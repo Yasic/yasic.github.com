@@ -2586,6 +2586,32 @@
       </categories>
   </entry>
   <entry>
+    <title>Autolayout指南·AutoLayout 高级指南·使用自适应高度TableViewCell</title>
+    <url>/2018/01/22/AutoLayout/Autolayout%E6%8C%87%E5%8D%97%C2%B7AutoLayout%20%E9%AB%98%E7%BA%A7%E6%8C%87%E5%8D%97%C2%B7%E4%BD%BF%E7%94%A8%E8%87%AA%E9%80%82%E5%BA%94%E9%AB%98%E5%BA%A6TableViewCell/</url>
+    <content><![CDATA[<h1 id="015-Autolayout指南·AutoLayout-高级指南"><a href="#015-Autolayout指南·AutoLayout-高级指南" class="headerlink" title="015-Autolayout指南·AutoLayout 高级指南"></a>015-Autolayout指南·AutoLayout 高级指南</h1><h2 id="使用自适应高度-TableViewCell"><a href="#使用自适应高度-TableViewCell" class="headerlink" title="使用自适应高度 TableViewCell"></a>使用自适应高度 TableViewCell</h2><p>在 iOS 中你可以使用 AutoLayout 来定义一个 TableViewCell 的高度，但是这一特性默认是没有打开的。</p>
+<p>一般来说，一个 cell 的高度是由 tableview 的代理对象的  tableView:heightForRowAtIndexPath: 来决定的。为了实现自适应高度的 TableViewCell，你必须设置 tableview 的 rowHeight 属性为 UITableViewAutomaticDimension，并为 tableview 的 estimatedRowHeight 属性设置一个值。一旦这两个属性都被设置了，系统就会使用 AutoLayout 来计算实际行高。</p>
+<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line">tableView.estimatedRowHeight = <span class="number">85.0</span></span><br><span class="line">tableView.rowHeight = <span class="built_in">UITableViewAutomaticDimension</span></span><br></pre></td></tr></table></figure>
+
+<p>接下来，将 tableviewcell 的内容放置在 cell 的内容视图中。为了定义 cell 的高度，你需要保证约束链和视图链从内容视图的顶边到底边有不间断的延伸，最终撑起内容区高度。如果你的 view 有固有内容高度，系统会使用这些高度，如果没有，你就必须显式得为视图或视图内的内容添加适合的高度约束。</p>
+<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/Chain_of_Views_and_Constraints_2x.png" width=500>
+
+<p>此外，你要尝试使预估高度尽量精确。系统会根据这些预估高度计算一些值，例如滚动条高度。越精确的预估高度越能实现无缝的用户体验。</p>
+<blockquote>
+<p>注意：</p>
+<p>使用 tableviewcell 时，不能更改预定义内容的布局（例如，textLabel，detailTextLabel 和 imageView 的属性）。</p>
+<p>下面这些约束都是支持的：</p>
+<ul>
+<li>定位子视图相对于内容视图的约束</li>
+<li>定位子视图相对于 cell 的边缘的约束</li>
+<li>定位子视图相对于预定义内容视图的约束</li>
+</ul>
+</blockquote>
+]]></content>
+      <categories>
+        <category>AutoLayout</category>
+      </categories>
+  </entry>
+  <entry>
     <title>Autolayout指南·AutoLayout 高级指南·使用ScrollView</title>
     <url>/2018/01/22/AutoLayout/Autolayout%E6%8C%87%E5%8D%97%C2%B7AutoLayout%20%E9%AB%98%E7%BA%A7%E6%8C%87%E5%8D%97%C2%B7%E4%BD%BF%E7%94%A8ScrollView/</url>
     <content><![CDATA[<h1 id="014-Autolayout指南·AutoLayout-高级指南"><a href="#014-Autolayout指南·AutoLayout-高级指南" class="headerlink" title="014-Autolayout指南·AutoLayout 高级指南"></a>014-Autolayout指南·AutoLayout 高级指南</h1><h2 id="使用-ScrollView"><a href="#使用-ScrollView" class="headerlink" title="使用 ScrollView"></a>使用 ScrollView</h2><p>当你使用 scrollView 时，需要定义 scrollView 的 frame 在父视图中的尺寸和位置，同时定义内容区域的尺寸。所有这些属性都可以用 AutoLayout 来设置。</p>
@@ -2620,32 +2646,6 @@
 <p>你的布局必须完全定义内容视图的尺寸（步骤 5 和 步骤 6 定义的除外）。要根据内容的 intrinsic size 来设置高度，你必须保证约束链和视图链从内容视图的顶边到底边有不间断的延伸。 同样，要设置宽度，你必须保证约束链和视图链从内容视图的前导边缘到后边缘有一个不间断的延伸。</p>
 <p>如果你的内容没有固有内容尺寸，你必须为内容视图或内容设置一个适当的尺寸约束。</p>
 <p>当内容视图比 scrollView 高度要高时，scrollView 就能够在垂直方向上滑动。当内容视图比 scrollView 宽度要宽时，scrollView 就能够在水平方向上滑动。否则默认情况下 scrollView 是不能滑动的。</p>
-</blockquote>
-]]></content>
-      <categories>
-        <category>AutoLayout</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>Autolayout指南·AutoLayout 高级指南·使用自适应高度TableViewCell</title>
-    <url>/2018/01/22/AutoLayout/Autolayout%E6%8C%87%E5%8D%97%C2%B7AutoLayout%20%E9%AB%98%E7%BA%A7%E6%8C%87%E5%8D%97%C2%B7%E4%BD%BF%E7%94%A8%E8%87%AA%E9%80%82%E5%BA%94%E9%AB%98%E5%BA%A6TableViewCell/</url>
-    <content><![CDATA[<h1 id="015-Autolayout指南·AutoLayout-高级指南"><a href="#015-Autolayout指南·AutoLayout-高级指南" class="headerlink" title="015-Autolayout指南·AutoLayout 高级指南"></a>015-Autolayout指南·AutoLayout 高级指南</h1><h2 id="使用自适应高度-TableViewCell"><a href="#使用自适应高度-TableViewCell" class="headerlink" title="使用自适应高度 TableViewCell"></a>使用自适应高度 TableViewCell</h2><p>在 iOS 中你可以使用 AutoLayout 来定义一个 TableViewCell 的高度，但是这一特性默认是没有打开的。</p>
-<p>一般来说，一个 cell 的高度是由 tableview 的代理对象的  tableView:heightForRowAtIndexPath: 来决定的。为了实现自适应高度的 TableViewCell，你必须设置 tableview 的 rowHeight 属性为 UITableViewAutomaticDimension，并为 tableview 的 estimatedRowHeight 属性设置一个值。一旦这两个属性都被设置了，系统就会使用 AutoLayout 来计算实际行高。</p>
-<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line">tableView.estimatedRowHeight = <span class="number">85.0</span></span><br><span class="line">tableView.rowHeight = <span class="built_in">UITableViewAutomaticDimension</span></span><br></pre></td></tr></table></figure>
-
-<p>接下来，将 tableviewcell 的内容放置在 cell 的内容视图中。为了定义 cell 的高度，你需要保证约束链和视图链从内容视图的顶边到底边有不间断的延伸，最终撑起内容区高度。如果你的 view 有固有内容高度，系统会使用这些高度，如果没有，你就必须显式得为视图或视图内的内容添加适合的高度约束。</p>
-<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/Chain_of_Views_and_Constraints_2x.png" width=500>
-
-<p>此外，你要尝试使预估高度尽量精确。系统会根据这些预估高度计算一些值，例如滚动条高度。越精确的预估高度越能实现无缝的用户体验。</p>
-<blockquote>
-<p>注意：</p>
-<p>使用 tableviewcell 时，不能更改预定义内容的布局（例如，textLabel，detailTextLabel 和 imageView 的属性）。</p>
-<p>下面这些约束都是支持的：</p>
-<ul>
-<li>定位子视图相对于内容视图的约束</li>
-<li>定位子视图相对于 cell 的边缘的约束</li>
-<li>定位子视图相对于预定义内容视图的约束</li>
-</ul>
 </blockquote>
 ]]></content>
       <categories>
@@ -3076,41 +3076,6 @@
 
 <p>利用约束生成特定布局表现的逻辑远远不同于编写过程式代码的逻辑或是面向对象代码的逻辑。很幸运的是，掌握 AutoLayout 并不同于掌握其他的编程能力。你只需要做到两步：首先理解基于约束进行布局的背后逻辑，其次学习相应的 API。你已经在学习其他编程能力时熟练掌握了这两步，AutoLayout 在这一点上并没有什么差别。</p>
 <p>指南剩下的部分将会帮助你逐步过渡到 AutoLayout 上来。<a href="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/AutoLayoutWithoutConstraints.html#//apple_ref/doc/uid/TP40010853-CH8-SW1" target="_blank" rel="noopener">无约束的自动布局</a> 章节将会阐述一种高水平的抽象概念来简化用户界面背后所创建的 AutoLayout。<a href="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/AnatomyofaConstraint.html#//apple_ref/doc/uid/TP40010853-CH9-SW1" target="_blank" rel="noopener">详解约束</a> 阐述为了更好使用 AutoLayout 需要掌握的理论知识。<a href="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/WorkingwithConstraintsinInterfaceBuidler.html#//apple_ref/doc/uid/TP40010853-CH10-SW1" target="_blank" rel="noopener">在 IB 中使用约束</a> 介绍了自动布局用到的一些工具。<a href="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/ProgrammaticallyCreatingConstraints.html#//apple_ref/doc/uid/TP40010853-CH16-SW1" target="_blank" rel="noopener">编程实现约束</a> 和 <a href="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/LayoutUsingStackViews.html#//apple_ref/doc/uid/TP40010853-CH3-SW1" target="_blank" rel="noopener">AutoLayout 烹饪书</a> 细致描述了 AutoLayout 的 API。最后，<a href="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/LayoutUsingStackViews.html#//apple_ref/doc/uid/TP40010853-CH3-SW1" target="_blank" rel="noopener">AutoLayout 烹饪书</a> 陈列了一些不同复杂度下的示例布局，你可以学习并在自己的项目中使用这些示例。<a href="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/TypesofErrors.html#//apple_ref/doc/uid/TP40010853-CH22-SW1" target="_blank" rel="noopener">AutoLayout 调试</a> 则提供了一些设备和工具用以在出错时对 AutoLayout 进行修复。</p>
-]]></content>
-      <categories>
-        <category>AutoLayout</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>AutoLayout指南·概述·AutoLayout Without Constraints</title>
-    <url>/2017/12/26/AutoLayout/AutoLayout%E6%8C%87%E5%8D%97%C2%B7%E6%A6%82%E8%BF%B0%C2%B7AutoLayout%20Without%20Constraints/</url>
-    <content><![CDATA[<h1 id="AutoLayout指南·概述"><a href="#AutoLayout指南·概述" class="headerlink" title="AutoLayout指南·概述"></a>AutoLayout指南·概述</h1><h2 id="AutoLayout-Without-Constraints"><a href="#AutoLayout-Without-Constraints" class="headerlink" title="AutoLayout Without Constraints"></a>AutoLayout Without Constraints</h2><p>Stack View 提供了一种简单的方式，可以不引入复杂的约束就能运用 AutoLayout 的特性构建用用户界面。一个 StackView 可以定义一行或者一列的用户界面元素。StackView 运用以下属性来调整这些元素。</p>
-<ul>
-<li>axis(UIStackView Only)：定义 StackView 的轴向是垂直还是水平</li>
-<li>orientation(NSStackView only)：定义 StackView 的轴向是垂直还是水平</li>
-<li>distribution：定义子 view 沿轴向的排布方式</li>
-<li>alignment：设定如何沿轴线垂直方向排布子视图</li>
-<li>spacing：设定子视图间距</li>
-</ul>
-<p>可以在 Interface Builder 中拖一个垂直或者水平的 StackView 到画布上来使用一个 StackView，然后拖出其他内容放到 Stack 中。</p>
-<p>如果一个对象自身有固有内容尺寸(intrinsic content size)，则放置到 StackView 中后仍然会保持这一尺寸。如果对象本身没有 intrinsic content size，IB 将会提供一个默认尺寸给它。你可以重新调整对象的尺寸，IB 也会添加约束来维护视图的尺寸。</p>
-<p>要进一步调整这个布局，也可以用属性检查器修改 StackView 的属性。比如下面的例子设置了 StackView 的间距为 8，distribution 为 Fills Equallly(默认使用Fill模式，自视图各自按照各自尺寸显示，Fill Equally模式的意思是让所有自视图尺寸大小相等)。</p>
-<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/IB_StackView_Simple_2x.png" width=500>
-
-<p>StackView 也会基于子视图的抗拉伸属性和抗压缩属性来设置布局，你可以用尺寸检查器来修改这些属性。</p>
-<blockquote>
-<p>注意：</p>
-<p>你可以直接通过添加约束的方式来调整子视图的布局，但是要避免任何可能的约束冲突：一般来说，如果一个视图的尺寸默认返回其 Intrinsic Content Size 值，就可以安全给这一维度添加约束。更多关于约束冲突的信息查看 <a href="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/ConflictingLayouts.html#//apple_ref/doc/uid/TP40010853-CH19-SW1" target="_blank" rel="noopener">不安全的布局</a></p>
-</blockquote>
-<p>此外，你也可以嵌套 StackView 到其他 StackView 中，构建更加复杂的布局。</p>
-<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/IB_StackView_NestedStacks_2x.png" width=500>
-
-<p>总而言之，应当尽可能用 StackView 去设置你的布局，只有 StackView 无法达到你想到的效果时才应该借助创建约束的方式去实现。</p>
-<p>更多关于使用 StackView 的信息查看 <a href="https://developer.apple.com/documentation/uikit/uistackview" target="_blank" rel="noopener">UIStackView Class Reference</a> 或 <a href="https://developer.apple.com/documentation/appkit/nsstackview" target="_blank" rel="noopener">NSStackView Class Reference</a></p>
-<blockquote>
-<p>注意：</p>
-<p>尽管嵌套 StackView 的使用可以创建更复杂的用户界面，你也不能完全避免使用约束。至少你仍然会需要用约束来布局最外层 StackView 的位置或者尺寸大小。</p>
-</blockquote>
 ]]></content>
       <categories>
         <category>AutoLayout</category>
@@ -3562,6 +3527,41 @@
 <p>要记住，你需要确保对于每一种可能的 size-class 你都有可行的布局与之对应，包括所有的 size-class 基类。作为一个一般规则，选择一种布局作为你的默认布局会是一种最简单的方法。在 Any-Any size-class 下设计这种布局，然后按照需要修改 Final size-class。记住，你可以在更具体的 size-class 中添加或修改元其中的元素。</p>
 <p>要创建更复杂的布局，你可能希望在开始创建布局前绘制出 size-class 的九宫格。九宫格帮助你看到哪些约束会被多种 size-class 共享，并帮助你找到布局和 size-class 的最佳混合。</p>
 <p>查看更多使用 size-class 的信息请前往 <a href="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/TypesofErrors.html#//apple_ref/doc/uid/TP40010853-CH22-SW1" target="_blank" rel="noopener">调试 AutoLayout</a></p>
+]]></content>
+      <categories>
+        <category>AutoLayout</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>AutoLayout指南·概述·AutoLayout Without Constraints</title>
+    <url>/2017/12/26/AutoLayout/AutoLayout%E6%8C%87%E5%8D%97%C2%B7%E6%A6%82%E8%BF%B0%C2%B7AutoLayout%20Without%20Constraints/</url>
+    <content><![CDATA[<h1 id="AutoLayout指南·概述"><a href="#AutoLayout指南·概述" class="headerlink" title="AutoLayout指南·概述"></a>AutoLayout指南·概述</h1><h2 id="AutoLayout-Without-Constraints"><a href="#AutoLayout-Without-Constraints" class="headerlink" title="AutoLayout Without Constraints"></a>AutoLayout Without Constraints</h2><p>Stack View 提供了一种简单的方式，可以不引入复杂的约束就能运用 AutoLayout 的特性构建用用户界面。一个 StackView 可以定义一行或者一列的用户界面元素。StackView 运用以下属性来调整这些元素。</p>
+<ul>
+<li>axis(UIStackView Only)：定义 StackView 的轴向是垂直还是水平</li>
+<li>orientation(NSStackView only)：定义 StackView 的轴向是垂直还是水平</li>
+<li>distribution：定义子 view 沿轴向的排布方式</li>
+<li>alignment：设定如何沿轴线垂直方向排布子视图</li>
+<li>spacing：设定子视图间距</li>
+</ul>
+<p>可以在 Interface Builder 中拖一个垂直或者水平的 StackView 到画布上来使用一个 StackView，然后拖出其他内容放到 Stack 中。</p>
+<p>如果一个对象自身有固有内容尺寸(intrinsic content size)，则放置到 StackView 中后仍然会保持这一尺寸。如果对象本身没有 intrinsic content size，IB 将会提供一个默认尺寸给它。你可以重新调整对象的尺寸，IB 也会添加约束来维护视图的尺寸。</p>
+<p>要进一步调整这个布局，也可以用属性检查器修改 StackView 的属性。比如下面的例子设置了 StackView 的间距为 8，distribution 为 Fills Equallly(默认使用Fill模式，自视图各自按照各自尺寸显示，Fill Equally模式的意思是让所有自视图尺寸大小相等)。</p>
+<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/IB_StackView_Simple_2x.png" width=500>
+
+<p>StackView 也会基于子视图的抗拉伸属性和抗压缩属性来设置布局，你可以用尺寸检查器来修改这些属性。</p>
+<blockquote>
+<p>注意：</p>
+<p>你可以直接通过添加约束的方式来调整子视图的布局，但是要避免任何可能的约束冲突：一般来说，如果一个视图的尺寸默认返回其 Intrinsic Content Size 值，就可以安全给这一维度添加约束。更多关于约束冲突的信息查看 <a href="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/ConflictingLayouts.html#//apple_ref/doc/uid/TP40010853-CH19-SW1" target="_blank" rel="noopener">不安全的布局</a></p>
+</blockquote>
+<p>此外，你也可以嵌套 StackView 到其他 StackView 中，构建更加复杂的布局。</p>
+<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/IB_StackView_NestedStacks_2x.png" width=500>
+
+<p>总而言之，应当尽可能用 StackView 去设置你的布局，只有 StackView 无法达到你想到的效果时才应该借助创建约束的方式去实现。</p>
+<p>更多关于使用 StackView 的信息查看 <a href="https://developer.apple.com/documentation/uikit/uistackview" target="_blank" rel="noopener">UIStackView Class Reference</a> 或 <a href="https://developer.apple.com/documentation/appkit/nsstackview" target="_blank" rel="noopener">NSStackView Class Reference</a></p>
+<blockquote>
+<p>注意：</p>
+<p>尽管嵌套 StackView 的使用可以创建更复杂的用户界面，你也不能完全避免使用约束。至少你仍然会需要用约束来布局最外层 StackView 的位置或者尺寸大小。</p>
+</blockquote>
 ]]></content>
       <categories>
         <category>AutoLayout</category>
