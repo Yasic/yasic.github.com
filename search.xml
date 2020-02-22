@@ -818,44 +818,6 @@
       </categories>
   </entry>
   <entry>
-    <title>媒体的组合和编辑</title>
-    <url>/2018/04/26/AVFoundation/%E5%AA%92%E4%BD%93%E7%9A%84%E7%BB%84%E5%90%88%E5%92%8C%E7%BC%96%E8%BE%91/</url>
-    <content><![CDATA[<p>AVFoundation 能支持非线性、无损的编辑工具，并且可以在原始媒体资源不破坏的情况下无约束地编辑。</p>
-<h2 id="1-基础"><a href="#1-基础" class="headerlink" title="1. 基础"></a>1. 基础</h2><p>AVFoundation 有关资源组合的功能均需要用到 AVComposition 类，这个类将其他几种媒体资源组合成一个临时的排列，这个临时排列可以像 AVAsset 一样使用。一个 AVComposition 中的轨道都是 AVCompositionTrack，而 AVCompositionTrack 又由多个 AVCompositionTrackSegment 组成，代表这个组合中的实际媒体区域。AVComposition 及其相关类没有遵循 NSCoding 协议，因此不能将其简单归档到存储磁盘里，需要自定义数据模型来保存。</p>
-<h3 id="1-1-时间的处理"><a href="#1-1-时间的处理" class="headerlink" title="1.1 时间的处理"></a>1.1 时间的处理</h3><p>为了避免浮点数的不精确性导致的误差，AVFoundation 普遍使用 CMTime 数据类型来表达时间格式。</p>
-<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">	<span class="built_in">CMTimeValue</span>	value;</span><br><span class="line">	<span class="built_in">CMTimeScale</span>	timescale;</span><br><span class="line">	<span class="built_in">CMTimeFlags</span>	flags;<span class="comment">// 表示时间状态，如是否有效、是否有舍入值</span></span><br><span class="line">	<span class="built_in">CMTimeEpoch</span>	epoch;</span><br><span class="line">&#125; <span class="built_in">CMTime</span>;</span><br></pre></td></tr></table></figure>
-
-<p>另外使用 CMTimeRange 来表达时间范围</p>
-<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">	<span class="built_in">CMTime</span>			start;</span><br><span class="line">	<span class="built_in">CMTime</span>			duration;</span><br><span class="line">&#125; <span class="built_in">CMTimeRange</span>;</span><br></pre></td></tr></table></figure>
-
-<p>下面是一些常用方法</p>
-<ul>
-<li>CMTimeMake 创造一个 CMTime</li>
-<li>CMTimeShow 打印 CMTime 值</li>
-<li>CMTimeAdd 两个 CMTime 相加</li>
-<li>CMTimeSubtract 两个 CMTime 相减</li>
-<li>CMTimeRangeMake 创造一个 CMTimeRange</li>
-<li>CMTimeRangeFromTimeToTime 以两个时间点创造 CMTimeRange</li>
-<li>CMTimeRangeGetIntersection 获得两个 CMTimeRange 的交集</li>
-<li>CMTimeRangeGetUnion 获得两个 CMTImeRange 的并集</li>
-</ul>
-<h2 id="2-组合媒体"><a href="#2-组合媒体" class="headerlink" title="2. 组合媒体"></a>2. 组合媒体</h2><p>组合媒体资源时要注意对一个 AVAsset 的 videoTrack 和 audioTrack 分别进行组合。首先需要初始化一个 AVMutableComposition，还需要初始化两个 AVMutableCompositionTrack，一个用于附加 video，一个用于附加 audio。</p>
-<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line"><span class="built_in">AVMutableComposition</span> *composition = [<span class="built_in">AVMutableComposition</span> composition];</span><br><span class="line">__block <span class="built_in">CMTime</span> cursor = kCMTimeZero;<span class="comment">// 标识当前附加资源的时间轴位置</span></span><br><span class="line"><span class="built_in">AVMutableCompositionTrack</span> *videoCompositionTrack = [composition addMutableTrackWithMediaType:<span class="built_in">AVMediaTypeVideo</span> preferredTrackID:kCMPersistentTrackID_Invalid];<span class="comment">// kCMPersistentTrackID_Invalid 表示 AVFoundation 应该自动生成一个正确的轨道 ID</span></span><br><span class="line"><span class="built_in">AVMutableCompositionTrack</span> *audioCompositionTrack = [composition addMutableTrackWithMediaType:<span class="built_in">AVMediaTypeAudio</span> preferredTrackID:kCMPersistentTrackID_Invalid];</span><br></pre></td></tr></table></figure>
-
-<p>对于每一个 AVAsset，需要取出其中的 videoTrack 和 audioTrack，分别加入到对应的 AVMutableCompositionTrack 中</p>
-<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line"><span class="built_in">AVAssetTrack</span> *videoTrack = [[targetAsset tracksWithMediaType:<span class="built_in">AVMediaTypeVideo</span>] firstObject];</span><br><span class="line">[videoCompositionTrack insertTimeRange:<span class="built_in">CMTimeRangeMake</span>(kCMTimeZero, targetAsset.duration) ofTrack:videoTrack atTime:cursor error:<span class="literal">nil</span>];</span><br><span class="line"></span><br><span class="line"><span class="built_in">AVAssetTrack</span> *audioTracck = [[targetAsset tracksWithMediaType:<span class="built_in">AVMediaTypeAudio</span>] firstObject];</span><br><span class="line">[audioCompositionTrack insertTimeRange:<span class="built_in">CMTimeRangeMake</span>(kCMTimeZero, targetAsset.duration) ofTrack:audioTracck atTime:cursor error:<span class="literal">nil</span>];</span><br><span class="line">cursor = <span class="built_in">CMTimeAdd</span>(cursor, targetAsset.duration); <span class="comment">// 移动当前媒体资源附加位置</span></span><br></pre></td></tr></table></figure>
-
-<p>这样就完成了一个临时排列 AVMutableComposition，可以将其直接用于播放。</p>
-<h2 id="3-导出媒体"><a href="#3-导出媒体" class="headerlink" title="3. 导出媒体"></a>3. 导出媒体</h2><p>AVMutableComposition 可以在内存中进行使用，但是如果想持久化到磁盘中，就需要进行导出，导出后的媒体资源是一个完整的独立资源。</p>
-<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">	<span class="built_in">NSString</span> *preset = <span class="built_in">AVAssetExportPresetHighestQuality</span>;</span><br><span class="line">	<span class="built_in">AVAssetExportSession</span> *<span class="keyword">export</span> = [<span class="built_in">AVAssetExportSession</span> exportSessionWithAsset:[composition <span class="keyword">copy</span>] presetName:preset];</span><br><span class="line">	<span class="keyword">export</span>.outputURL = [<span class="keyword">self</span> outputUrl];</span><br><span class="line">	<span class="keyword">export</span>.outputFileType = <span class="built_in">AVFileTypeMPEG4</span>;</span><br><span class="line">	[<span class="keyword">export</span> exportAsynchronouslyWithCompletionHandler:^&#123;</span><br><span class="line">		<span class="built_in">AVAssetExportSessionStatus</span> status = <span class="keyword">export</span>.status;</span><br><span class="line">		<span class="keyword">if</span> (status == <span class="built_in">AVAssetExportSessionStatusCompleted</span>) &#123;</span><br><span class="line">			[<span class="keyword">self</span> saveVideo:<span class="keyword">export</span>.outputURL];</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;];</span><br><span class="line">&#125;</span><br><span class="line">                            </span><br><span class="line">- (<span class="built_in">NSURL</span> *)outputUrl</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">NSString</span> *filePath = <span class="literal">nil</span>;</span><br><span class="line">    <span class="built_in">NSUInteger</span> count = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">do</span> &#123;</span><br><span class="line">        filePath = <span class="built_in">NSTemporaryDirectory</span>();</span><br><span class="line">        <span class="built_in">NSString</span> *numberString = count &gt; <span class="number">0</span> ?</span><br><span class="line">        [<span class="built_in">NSString</span> stringWithFormat:<span class="string">@"-%li"</span>, (<span class="keyword">unsigned</span> <span class="keyword">long</span>) count] : <span class="string">@""</span>;</span><br><span class="line">        <span class="built_in">NSString</span> *fileNameString =</span><br><span class="line">        [<span class="built_in">NSString</span> stringWithFormat:<span class="string">@"Masterpiece-%@.m4v"</span>, numberString];</span><br><span class="line">        filePath = [filePath stringByAppendingPathComponent:fileNameString];</span><br><span class="line">        count++;</span><br><span class="line">    &#125; <span class="keyword">while</span> ([[<span class="built_in">NSFileManager</span> defaultManager] fileExistsAtPath:filePath]);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> [<span class="built_in">NSURL</span> fileURLWithPath:filePath];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>最终在导出结束后，通过导出 URL 可以将目标视频保存到系统相册里。</p>
-<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line">__block <span class="built_in">NSString</span> *imageIdentifier;</span><br><span class="line">@weakify(<span class="keyword">self</span>)</span><br><span class="line">[[PHPhotoLibrary sharedPhotoLibrary] performChanges:^&#123;</span><br><span class="line">    PHAssetChangeRequest *changeRequest = [PHAssetChangeRequest creationRequestForAssetFromVideoAtFileURL:videoURL];</span><br><span class="line">    imageIdentifier = changeRequest.placeholderForCreatedAsset.localIdentifier;</span><br><span class="line">&#125; completionHandler:^( <span class="built_in">BOOL</span> success, <span class="built_in">NSError</span> * _Nullable error ) &#123;</span><br><span class="line">    <span class="built_in">dispatch_async</span>(dispatch_get_main_queue(), ^&#123;</span><br><span class="line">        [MTBProgressHUD dismiss];</span><br><span class="line">        <span class="keyword">if</span> (!success) &#123;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>]]></content>
-      <categories>
-        <category>AVFoundation</category>
-      </categories>
-  </entry>
-  <entry>
     <title>AVFoundation资源和元数据</title>
     <url>/2018/04/26/AVFoundation/AVFoundation%E8%B5%84%E6%BA%90%E5%92%8C%E5%85%83%E6%95%B0%E6%8D%AE/</url>
     <content><![CDATA[<p>AVAsset 是一个抽象类和不可变类，它定义了媒体资源混合呈现的方式，将媒体资源的静态属性模块化为一个整体，包括标题、时长和元数据。AVAsset 提供了基本媒体格式的层抽象，隐藏了资源的位置信息。</p>
@@ -915,6 +877,44 @@
 
 <p>导出需要用到 exportAsynchronouslyWithCompletionHandler 方法，完成后对状态进行判断，获知导出是否成功，然后通过 NSFileManager 的 moveItemAtURL 方法来覆盖原始的媒体资源</p>
 ]]></content>
+      <categories>
+        <category>AVFoundation</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>媒体的组合和编辑</title>
+    <url>/2018/04/26/AVFoundation/%E5%AA%92%E4%BD%93%E7%9A%84%E7%BB%84%E5%90%88%E5%92%8C%E7%BC%96%E8%BE%91/</url>
+    <content><![CDATA[<p>AVFoundation 能支持非线性、无损的编辑工具，并且可以在原始媒体资源不破坏的情况下无约束地编辑。</p>
+<h2 id="1-基础"><a href="#1-基础" class="headerlink" title="1. 基础"></a>1. 基础</h2><p>AVFoundation 有关资源组合的功能均需要用到 AVComposition 类，这个类将其他几种媒体资源组合成一个临时的排列，这个临时排列可以像 AVAsset 一样使用。一个 AVComposition 中的轨道都是 AVCompositionTrack，而 AVCompositionTrack 又由多个 AVCompositionTrackSegment 组成，代表这个组合中的实际媒体区域。AVComposition 及其相关类没有遵循 NSCoding 协议，因此不能将其简单归档到存储磁盘里，需要自定义数据模型来保存。</p>
+<h3 id="1-1-时间的处理"><a href="#1-1-时间的处理" class="headerlink" title="1.1 时间的处理"></a>1.1 时间的处理</h3><p>为了避免浮点数的不精确性导致的误差，AVFoundation 普遍使用 CMTime 数据类型来表达时间格式。</p>
+<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">	<span class="built_in">CMTimeValue</span>	value;</span><br><span class="line">	<span class="built_in">CMTimeScale</span>	timescale;</span><br><span class="line">	<span class="built_in">CMTimeFlags</span>	flags;<span class="comment">// 表示时间状态，如是否有效、是否有舍入值</span></span><br><span class="line">	<span class="built_in">CMTimeEpoch</span>	epoch;</span><br><span class="line">&#125; <span class="built_in">CMTime</span>;</span><br></pre></td></tr></table></figure>
+
+<p>另外使用 CMTimeRange 来表达时间范围</p>
+<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">	<span class="built_in">CMTime</span>			start;</span><br><span class="line">	<span class="built_in">CMTime</span>			duration;</span><br><span class="line">&#125; <span class="built_in">CMTimeRange</span>;</span><br></pre></td></tr></table></figure>
+
+<p>下面是一些常用方法</p>
+<ul>
+<li>CMTimeMake 创造一个 CMTime</li>
+<li>CMTimeShow 打印 CMTime 值</li>
+<li>CMTimeAdd 两个 CMTime 相加</li>
+<li>CMTimeSubtract 两个 CMTime 相减</li>
+<li>CMTimeRangeMake 创造一个 CMTimeRange</li>
+<li>CMTimeRangeFromTimeToTime 以两个时间点创造 CMTimeRange</li>
+<li>CMTimeRangeGetIntersection 获得两个 CMTimeRange 的交集</li>
+<li>CMTimeRangeGetUnion 获得两个 CMTImeRange 的并集</li>
+</ul>
+<h2 id="2-组合媒体"><a href="#2-组合媒体" class="headerlink" title="2. 组合媒体"></a>2. 组合媒体</h2><p>组合媒体资源时要注意对一个 AVAsset 的 videoTrack 和 audioTrack 分别进行组合。首先需要初始化一个 AVMutableComposition，还需要初始化两个 AVMutableCompositionTrack，一个用于附加 video，一个用于附加 audio。</p>
+<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line"><span class="built_in">AVMutableComposition</span> *composition = [<span class="built_in">AVMutableComposition</span> composition];</span><br><span class="line">__block <span class="built_in">CMTime</span> cursor = kCMTimeZero;<span class="comment">// 标识当前附加资源的时间轴位置</span></span><br><span class="line"><span class="built_in">AVMutableCompositionTrack</span> *videoCompositionTrack = [composition addMutableTrackWithMediaType:<span class="built_in">AVMediaTypeVideo</span> preferredTrackID:kCMPersistentTrackID_Invalid];<span class="comment">// kCMPersistentTrackID_Invalid 表示 AVFoundation 应该自动生成一个正确的轨道 ID</span></span><br><span class="line"><span class="built_in">AVMutableCompositionTrack</span> *audioCompositionTrack = [composition addMutableTrackWithMediaType:<span class="built_in">AVMediaTypeAudio</span> preferredTrackID:kCMPersistentTrackID_Invalid];</span><br></pre></td></tr></table></figure>
+
+<p>对于每一个 AVAsset，需要取出其中的 videoTrack 和 audioTrack，分别加入到对应的 AVMutableCompositionTrack 中</p>
+<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line"><span class="built_in">AVAssetTrack</span> *videoTrack = [[targetAsset tracksWithMediaType:<span class="built_in">AVMediaTypeVideo</span>] firstObject];</span><br><span class="line">[videoCompositionTrack insertTimeRange:<span class="built_in">CMTimeRangeMake</span>(kCMTimeZero, targetAsset.duration) ofTrack:videoTrack atTime:cursor error:<span class="literal">nil</span>];</span><br><span class="line"></span><br><span class="line"><span class="built_in">AVAssetTrack</span> *audioTracck = [[targetAsset tracksWithMediaType:<span class="built_in">AVMediaTypeAudio</span>] firstObject];</span><br><span class="line">[audioCompositionTrack insertTimeRange:<span class="built_in">CMTimeRangeMake</span>(kCMTimeZero, targetAsset.duration) ofTrack:audioTracck atTime:cursor error:<span class="literal">nil</span>];</span><br><span class="line">cursor = <span class="built_in">CMTimeAdd</span>(cursor, targetAsset.duration); <span class="comment">// 移动当前媒体资源附加位置</span></span><br></pre></td></tr></table></figure>
+
+<p>这样就完成了一个临时排列 AVMutableComposition，可以将其直接用于播放。</p>
+<h2 id="3-导出媒体"><a href="#3-导出媒体" class="headerlink" title="3. 导出媒体"></a>3. 导出媒体</h2><p>AVMutableComposition 可以在内存中进行使用，但是如果想持久化到磁盘中，就需要进行导出，导出后的媒体资源是一个完整的独立资源。</p>
+<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">	<span class="built_in">NSString</span> *preset = <span class="built_in">AVAssetExportPresetHighestQuality</span>;</span><br><span class="line">	<span class="built_in">AVAssetExportSession</span> *<span class="keyword">export</span> = [<span class="built_in">AVAssetExportSession</span> exportSessionWithAsset:[composition <span class="keyword">copy</span>] presetName:preset];</span><br><span class="line">	<span class="keyword">export</span>.outputURL = [<span class="keyword">self</span> outputUrl];</span><br><span class="line">	<span class="keyword">export</span>.outputFileType = <span class="built_in">AVFileTypeMPEG4</span>;</span><br><span class="line">	[<span class="keyword">export</span> exportAsynchronouslyWithCompletionHandler:^&#123;</span><br><span class="line">		<span class="built_in">AVAssetExportSessionStatus</span> status = <span class="keyword">export</span>.status;</span><br><span class="line">		<span class="keyword">if</span> (status == <span class="built_in">AVAssetExportSessionStatusCompleted</span>) &#123;</span><br><span class="line">			[<span class="keyword">self</span> saveVideo:<span class="keyword">export</span>.outputURL];</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;];</span><br><span class="line">&#125;</span><br><span class="line">                            </span><br><span class="line">- (<span class="built_in">NSURL</span> *)outputUrl</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">NSString</span> *filePath = <span class="literal">nil</span>;</span><br><span class="line">    <span class="built_in">NSUInteger</span> count = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">do</span> &#123;</span><br><span class="line">        filePath = <span class="built_in">NSTemporaryDirectory</span>();</span><br><span class="line">        <span class="built_in">NSString</span> *numberString = count &gt; <span class="number">0</span> ?</span><br><span class="line">        [<span class="built_in">NSString</span> stringWithFormat:<span class="string">@"-%li"</span>, (<span class="keyword">unsigned</span> <span class="keyword">long</span>) count] : <span class="string">@""</span>;</span><br><span class="line">        <span class="built_in">NSString</span> *fileNameString =</span><br><span class="line">        [<span class="built_in">NSString</span> stringWithFormat:<span class="string">@"Masterpiece-%@.m4v"</span>, numberString];</span><br><span class="line">        filePath = [filePath stringByAppendingPathComponent:fileNameString];</span><br><span class="line">        count++;</span><br><span class="line">    &#125; <span class="keyword">while</span> ([[<span class="built_in">NSFileManager</span> defaultManager] fileExistsAtPath:filePath]);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> [<span class="built_in">NSURL</span> fileURLWithPath:filePath];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>最终在导出结束后，通过导出 URL 可以将目标视频保存到系统相册里。</p>
+<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line">__block <span class="built_in">NSString</span> *imageIdentifier;</span><br><span class="line">@weakify(<span class="keyword">self</span>)</span><br><span class="line">[[PHPhotoLibrary sharedPhotoLibrary] performChanges:^&#123;</span><br><span class="line">    PHAssetChangeRequest *changeRequest = [PHAssetChangeRequest creationRequestForAssetFromVideoAtFileURL:videoURL];</span><br><span class="line">    imageIdentifier = changeRequest.placeholderForCreatedAsset.localIdentifier;</span><br><span class="line">&#125; completionHandler:^( <span class="built_in">BOOL</span> success, <span class="built_in">NSError</span> * _Nullable error ) &#123;</span><br><span class="line">    <span class="built_in">dispatch_async</span>(dispatch_get_main_queue(), ^&#123;</span><br><span class="line">        [MTBProgressHUD dismiss];</span><br><span class="line">        <span class="keyword">if</span> (!success) &#123;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>]]></content>
       <categories>
         <category>AVFoundation</category>
       </categories>
@@ -2754,81 +2754,6 @@
       </categories>
   </entry>
   <entry>
-    <title>Autolayout指南·调试 AutoLayout·调试技巧</title>
-    <url>/2018/01/15/AutoLayout/Autolayout%E6%8C%87%E5%8D%97%C2%B7%E8%B0%83%E8%AF%95%20AutoLayout%C2%B7%E8%B0%83%E8%AF%95%E6%8A%80%E5%B7%A7/</url>
-    <content><![CDATA[<h1 id="011-Autolayout指南·调试-AutoLayout"><a href="#011-Autolayout指南·调试-AutoLayout" class="headerlink" title="011-Autolayout指南·调试 AutoLayout"></a>011-Autolayout指南·调试 AutoLayout</h1><h2 id="调试技巧"><a href="#调试技巧" class="headerlink" title="调试技巧"></a>调试技巧</h2><p>接下来的话题是关于如何收集和组织你的布局的信息的技术，以及一些你可能会遇到的奇葩的布局表现。你可能并不需要在每一个布局上都使用这些技术，但是它们能帮助你即使遇到最困难的问题也能顺利完成布局工作。</p>
-<h3 id="理解日志"><a href="#理解日志" class="headerlink" title="理解日志"></a>理解日志</h3><p>有关视图的信息都可以被打印到控制台，无论是由于无法满足的布局，还是因为你调用 constraintsAffectingLayoutForAxis: 或者 constraintsAffectingLayoutForOrientation: 等调试函数显式地打印这些约束。</p>
-<p>总之，你可以在这些日志里找到很多有用的信息，这里有一份有关无法满足的约束的示例输出：</p>
-<figure class="highlight livecodeserver"><table><tr><td class="code"><pre><span class="line"><span class="number">2015</span><span class="number">-08</span><span class="number">-26</span> <span class="number">14</span>:<span class="number">27</span>:<span class="number">54.790</span> Auto Layout Cookbook[<span class="number">10040</span>:<span class="number">1906606</span>] Unable <span class="built_in">to</span> simultaneously satisfy constraints.</span><br><span class="line">    Probably <span class="keyword">at</span> least <span class="literal">one</span> <span class="keyword">of</span> <span class="keyword">the</span> constraints <span class="keyword">in</span> <span class="keyword">the</span> following list is <span class="literal">one</span> you don<span class="string">'t want. Try this: (1) look at each constraint and try to figure out which you don'</span>t expect; (<span class="number">2</span>) find <span class="keyword">the</span> code that added <span class="keyword">the</span> unwanted constraint <span class="keyword">or</span> constraints <span class="keyword">and</span> fix <span class="keyword">it</span>. (Note: If you<span class="string">'re seeing NSAutoresizingMaskLayoutConstraints that you don'</span>t understand, refer <span class="built_in">to</span> <span class="keyword">the</span> documentation <span class="keyword">for</span> <span class="keyword">the</span> UIView property translatesAutoresizingMaskIntoConstraints) </span><br><span class="line">(</span><br><span class="line">    <span class="string">"&lt;NSLayoutConstraint:0x7a87b000 H:[UILabel:0x7a8724b0'Name'(&gt;=400)]&gt;"</span>,</span><br><span class="line">    <span class="string">"&lt;NSLayoutConstraint:0x7a895e30 UILabel:0x7a8724b0'Name'.leading == UIView:0x7a887ee0.leadingMargin&gt;"</span>,</span><br><span class="line">    <span class="string">"&lt;NSLayoutConstraint:0x7a886d20 H:[UILabel:0x7a8724b0'Name']-(NSSpace(8))-[UITextField:0x7a88cff0]&gt;"</span>,</span><br><span class="line">    <span class="string">"&lt;NSLayoutConstraint:0x7a87b2e0 UITextField:0x7a88cff0.trailing == UIView:0x7a887ee0.trailingMargin&gt;"</span>,</span><br><span class="line">    <span class="string">"&lt;NSLayoutConstraint:0x7ac7c430 'UIView-Encapsulated-Layout-Width' H:[UIView:0x7a887ee0(320)]&gt;"</span></span><br><span class="line">)</span><br><span class="line"> </span><br><span class="line">Will attempt <span class="built_in">to</span> recover <span class="keyword">by</span> breaking constraint</span><br><span class="line">&lt;NSLayoutConstraint:<span class="number">0x7a87b000</span> H:[UILabel:<span class="number">0x7a8724b0</span><span class="string">'Name'</span>(&gt;=<span class="number">400</span>)]&gt;</span><br><span class="line"> </span><br><span class="line">Make <span class="keyword">a</span> symbolic <span class="built_in">breakpoint</span> <span class="keyword">at</span> UIViewAlertForUnsatisfiableConstraints <span class="built_in">to</span> <span class="keyword">catch</span> this <span class="keyword">in</span> <span class="keyword">the</span> debugger.</span><br><span class="line">The methods <span class="keyword">in</span> <span class="keyword">the</span> UIConstraintBasedLayoutDebugging category <span class="keyword">on</span> <span class="title">UIView</span> <span class="title">listed</span> <span class="title">in</span> &lt;<span class="title">UIKit</span>/<span class="title">UIView</span>.<span class="title">h</span>&gt; <span class="title">may</span> <span class="title">also</span> <span class="title">be</span> <span class="title">helpful</span>.</span><br></pre></td></tr></table></figure>
-
-<p>这条错误信息展示了五条冲突约束，并不是所有约束都能同时成立，你需要移除其中一个，或者是将其转为一个可选的约束。</p>
-<p>幸运的是，视图层级相对比较简单，你有一个包含一个 label 和 一个 textfield 的父视图，冲突约束设置了下面这一系列的关系：</p>
-<ul>
-<li>label 的宽度大于等于 400pt</li>
-<li>label 的头部边线等于父视图的头部</li>
-<li>Label 与 textfield 间距为 8pt</li>
-<li>textfield 的尾部边线等于父视图的尾部</li>
-<li>父视图的宽度为 320 pt</li>
-</ul>
-<p>系统会尝试打破 label 的宽度以修复冲突</p>
-<blockquote>
-<p>注意：</p>
-<p>约束采用了视觉格式语言 VFL （Visual Format Language）打印到控制台，即使你从未使用过 VFL 来创建约束，你也一定能够读懂它，从而有效调试你的 AutoLayout 问题。关于 VFL 更多信息请查阅 <a href="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/VisualFormatLanguage.html#//apple_ref/doc/uid/TP40010853-CH27-SW1" target="_blank" rel="noopener">Visual Format Language</a></p>
-</blockquote>
-<p>在这些约束中，最后一个约束是由系统创建的。你不能修改这条约束，另外，它还和第一条约束产生了一个明显的冲突。如果你的父视图宽度只有 320pt，那么你永远不能有一个 400pt 宽度的 label。幸运的是，你并不需要去除第一条约束，如果您将其优先级降至 999，那么系统仍然会尝试提供你所选择的宽度 - 它会尽可能接近，同时仍然满足其他约束。</p>
-<p>基于 view 的 view’s autoresizing mask 创建的约束（例如当 translatesAutoresizingMaskIntoConstraints 为 YES 时就会创建约束）会有额外的信息。在约束的地址后面，日志分别展示了一个 “h=” 和 一个 “v=”，后面各跟着三个字符。这三个字符如果是”-“ 连字符则表示一个固定的值，是 “&amp;” 符号则表示一个变化的值。对于水平 mask 值（h=），三个字符分别代表左边距、宽度和右边距，对于垂直 mask 值（v=），三个字符分别表示上边距、高度和下边距。</p>
-<p>例如，考虑下面这条日志信息：</p>
-<figure class="highlight routeros"><table><tr><td class="code"><pre><span class="line">&lt;NSAutoresizingMaskLayoutConstraint:0x7ff28252e480 <span class="attribute">h</span>=--&amp; <span class="attribute">v</span>=--&amp; H:[UIView:0x7ff282617cc0(50)]&gt;<span class="string">"</span></span><br></pre></td></tr></table></figure>
-
-<p>这条信息包含了以下几部分：</p>
-<ul>
-<li>NSAutoresizingMaskLayoutConstraint:0x7ff28252e480: 这条约束的类和地址，这里的类告诉我们这是一条基于 view 的 autoresizing mask 创建的约束。</li>
-<li>h=–&amp; v=—&amp;: view 的 autoresizing mask 值，在这里它是默认值。水平方向上有一个固定的左边距和宽度，一个变化的右边距。竖直方向上有一个固定的上边距和高度，一个变化的下边距。也就是说，这个 view 的左上角和尺寸不会随着父视图的尺寸变化而变化。</li>
-<li>H:[UIView:0x7ff282617cc0(50)]: 这条约束的 VFL 表达。在这个例子中，它定义了一个有 50pt 宽度 的 view，表达中同样包含了这条约束影响到的视图的类和地址。</li>
-</ul>
-<h3 id="向日志添加标识"><a href="#向日志添加标识" class="headerlink" title="向日志添加标识"></a>向日志添加标识</h3><p>前面的示例还比较容易理解，但是随着约束列表变长，很快就会难以追踪和理解日志的含义。你可以向每一个 view 和约束提供一个可理解的标识来使日志更易于阅读。</p>
-<p>如果 view 有一个明显的文本组件，Xcode 会使用这个组件来作为标识。例如，Xcode 会使用一个 lable 的文案，一个 button 的标题，或者一个 textfield 的占位文案来标识这些 view。否则，就需要在标识检查器里设置 view 的 Xcode 标签。IB 会在整个接口中使用这些标识符，控制台日志中也会展示这些标识。</p>
-<p>对于约束，可以通过编程或者使用属性检查器来设置它们的 identifier 属性。Autolayout 之后会使用这些标识在控制台中打印约束信息。</p>
-<p>例如，这里有一个同样无法满足的约束错误，它有一个标识集合：</p>
-<figure class="highlight livecodeserver"><table><tr><td class="code"><pre><span class="line"><span class="number">2015</span><span class="number">-08</span><span class="number">-26</span> <span class="number">14</span>:<span class="number">29</span>:<span class="number">32.870</span> Auto Layout Cookbook[<span class="number">10208</span>:<span class="number">1918826</span>] Unable <span class="built_in">to</span> simultaneously satisfy constraints.</span><br><span class="line">    Probably <span class="keyword">at</span> least <span class="literal">one</span> <span class="keyword">of</span> <span class="keyword">the</span> constraints <span class="keyword">in</span> <span class="keyword">the</span> following list is <span class="literal">one</span> you don<span class="string">'t want. Try this: (1) look at each constraint and try to figure out which you don'</span>t expect; (<span class="number">2</span>) find <span class="keyword">the</span> code that added <span class="keyword">the</span> unwanted constraint <span class="keyword">or</span> constraints <span class="keyword">and</span> fix <span class="keyword">it</span>. (Note: If you<span class="string">'re seeing NSAutoresizingMaskLayoutConstraints that you don'</span>t understand, refer <span class="built_in">to</span> <span class="keyword">the</span> documentation <span class="keyword">for</span> <span class="keyword">the</span> UIView property translatesAutoresizingMaskIntoConstraints) </span><br><span class="line">(</span><br><span class="line">    <span class="string">"&lt;NSLayoutConstraint:0x7b58bac0 'Label Leading' UILabel:0x7b58b040'Name'.leading == UIView:0x7b590790.leadingMargin&gt;"</span>,</span><br><span class="line">    <span class="string">"&lt;NSLayoutConstraint:0x7b56d020 'Label Width' H:[UILabel:0x7b58b040'Name'(&gt;=400)]&gt;"</span>,</span><br><span class="line">    <span class="string">"&lt;NSLayoutConstraint:0x7b58baf0 'Space Between Controls' H:[UILabel:0x7b58b040'Name']-(NSSpace(8))-[UITextField:0x7b589490]&gt;"</span>,</span><br><span class="line">    <span class="string">"&lt;NSLayoutConstraint:0x7b51cb10 'Text Field Trailing' UITextField:0x7b589490.trailing == UIView:0x7b590790.trailingMargin&gt;"</span>,</span><br><span class="line">    <span class="string">"&lt;NSLayoutConstraint:0x7b0758c0 'UIView-Encapsulated-Layout-Width' H:[UIView:0x7b590790(320)]&gt;"</span></span><br><span class="line">)</span><br><span class="line"> </span><br><span class="line">Will attempt <span class="built_in">to</span> recover <span class="keyword">by</span> breaking constraint</span><br><span class="line">&lt;NSLayoutConstraint:<span class="number">0x7b56d020</span> <span class="string">'Label Width'</span> H:[UILabel:<span class="number">0x7b58b040</span><span class="string">'Name'</span>(&gt;=<span class="number">400</span>)]&gt;</span><br><span class="line"> </span><br><span class="line">Make <span class="keyword">a</span> symbolic <span class="built_in">breakpoint</span> <span class="keyword">at</span> UIViewAlertForUnsatisfiableConstraints <span class="built_in">to</span> <span class="keyword">catch</span> this <span class="keyword">in</span> <span class="keyword">the</span> debugger.</span><br><span class="line">The methods <span class="keyword">in</span> <span class="keyword">the</span> UIConstraintBasedLayoutDebugging category <span class="keyword">on</span> <span class="title">UIView</span> <span class="title">listed</span> <span class="title">in</span> &lt;<span class="title">UIKit</span>/<span class="title">UIView</span>.<span class="title">h</span>&gt; <span class="title">may</span> <span class="title">also</span> <span class="title">be</span> <span class="title">helpful</span>.</span><br></pre></td></tr></table></figure>
-
-<p>正如你所看到的，标识能允许你快速便捷地在日志中识别出你的约束。</p>
-<h3 id="可视化-view-和-约束"><a href="#可视化-view-和-约束" class="headerlink" title="可视化 view 和 约束"></a>可视化 view 和 约束</h3><p>Xcode 提供了工具来帮助你可视化你的视图层级中的 view 和约束。</p>
-<p>在模拟器中进行如下操作即可看到 view：</p>
-<ul>
-<li>在模拟器中运行 app</li>
-<li>切换回 Xcode</li>
-<li>选择 Debug &gt; View Debugging &gt; Show Alignment Rectangles。这个设置能显示出你的 view 的轮廓</li>
-</ul>
-<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/Show_Alignment_Rectangles_2x.png" width=500>
-
-<p>alignment rectangles 对齐是 AutoLayout 所使用的 view 的边线，开启这个选项能够使你快速定位尺寸不对的 alignment rectangles。</p>
-<p>如果你需要更多信息，你可以点击 Xcode 调试条上的 Debug View Hierarchy 按钮。Xcode 会展示一个 View 互动调试器，提供给你一些工具来探索视图层级并与之进行交互。当你在调试 AutoLayout 问题时，”Show clipped content” 和 “Show constraints” 通常会非常有用。</p>
-<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/Debug_View_Hierarchy_2x.png" width=500>
-
-<p>选中 “Show clipped content” 选项会展示一些已经放置到屏幕外面的 view。选中 “Show constraints” 选项会展示所有影响到当前选中 view 的约束。当布局变得很奇怪时，两个选项提供了一个便捷而明智的检查方式。</p>
-<p>了解更多信息请查阅 <a href="http://help.apple.com/xcode" target="_blank" rel="noopener">调试区帮助</a>。</p>
-<h3 id="理解边界情况"><a href="#理解边界情况" class="headerlink" title="理解边界情况"></a>理解边界情况</h3><p>这里有一些会引起 AutoLayout 布局发生异常的边界情况：</p>
-<ul>
-<li>AutoLayout 是基于 alignment rectangles 来定位 view 的，而不是 view 的 frame，在大多数时候这两者是完全一样的。但是一些 view 可能会设置一个自己的 alignment rectangles 从而在布局计算中去除掉自己的部分 view（例如边界线）。</li>
-</ul>
-<p>了解更多信息，可以查看 <a href="https://developer.apple.com/documentation/uikit/uiview" target="_blank" rel="noopener">UIView类参考</a> 的 “与自动布局对齐视图” 一节。</p>
-<ul>
-<li>在 iOS 上，你可以使用一个 view 的 transform 属性来重新设置 view 的尺寸、对 viw 旋转、移动等，但是这些变换无法影响 AutoLayout 的计算。AutoLayout 会基于 view 未变换时的 frame 来计算它的 alignment rectangles。</li>
-<li>一个 view 展示超出其边界的内容。大多数时候 view 会正常展示并限制内容在它们的边界内。但是，出于性能方面的考虑，这不是由图形引擎强制执行的。这意味着 view (尤其是有自定义绘图的 view) 可能会被按照一个与其 frame 所不同的尺寸来绘制。</li>
-</ul>
-<p>你可以通过设置 view 的 clipsToBounds 属性为 YES 或者检查 view 的 frame 尺寸来识别出这些 bug。</p>
-<ul>
-<li>只有当 view 都被按照其 intrinsic content height 来展示时 NSLayoutAttributeBaseline, NSLayoutAttributeFirstBaseline, and NSLayoutAttributeLastBaseline 属性才能正确对齐文案。如果其中一个 view 在竖直方向上被压缩或延展了，那么它的文案就可能被展示在错误的位置。</li>
-<li>约束优先级在视图层级中充当了全局属性。你常常可以通过将 view 分组到一个 StackView 、一个 layoutguide、或者一个 dummy view 中来简化布局。但是这种方式并不能封装所包含 view 的优先级。AutoLayout 仍会继续比较组内和组外的优先级（甚至是其他组内的优先级）（疑惑？）</li>
-<li>长宽比约束会将水平与竖直约束联系起来。一般来说竖直和水平约束都是分开计算的。但是如果你约束了一个 view 的高度相对于其宽度而变化，那么你就创建了竖直与水平约束之间的联系。它们互相之间可以影响甚至产生冲突。这种联系会极大增加布局复杂性，也会在你的布局的一些没有关联的部分之间引起无法预期的冲突。</li>
-</ul>
-]]></content>
-      <categories>
-        <category>AutoLayout</category>
-      </categories>
-  </entry>
-  <entry>
     <title>Autolayout指南·AutoLayout 高级指南·编程创建约束</title>
     <url>/2018/01/15/AutoLayout/Autolayout%E6%8C%87%E5%8D%97%C2%B7AutoLayout%20%E9%AB%98%E7%BA%A7%E6%8C%87%E5%8D%97%C2%B7%E7%BC%96%E7%A8%8B%E5%88%9B%E5%BB%BA%E7%BA%A6%E6%9D%9F/</url>
     <content><![CDATA[<h1 id="012-Autolayout指南·AutoLayout-高级指南"><a href="#012-Autolayout指南·AutoLayout-高级指南" class="headerlink" title="012-Autolayout指南·AutoLayout 高级指南"></a>012-Autolayout指南·AutoLayout 高级指南</h1><h2 id="编程创建约束"><a href="#编程创建约束" class="headerlink" title="编程创建约束"></a>编程创建约束</h2><p>尽可能通过 IB 来创建你的约束。IB 能提供很多工具来可视化、编辑、管理和调试你的约束。IB 也可以通过分析你的约束，在设计期就发现很多常见的错误，使你能够在 app 运行之前找到并修复你的问题。</p>
@@ -2930,6 +2855,81 @@
 <li>通过调用 NSLayoutConstraint 类的 activateConstraints: 方法来激活约束</li>
 </ul>
 <p>了解更多信息请查阅附录的 <a href="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/VisualFormatLanguage.html#//apple_ref/doc/uid/TP40010853-CH27-SW1" target="_blank" rel="noopener">视觉格式语言</a></p>
+]]></content>
+      <categories>
+        <category>AutoLayout</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>Autolayout指南·调试 AutoLayout·调试技巧</title>
+    <url>/2018/01/15/AutoLayout/Autolayout%E6%8C%87%E5%8D%97%C2%B7%E8%B0%83%E8%AF%95%20AutoLayout%C2%B7%E8%B0%83%E8%AF%95%E6%8A%80%E5%B7%A7/</url>
+    <content><![CDATA[<h1 id="011-Autolayout指南·调试-AutoLayout"><a href="#011-Autolayout指南·调试-AutoLayout" class="headerlink" title="011-Autolayout指南·调试 AutoLayout"></a>011-Autolayout指南·调试 AutoLayout</h1><h2 id="调试技巧"><a href="#调试技巧" class="headerlink" title="调试技巧"></a>调试技巧</h2><p>接下来的话题是关于如何收集和组织你的布局的信息的技术，以及一些你可能会遇到的奇葩的布局表现。你可能并不需要在每一个布局上都使用这些技术，但是它们能帮助你即使遇到最困难的问题也能顺利完成布局工作。</p>
+<h3 id="理解日志"><a href="#理解日志" class="headerlink" title="理解日志"></a>理解日志</h3><p>有关视图的信息都可以被打印到控制台，无论是由于无法满足的布局，还是因为你调用 constraintsAffectingLayoutForAxis: 或者 constraintsAffectingLayoutForOrientation: 等调试函数显式地打印这些约束。</p>
+<p>总之，你可以在这些日志里找到很多有用的信息，这里有一份有关无法满足的约束的示例输出：</p>
+<figure class="highlight livecodeserver"><table><tr><td class="code"><pre><span class="line"><span class="number">2015</span><span class="number">-08</span><span class="number">-26</span> <span class="number">14</span>:<span class="number">27</span>:<span class="number">54.790</span> Auto Layout Cookbook[<span class="number">10040</span>:<span class="number">1906606</span>] Unable <span class="built_in">to</span> simultaneously satisfy constraints.</span><br><span class="line">    Probably <span class="keyword">at</span> least <span class="literal">one</span> <span class="keyword">of</span> <span class="keyword">the</span> constraints <span class="keyword">in</span> <span class="keyword">the</span> following list is <span class="literal">one</span> you don<span class="string">'t want. Try this: (1) look at each constraint and try to figure out which you don'</span>t expect; (<span class="number">2</span>) find <span class="keyword">the</span> code that added <span class="keyword">the</span> unwanted constraint <span class="keyword">or</span> constraints <span class="keyword">and</span> fix <span class="keyword">it</span>. (Note: If you<span class="string">'re seeing NSAutoresizingMaskLayoutConstraints that you don'</span>t understand, refer <span class="built_in">to</span> <span class="keyword">the</span> documentation <span class="keyword">for</span> <span class="keyword">the</span> UIView property translatesAutoresizingMaskIntoConstraints) </span><br><span class="line">(</span><br><span class="line">    <span class="string">"&lt;NSLayoutConstraint:0x7a87b000 H:[UILabel:0x7a8724b0'Name'(&gt;=400)]&gt;"</span>,</span><br><span class="line">    <span class="string">"&lt;NSLayoutConstraint:0x7a895e30 UILabel:0x7a8724b0'Name'.leading == UIView:0x7a887ee0.leadingMargin&gt;"</span>,</span><br><span class="line">    <span class="string">"&lt;NSLayoutConstraint:0x7a886d20 H:[UILabel:0x7a8724b0'Name']-(NSSpace(8))-[UITextField:0x7a88cff0]&gt;"</span>,</span><br><span class="line">    <span class="string">"&lt;NSLayoutConstraint:0x7a87b2e0 UITextField:0x7a88cff0.trailing == UIView:0x7a887ee0.trailingMargin&gt;"</span>,</span><br><span class="line">    <span class="string">"&lt;NSLayoutConstraint:0x7ac7c430 'UIView-Encapsulated-Layout-Width' H:[UIView:0x7a887ee0(320)]&gt;"</span></span><br><span class="line">)</span><br><span class="line"> </span><br><span class="line">Will attempt <span class="built_in">to</span> recover <span class="keyword">by</span> breaking constraint</span><br><span class="line">&lt;NSLayoutConstraint:<span class="number">0x7a87b000</span> H:[UILabel:<span class="number">0x7a8724b0</span><span class="string">'Name'</span>(&gt;=<span class="number">400</span>)]&gt;</span><br><span class="line"> </span><br><span class="line">Make <span class="keyword">a</span> symbolic <span class="built_in">breakpoint</span> <span class="keyword">at</span> UIViewAlertForUnsatisfiableConstraints <span class="built_in">to</span> <span class="keyword">catch</span> this <span class="keyword">in</span> <span class="keyword">the</span> debugger.</span><br><span class="line">The methods <span class="keyword">in</span> <span class="keyword">the</span> UIConstraintBasedLayoutDebugging category <span class="keyword">on</span> <span class="title">UIView</span> <span class="title">listed</span> <span class="title">in</span> &lt;<span class="title">UIKit</span>/<span class="title">UIView</span>.<span class="title">h</span>&gt; <span class="title">may</span> <span class="title">also</span> <span class="title">be</span> <span class="title">helpful</span>.</span><br></pre></td></tr></table></figure>
+
+<p>这条错误信息展示了五条冲突约束，并不是所有约束都能同时成立，你需要移除其中一个，或者是将其转为一个可选的约束。</p>
+<p>幸运的是，视图层级相对比较简单，你有一个包含一个 label 和 一个 textfield 的父视图，冲突约束设置了下面这一系列的关系：</p>
+<ul>
+<li>label 的宽度大于等于 400pt</li>
+<li>label 的头部边线等于父视图的头部</li>
+<li>Label 与 textfield 间距为 8pt</li>
+<li>textfield 的尾部边线等于父视图的尾部</li>
+<li>父视图的宽度为 320 pt</li>
+</ul>
+<p>系统会尝试打破 label 的宽度以修复冲突</p>
+<blockquote>
+<p>注意：</p>
+<p>约束采用了视觉格式语言 VFL （Visual Format Language）打印到控制台，即使你从未使用过 VFL 来创建约束，你也一定能够读懂它，从而有效调试你的 AutoLayout 问题。关于 VFL 更多信息请查阅 <a href="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/VisualFormatLanguage.html#//apple_ref/doc/uid/TP40010853-CH27-SW1" target="_blank" rel="noopener">Visual Format Language</a></p>
+</blockquote>
+<p>在这些约束中，最后一个约束是由系统创建的。你不能修改这条约束，另外，它还和第一条约束产生了一个明显的冲突。如果你的父视图宽度只有 320pt，那么你永远不能有一个 400pt 宽度的 label。幸运的是，你并不需要去除第一条约束，如果您将其优先级降至 999，那么系统仍然会尝试提供你所选择的宽度 - 它会尽可能接近，同时仍然满足其他约束。</p>
+<p>基于 view 的 view’s autoresizing mask 创建的约束（例如当 translatesAutoresizingMaskIntoConstraints 为 YES 时就会创建约束）会有额外的信息。在约束的地址后面，日志分别展示了一个 “h=” 和 一个 “v=”，后面各跟着三个字符。这三个字符如果是”-“ 连字符则表示一个固定的值，是 “&amp;” 符号则表示一个变化的值。对于水平 mask 值（h=），三个字符分别代表左边距、宽度和右边距，对于垂直 mask 值（v=），三个字符分别表示上边距、高度和下边距。</p>
+<p>例如，考虑下面这条日志信息：</p>
+<figure class="highlight routeros"><table><tr><td class="code"><pre><span class="line">&lt;NSAutoresizingMaskLayoutConstraint:0x7ff28252e480 <span class="attribute">h</span>=--&amp; <span class="attribute">v</span>=--&amp; H:[UIView:0x7ff282617cc0(50)]&gt;<span class="string">"</span></span><br></pre></td></tr></table></figure>
+
+<p>这条信息包含了以下几部分：</p>
+<ul>
+<li>NSAutoresizingMaskLayoutConstraint:0x7ff28252e480: 这条约束的类和地址，这里的类告诉我们这是一条基于 view 的 autoresizing mask 创建的约束。</li>
+<li>h=–&amp; v=—&amp;: view 的 autoresizing mask 值，在这里它是默认值。水平方向上有一个固定的左边距和宽度，一个变化的右边距。竖直方向上有一个固定的上边距和高度，一个变化的下边距。也就是说，这个 view 的左上角和尺寸不会随着父视图的尺寸变化而变化。</li>
+<li>H:[UIView:0x7ff282617cc0(50)]: 这条约束的 VFL 表达。在这个例子中，它定义了一个有 50pt 宽度 的 view，表达中同样包含了这条约束影响到的视图的类和地址。</li>
+</ul>
+<h3 id="向日志添加标识"><a href="#向日志添加标识" class="headerlink" title="向日志添加标识"></a>向日志添加标识</h3><p>前面的示例还比较容易理解，但是随着约束列表变长，很快就会难以追踪和理解日志的含义。你可以向每一个 view 和约束提供一个可理解的标识来使日志更易于阅读。</p>
+<p>如果 view 有一个明显的文本组件，Xcode 会使用这个组件来作为标识。例如，Xcode 会使用一个 lable 的文案，一个 button 的标题，或者一个 textfield 的占位文案来标识这些 view。否则，就需要在标识检查器里设置 view 的 Xcode 标签。IB 会在整个接口中使用这些标识符，控制台日志中也会展示这些标识。</p>
+<p>对于约束，可以通过编程或者使用属性检查器来设置它们的 identifier 属性。Autolayout 之后会使用这些标识在控制台中打印约束信息。</p>
+<p>例如，这里有一个同样无法满足的约束错误，它有一个标识集合：</p>
+<figure class="highlight livecodeserver"><table><tr><td class="code"><pre><span class="line"><span class="number">2015</span><span class="number">-08</span><span class="number">-26</span> <span class="number">14</span>:<span class="number">29</span>:<span class="number">32.870</span> Auto Layout Cookbook[<span class="number">10208</span>:<span class="number">1918826</span>] Unable <span class="built_in">to</span> simultaneously satisfy constraints.</span><br><span class="line">    Probably <span class="keyword">at</span> least <span class="literal">one</span> <span class="keyword">of</span> <span class="keyword">the</span> constraints <span class="keyword">in</span> <span class="keyword">the</span> following list is <span class="literal">one</span> you don<span class="string">'t want. Try this: (1) look at each constraint and try to figure out which you don'</span>t expect; (<span class="number">2</span>) find <span class="keyword">the</span> code that added <span class="keyword">the</span> unwanted constraint <span class="keyword">or</span> constraints <span class="keyword">and</span> fix <span class="keyword">it</span>. (Note: If you<span class="string">'re seeing NSAutoresizingMaskLayoutConstraints that you don'</span>t understand, refer <span class="built_in">to</span> <span class="keyword">the</span> documentation <span class="keyword">for</span> <span class="keyword">the</span> UIView property translatesAutoresizingMaskIntoConstraints) </span><br><span class="line">(</span><br><span class="line">    <span class="string">"&lt;NSLayoutConstraint:0x7b58bac0 'Label Leading' UILabel:0x7b58b040'Name'.leading == UIView:0x7b590790.leadingMargin&gt;"</span>,</span><br><span class="line">    <span class="string">"&lt;NSLayoutConstraint:0x7b56d020 'Label Width' H:[UILabel:0x7b58b040'Name'(&gt;=400)]&gt;"</span>,</span><br><span class="line">    <span class="string">"&lt;NSLayoutConstraint:0x7b58baf0 'Space Between Controls' H:[UILabel:0x7b58b040'Name']-(NSSpace(8))-[UITextField:0x7b589490]&gt;"</span>,</span><br><span class="line">    <span class="string">"&lt;NSLayoutConstraint:0x7b51cb10 'Text Field Trailing' UITextField:0x7b589490.trailing == UIView:0x7b590790.trailingMargin&gt;"</span>,</span><br><span class="line">    <span class="string">"&lt;NSLayoutConstraint:0x7b0758c0 'UIView-Encapsulated-Layout-Width' H:[UIView:0x7b590790(320)]&gt;"</span></span><br><span class="line">)</span><br><span class="line"> </span><br><span class="line">Will attempt <span class="built_in">to</span> recover <span class="keyword">by</span> breaking constraint</span><br><span class="line">&lt;NSLayoutConstraint:<span class="number">0x7b56d020</span> <span class="string">'Label Width'</span> H:[UILabel:<span class="number">0x7b58b040</span><span class="string">'Name'</span>(&gt;=<span class="number">400</span>)]&gt;</span><br><span class="line"> </span><br><span class="line">Make <span class="keyword">a</span> symbolic <span class="built_in">breakpoint</span> <span class="keyword">at</span> UIViewAlertForUnsatisfiableConstraints <span class="built_in">to</span> <span class="keyword">catch</span> this <span class="keyword">in</span> <span class="keyword">the</span> debugger.</span><br><span class="line">The methods <span class="keyword">in</span> <span class="keyword">the</span> UIConstraintBasedLayoutDebugging category <span class="keyword">on</span> <span class="title">UIView</span> <span class="title">listed</span> <span class="title">in</span> &lt;<span class="title">UIKit</span>/<span class="title">UIView</span>.<span class="title">h</span>&gt; <span class="title">may</span> <span class="title">also</span> <span class="title">be</span> <span class="title">helpful</span>.</span><br></pre></td></tr></table></figure>
+
+<p>正如你所看到的，标识能允许你快速便捷地在日志中识别出你的约束。</p>
+<h3 id="可视化-view-和-约束"><a href="#可视化-view-和-约束" class="headerlink" title="可视化 view 和 约束"></a>可视化 view 和 约束</h3><p>Xcode 提供了工具来帮助你可视化你的视图层级中的 view 和约束。</p>
+<p>在模拟器中进行如下操作即可看到 view：</p>
+<ul>
+<li>在模拟器中运行 app</li>
+<li>切换回 Xcode</li>
+<li>选择 Debug &gt; View Debugging &gt; Show Alignment Rectangles。这个设置能显示出你的 view 的轮廓</li>
+</ul>
+<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/Show_Alignment_Rectangles_2x.png" width=500>
+
+<p>alignment rectangles 对齐是 AutoLayout 所使用的 view 的边线，开启这个选项能够使你快速定位尺寸不对的 alignment rectangles。</p>
+<p>如果你需要更多信息，你可以点击 Xcode 调试条上的 Debug View Hierarchy 按钮。Xcode 会展示一个 View 互动调试器，提供给你一些工具来探索视图层级并与之进行交互。当你在调试 AutoLayout 问题时，”Show clipped content” 和 “Show constraints” 通常会非常有用。</p>
+<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/Debug_View_Hierarchy_2x.png" width=500>
+
+<p>选中 “Show clipped content” 选项会展示一些已经放置到屏幕外面的 view。选中 “Show constraints” 选项会展示所有影响到当前选中 view 的约束。当布局变得很奇怪时，两个选项提供了一个便捷而明智的检查方式。</p>
+<p>了解更多信息请查阅 <a href="http://help.apple.com/xcode" target="_blank" rel="noopener">调试区帮助</a>。</p>
+<h3 id="理解边界情况"><a href="#理解边界情况" class="headerlink" title="理解边界情况"></a>理解边界情况</h3><p>这里有一些会引起 AutoLayout 布局发生异常的边界情况：</p>
+<ul>
+<li>AutoLayout 是基于 alignment rectangles 来定位 view 的，而不是 view 的 frame，在大多数时候这两者是完全一样的。但是一些 view 可能会设置一个自己的 alignment rectangles 从而在布局计算中去除掉自己的部分 view（例如边界线）。</li>
+</ul>
+<p>了解更多信息，可以查看 <a href="https://developer.apple.com/documentation/uikit/uiview" target="_blank" rel="noopener">UIView类参考</a> 的 “与自动布局对齐视图” 一节。</p>
+<ul>
+<li>在 iOS 上，你可以使用一个 view 的 transform 属性来重新设置 view 的尺寸、对 viw 旋转、移动等，但是这些变换无法影响 AutoLayout 的计算。AutoLayout 会基于 view 未变换时的 frame 来计算它的 alignment rectangles。</li>
+<li>一个 view 展示超出其边界的内容。大多数时候 view 会正常展示并限制内容在它们的边界内。但是，出于性能方面的考虑，这不是由图形引擎强制执行的。这意味着 view (尤其是有自定义绘图的 view) 可能会被按照一个与其 frame 所不同的尺寸来绘制。</li>
+</ul>
+<p>你可以通过设置 view 的 clipsToBounds 属性为 YES 或者检查 view 的 frame 尺寸来识别出这些 bug。</p>
+<ul>
+<li>只有当 view 都被按照其 intrinsic content height 来展示时 NSLayoutAttributeBaseline, NSLayoutAttributeFirstBaseline, and NSLayoutAttributeLastBaseline 属性才能正确对齐文案。如果其中一个 view 在竖直方向上被压缩或延展了，那么它的文案就可能被展示在错误的位置。</li>
+<li>约束优先级在视图层级中充当了全局属性。你常常可以通过将 view 分组到一个 StackView 、一个 layoutguide、或者一个 dummy view 中来简化布局。但是这种方式并不能封装所包含 view 的优先级。AutoLayout 仍会继续比较组内和组外的优先级（甚至是其他组内的优先级）（疑惑？）</li>
+<li>长宽比约束会将水平与竖直约束联系起来。一般来说竖直和水平约束都是分开计算的。但是如果你约束了一个 view 的高度相对于其宽度而变化，那么你就创建了竖直与水平约束之间的联系。它们互相之间可以影响甚至产生冲突。这种联系会极大增加布局复杂性，也会在你的布局的一些没有关联的部分之间引起无法预期的冲突。</li>
+</ul>
 ]]></content>
       <categories>
         <category>AutoLayout</category>
@@ -3111,218 +3111,6 @@
 <p>注意：</p>
 <p>尽管嵌套 StackView 的使用可以创建更复杂的用户界面，你也不能完全避免使用约束。至少你仍然会需要用约束来布局最外层 StackView 的位置或者尺寸大小。</p>
 </blockquote>
-]]></content>
-      <categories>
-        <category>AutoLayout</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>AutoLayout指南·概述·详解约束</title>
-    <url>/2017/12/26/AutoLayout/AutoLayout%E6%8C%87%E5%8D%97%C2%B7%E6%A6%82%E8%BF%B0%C2%B7%E8%AF%A6%E8%A7%A3%E7%BA%A6%E6%9D%9F/</url>
-    <content><![CDATA[<h1 id="AutoLayout指南·概述"><a href="#AutoLayout指南·概述" class="headerlink" title="AutoLayout指南·概述"></a>AutoLayout指南·概述</h1><h2 id="详解约束"><a href="#详解约束" class="headerlink" title="详解约束"></a>详解约束</h2><p>AutoLayout 用一系列的线性约束来实现视图层级的布局，每一个约束对应一个等式。你的目标就是声明一系列的等式，这些等式有且仅有一个可能的解。</p>
-<p>下面就是一个简单的等式的例子</p>
-<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/view_formula_2x.png" width=500>
-
-<p>译者注：由于APP所处环境的不同，布局可能会不同，像英文环境中，页面布局是从左到右布局，而像阿拉伯语环境中，页面布局是从右到左的布局方式，因此有了Leading和Trailing的概念，为的就是一次布局后可以正常的显示在多种语言环境中。</p>
-<p>这个约束表示红色 view 的头部(Leading)必须在蓝色 view 尾部(Trailing)之后相距 8 个单位的位置。等式由以下几个部分组成</p>
-<ul>
-<li>Item 1，在这个例子中就是等式的第一个元素红色 view，它必须是一个 view 或者是一个 layout guide</li>
-<li>Attribute 1，第一个元素被约束的属性，在这个例子中就是红色 view 的头部边缘(LeadingEdge)</li>
-<li>RelationShip，等式左边与右边的关系，可以是相等，大于等于，小于等于三种关系中的一种。在这里用到了相等关系</li>
-<li>Mutiplier，乘数因子，属性 2 的值会被乘以这个浮点数，在这里 mutiplier 等于 1.0</li>
-<li>Item 2，等式的第二个元素，在这里就是蓝色 view，不像第一个 item，这里的 item 可以为空</li>
-<li>Attribute2，第二个元素被约束的属性，在这个例子中就是蓝色 view 的尾部，如果第二个 Item 为空，则 Attitude2 就不能为一个属性</li>
-<li>Constant，常量因子，一个浮点数常量，在这里就是 8.0，这个值会和 Attribute2 的值进行加和</li>
-</ul>
-<p>在我们的界面中，大多数约束都定义了两个元素之间的关系。这些元素可以是 view 或者 layout guide。约束也可以用于定义单个元素的两个属性之间的关系，比如设置一个元素的长宽比。你也可以对一个元素的宽或高声明一个常量，此时上述表达式中的第二个元素和第二个属性就是空的，而 mutiplier 则为 0.0。</p>
-<h3 id="Auto-Layout-属性"><a href="#Auto-Layout-属性" class="headerlink" title="Auto Layout 属性"></a>Auto Layout 属性</h3><p>在 AutoLayout 中属性定义了一中可以被约束的特性。一般来说，属性包括四条边缘（Leading、Trailing、Top、Bottom），以及 width、height、centerX 和 centerY。而文本元素还包含一个或多个基线(Baseline)属性。</p>
-<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/attributes_2x.png" width=500>
-
-<p>在 <a href="https://developer.apple.com/documentation/uikit/nslayoutconstraint.attribute" target="_blank" rel="noopener">NSLayoutAttribute</a> 中枚举了全部的属性。</p>
-<blockquote>
-<p>注意</p>
-<p>虽然 OSX 和 iOS 都用到 NSLayoutAttribute 枚举值，但是它们在定义上仍有一些细微的差别。所以在查看属性列表时要确保查看的属性列表对应的是正确的平台文件</p>
-</blockquote>
-<h3 id="约束关系式示例"><a href="#约束关系式示例" class="headerlink" title="约束关系式示例"></a>约束关系式示例</h3><p>AutoLayout 的约束关系式的大量参数和属性使你可以创造出各种各样的约束。你可以定义 View 之间的间距，对齐 view 的边线，定义两个 View 之间的相对尺寸，甚至定义一个 view 的长宽比。但是并不是所有属性都可以相互兼容(搭配到一起进行约束的设置)。</p>
-<p>属性大致可以分为两类，一类是 size 属性（比如 Height 和 Width），一类是 location 属性（比如 Leading, Left, 和 Top）。size 属性被用于确定元素有多大，但没有指定这个元素的位置。location 属性被用于确定元素相对于其他元素的位置，但没有指定元素的尺寸大小。</p>
-<p>由于属性之间有这些差别，因此在约束中要注意以下几个规则：</p>
-<ul>
-<li>不能用 size 属性约束 location 属性</li>
-<li>不能用常量设置 location 属性</li>
-<li>不能用除了 1.0 之外的因子给 location 属性使用</li>
-<li>对于 location 属性，不能用垂直属性约束水平属性</li>
-<li>对于 location 属性，不能用 Leading 和 Trailing 约束 Left 和 Right</li>
-</ul>
-<p>例如，在没有其他上下文信息的情况下，将一个元素的 top 设置为常量 20.0 是没有任何意义的。你必须总是定义一个元素的 location 属性与其他元素的location属性之间的关系，比如设置一个元素在父 view 的顶部（Top）下方 20 单位长的距离处。然而，设置一个元素的高度为 20.0 却是有意义的。查阅 <a href="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/AnatomyofaConstraint.html#//apple_ref/doc/uid/TP40010853-CH9-SW22" target="_blank" rel="noopener">Interpreting Values</a> 获取更多信息。</p>
-<p>下面列举一些常见的约束关系式。</p>
-<blockquote>
-<p>注意</p>
-<p>本章节所有表达式均由伪代码组成，查看正式代码编写的关系式请前往 <a href="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/ProgrammaticallyCreatingConstraints.html#//apple_ref/doc/uid/TP40010853-CH16-SW1" target="_blank" rel="noopener">Programmatically Creating Constraints</a> 或 <a href="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/LayoutUsingStackViews.html#//apple_ref/doc/uid/TP40010853-CH3-SW1" target="_blank" rel="noopener">Auto Layout Cookbook</a></p>
-</blockquote>
-<figure class="highlight reasonml"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 设置一个常量高度</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">View</span>.</span></span>height = <span class="number">0.0</span><span class="operator"> * </span>NotAnAttribute + <span class="number">40.0</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">// 设置两个按钮的固定距离</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Button_2</span>.</span></span>leading = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Button_1</span>.</span></span>trailing + <span class="number">8.0</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">// 声明两个按钮的左边线</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Button_1</span>.</span></span>leading = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Button_2</span>.</span></span>leading + <span class="number">0.0</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">// 设置两个按钮等宽</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Button_1</span>.</span></span>width = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Button_2</span>.</span></span>width + <span class="number">0.0</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">// 将一个 view 在父 view 中居中</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">View</span>.</span></span>centerX = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Superview</span>.</span></span>centerX + <span class="number">0.0</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">View</span>.</span></span>centerY = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Superview</span>.</span></span>centerY + <span class="number">0.0</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">// 设置一个 view 的长宽比</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">View</span>.</span></span>height = <span class="number">2.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">View</span>.</span></span>width + <span class="number">0.0</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="相等、而非赋值"><a href="#相等、而非赋值" class="headerlink" title="相等、而非赋值"></a>相等、而非赋值</h3><p>一定要注意约束关系式表达的是相等关系、而非进行属性赋值。</p>
-<p>当 AutoLayout 处理这些关系式时，它不仅仅是将等式右边的值赋给左边，取而代之的是，它会计算 Attribute1 和 Attribute2 的值并保证二者符合关系式。这意味着我们可以自由地在等式中重新组合元素，下面列举了与上一节的表达式列表相同约束而不同形式的表达式。</p>
-<figure class="highlight reasonml"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 设置两个按钮之间固定距离</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Button_1</span>.</span></span>trailing = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Button_2</span>.</span></span>leading - <span class="number">8.0</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">// 声明两个按钮的左边线</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Button_2</span>.</span></span>leading = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Button_1</span>.</span></span>leading + <span class="number">0.0</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">// 设置两个按钮等宽</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Button_2</span>.</span></span>width = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Button</span>.</span></span>width + <span class="number">0.0</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">// 使一个 view 在父 view 中居中</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Superview</span>.</span></span>centerX = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">View</span>.</span></span>centerX + <span class="number">0.0</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Superview</span>.</span></span>centerY = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">View</span>.</span></span>centerY + <span class="number">0.0</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">// 设置一个 view 的长宽比</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">View</span>.</span></span>width = <span class="number">0.5</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">View</span>.</span></span>height + <span class="number">0.0</span></span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>注意</p>
-<p>在变换元素顺序时要注意转换乘数因子和常量因子。例如常量 8.0 需要变为 -8.0，常量因子 2.0 要变换为 0.5。而常量因子 0.0 和乘数因子 1.0 则保持不变。</p>
-</blockquote>
-<p>你会发现 AutoLayout 经常提供多种方式来解决相同的问题，所以你需要选择一种最清晰的表达方式。但无疑不同的开发者对最清晰的表达方式有不同的看法，此时保持一致比保持正确更重要。如果你不能一直保持同一种表达方式，那么你将不断在使用中遇到各种问题。比如这篇指南就用到了以下一些规则：</p>
-<ul>
-<li>优先使用整数乘数因子，好过于小数乘数因子</li>
-<li>优先使用正数作为乘数因子，好过于使用负数作为常数因子</li>
-<li>在任何位置中的view， 布局都应该遵照：从前(Leading)到后(Trailing)，从上(Top)到下(Bottom)的顺序</li>
-</ul>
-<h3 id="创建无歧义、可满足的布局"><a href="#创建无歧义、可满足的布局" class="headerlink" title="创建无歧义、可满足的布局"></a>创建无歧义、可满足的布局</h3><p>使用 AutoLayout 要达到的目的是提供一系列的约束表达式，同时有且仅有一个可行解。有歧义的约束表达式则会出现多个可行解。不可满足的约束表达式没有可行解。</p>
-<p>一般来说，每一个 view 的尺寸和位置都必须被约束。假设父 view 的尺寸已经设置好（比如是 iOS 上一个 Scene 的根视图），对于每一个 View 的每一个维度，一个无歧义、可满足的表达式都需要至少两个约束来表达（不算父视图）。但是你可以采取不同的方式去实现你想要的效果。比如下面三种布局都是用无歧义、可满足的表达式实现的(只展示了水平约束)</p>
-<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/constraint_examples_2x.png" width=500>
-
-<ul>
-<li>第一个布局约束了 view 的头部与父视图头部的关系，以及 view 的固定宽度，这样根据父视图的尺寸和其他约束就可以计算边线的位置。</li>
-<li>第二个布局约束了 view 的头部及尾部与父视图的关系。根据父视图的尺寸和其他约束就可以计算出这个 view 的宽度。</li>
-<li>第三个布局约束了 view 的头部与父视图的关系，同时将 view 居中展示在父视图中。根据父视图的尺寸和其他约束就可以计算出这个 view 的边线位置和宽度。</li>
-</ul>
-<p>注意每一个布局都由一个 view 和两个水平约束组成。在每一种情况中都定义了 view 的宽度和水平位置。这意味着这些布局在水平轴向上符合无歧义、可满足的布局要求。但是当父视图的宽度发生改变时这些约束可能就无法正常生效了。</p>
-<p>在第一个布局中，view 的宽度不会改变，很多时候这并不是你需要的效果。事实上，作为一个普遍适用的规则，你应该避免将 view 的尺寸声明为一个常量。AutoLayout 是被设计用于在不同的设备环境下动态适应和改变布局的利器，而当你给 view 赋值了一个固定尺寸之后这一特性就将无法生效了。</p>
-<p>可能没有那么显著，但其实第二个布局和第三个布局的表现是相同的。它们俩都维护了当前视图与父视图之间的固定边缘留白，无论父视图的宽度如何改变。然而它们并不是完全相同的。一般来说，第二个示例会更容易理解，但第三个示例却更有效，尤其是当你需要居中放置很多元素的时候。所以你应当始终为你的布局选择最好的实现方式。</p>
-<p>现在考虑一些更复杂的布局情况。想象一下如果你想在 iPhone 的屏幕上并排展示两个 view，你需要确保它们的每条边都有合适的边缘留白，同时它们总是有相同的宽度。并且当设备屏幕发生旋转时它们应当正确地修正它们的尺寸。</p>
-<p>下面的插图展示了屏幕在竖直和水平方向时这两个 view 的展示情况。</p>
-<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/Blocks_Portrait_2x.png" width=500>
-
-<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/Blocks_Landscape_2x.png" width=500>
-
-<p>所以我们应当如何进行约束设置呢？下面的插图展示了一种最直接的约束方式。</p>
-<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/two_view_example_1_2x.png" width=500>
-
-<p>上图用到了以下这些约束</p>
-<figure class="highlight reasonml"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 垂直约束</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Red</span>.</span></span>top = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Superview</span>.</span></span>top + <span class="number">20.0</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Superview</span>.</span></span>bottom = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Red</span>.</span></span>bottom + <span class="number">20.0</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Blue</span>.</span></span>top = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Superview</span>.</span></span>top + <span class="number">20.0</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Superview</span>.</span></span>bottom = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Blue</span>.</span></span>bottom + <span class="number">20.0</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">// 水平约束</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Red</span>.</span></span>leading = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Superview</span>.</span></span>leading + <span class="number">20.0</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Blue</span>.</span></span>leading = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Red</span>.</span></span>trailing + <span class="number">8.0</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Superview</span>.</span></span>trailing = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Blue</span>.</span></span>trailing + <span class="number">20.0</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Red</span>.</span></span>width = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Blue</span>.</span></span>width + <span class="number">0.0</span></span><br></pre></td></tr></table></figure>
-
-<p>遵循前文提到的布局规则，这里有两个 view，四条垂直约束和四条水平约束。尽管不是最可靠的，但确实能保证实现你需要的效果。更重要的是，这些约束唯一确定了两个 view 的尺寸和位置，生成了无歧义、可满足的布局。移除任何一条约束都将导致约束有歧义，而添加额外的约束可能引入布局冲突。</p>
-<p>但是这并不是约束实现的唯一方式。下面有一个与之等同的实现途径</p>
-<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/two_view_example_2_2x.png" width=500>
-
-<p>除了固定蓝色视图的顶部(top)和底部(bottom)与它们的父视图之间的距离，你可以让蓝色视图的顶部(top)与红色视图的顶部(top)对齐。同样地，让蓝色视图的底部(bottom)与红色视图底部(bottom)对齐。下面是详细的约束</p>
-<figure class="highlight reasonml"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 垂直约束</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Red</span>.</span></span>top = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Superview</span>.</span></span>top + <span class="number">20.0</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Superview</span>.</span></span>bottom = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Red</span>.</span></span>bottom + <span class="number">20.0</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Red</span>.</span></span>top = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Blue</span>.</span></span>top + <span class="number">0.0</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Red</span>.</span></span>bottom = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Blue</span>.</span></span>bottom + <span class="number">0.0</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">// 水平约束</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Red</span>.</span></span>leading = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Superview</span>.</span></span>leading + <span class="number">20.0</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Blue</span>.</span></span>leading = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Red</span>.</span></span>trailing + <span class="number">8.0</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Superview</span>.</span></span>trailing = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Blue</span>.</span></span>trailing + <span class="number">20.0</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Red</span>.</span></span>width = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Blue</span>.</span></span>width + <span class="number">0.0</span></span><br></pre></td></tr></table></figure>
-
-<p>这种方式也包含了两个 view 和四条垂直约束、四条水平约束，同时也是无歧义可满足的布局。</p>
-<blockquote>
-<p>但是哪种方式更好呢？</p>
-<p>两种方式都实现了需要的布局效果，但是哪种方式更好呢？<br>很不幸，并没有客观可行的方式去证明其中一种方式优于另一种，每种方式都有其优点和不足。</p>
-<p>第一种方式在移除 view 时表现更健壮。从视图层级中移除一个 view 的同时也会移除与之相关的所有引用。所以如果你移除了红色的 view，蓝色的 view 将会剩下三条约束规则。你只需要加入一条约束就可以再次正确实现约束布局。而第二种方式下移除红色 view 将使得蓝色 view 只剩下一条约束。</p>
-<p>但另一方面，在第一种情况下，如果你需要使 view 的顶部和底部对齐，你需要保证他们的约束使用了相同的常数值，如果你改变了其中一个常数值，你需要记得同时修改 view 对应的另一个常数值。</p>
-</blockquote>
-<h3 id="约束不等式"><a href="#约束不等式" class="headerlink" title="约束不等式"></a>约束不等式</h3><p>到目前为止，所有的示例都是展示的约束等式，但这只是故事的一部分。约束也可以以不等式的形式表示。特别地，约束之间的关系可以是相等的，大于等于的，或者小于等于的。</p>
-<p>例如，你可以用约束来定义一个view的最小尺寸或最大尺寸，如表3-3：</p>
-<p>表3-3 设置一个最小和最大尺寸</p>
-<figure class="highlight angelscript"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 设置最小宽度</span></span><br><span class="line">View.width &gt;= <span class="number">0.0</span> * NotAnAttribute + <span class="number">40.0</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">// 设置最大宽度</span></span><br><span class="line">View.width &lt;= <span class="number">0.0</span> * NotAnAttribute + <span class="number">280.0</span></span><br></pre></td></tr></table></figure>
-
-<p>一旦你开始用不等式时，每个视图的每个维度的两个约束就失效了。你可以总是用两个不等式替换一个等式。在表3-4中，一个等式关系和一对不等式关系都产生相同的结果。</p>
-<p>表3-4 用两个不等式替换一个等式</p>
-<figure class="highlight reasonml"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 一个单独的等式关系</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Blue</span>.</span></span>leading = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Red</span>.</span></span>trailing + <span class="number">8.0</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">// 可以被两个不等式关系替换</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Blue</span>.</span></span>leading &gt;= <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Red</span>.</span></span>trailing + <span class="number">8.0</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Blue</span>.</span></span>leading &lt;= <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Red</span>.</span></span>trailing + <span class="number">8.0</span></span><br></pre></td></tr></table></figure>
-
-<p>相反却不一定成立，因为两个不等式不一定等于一个等式关系。例如，在表3-3中的不等式限定了这个视图的宽度的可能值范围–但是对于它们本身，它们没有定义宽度。你仍然需要在这个范围内附加横向约束来定义视图的位置和宽度。</p>
-<p>译者注：这一段的中心思想是，一个等式可以用两个不等式来表示，但是两个不等式不能表示一个等式。</p>
-<h3 id="约束优先级"><a href="#约束优先级" class="headerlink" title="约束优先级"></a>约束优先级</h3><p>默认情况下所有的约束都是必需的。AutoLayout 必需计算出满足所有约束的唯一可行解。如果无法计算出这一可行解就会出错。AutoLayout 会在控制台打印出未满足的约束的信息，并随机打破一个约束条件。然后它就会计算出没有这一约束条件下的可行解。具体请看 <a href="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/ConflictingLayouts.html#//apple_ref/doc/uid/TP40010853-CH19-SW1" target="_blank" rel="noopener">Unsatisfiable Layouts</a>。</p>
-<p>你也可以创建一些可选的约束。所有的约束都有一个从 1 到 1000 的优先级，只有优先级为 1000 的约束是必须的，其他都是可选的。</p>
-<p>当计算可行解时，AutoLayout 会按照优先级从高到低，尝试满足所有的约束条件。如果它无法满足一个可选的约束条件，则会跳过这一约束条件并继续计算下一个约束条件。</p>
-<p>可选的约束即使无法被满足仍然可以对布局产生影响。如果在跳过这一约束后布局发生了歧义，那么系统会选择一种最接近被跳过的约束条件的可行解，在这种情况下，未满足的可选约束作为一种力量让视图向它们靠拢。</p>
-<p>可选约束一般会和不等式约束成对出现。比如在 <a href="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/AnatomyofaConstraint.html#//apple_ref/doc/uid/TP40010853-CH9-SW9" target="_blank" rel="noopener">Listing 3-4</a> 中你可以给两张不等式设置不同的优先级。可以设置大于等于关系式为必须的，而小于等于关系式为可选的（优先级250）。这意味着蓝色 view 与红色 view 的间距不会小于 8 个像素点。但是其他约束可以将它们拉开更大的距离。同样的，可选约束会基于其他约束条件，确保蓝色 view 与红色 view 尽可能接近 8 个像素点的间距。</p>
-<blockquote>
-<p>注意</p>
-<p>不要认为所有优先级都设置为 1000 是最靠谱的方式。优先级应当有基本的四种系统定义的类型，low（250），medium（500），high（750），必需（1000）。你可能需要将其中一些约束优先级设置得高出其他优先级 1 到 2 个点以防止布局错乱。如果你所使用的优先级远超出这四种，你可能需要重新审查你的布局逻辑。</p>
-<p><a href="https://developer.apple.com/documentation/uikit/uilayoutpriority" target="_blank" rel="noopener">UILayoutPriority</a> 里有优先级的所有预定义值。</p>
-</blockquote>
-<h3 id="固有内容尺寸-intrinsic-content-size"><a href="#固有内容尺寸-intrinsic-content-size" class="headerlink" title="固有内容尺寸(intrinsic content size)"></a>固有内容尺寸(intrinsic content size)</h3><p>到目前为止，所有的示例都是用约束的方式来定义视图的位置和它们的大小的。然而有一些 view 可以根据所含内容确定其自身的自然尺寸。这种属性被称为 intrinsic content size。比如一个按钮的 intrinsic content size 就是它的 title 的尺寸加上一个小边距。</p>
-<p>并不是所有 view 都有 intrinsic content size，对于有这一属性的 view 来说，intrinsic content size 可以定义它的高度、宽度或者两者都有。下面是一些常见的示例</p>
-<p>一般继承自UIControl的视图都有固有内容尺寸</p>
-<table>
-<thead>
-<tr>
-<th>View</th>
-<th>Intrinsic Content Size</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>UIView 和 NSView</td>
-<td>没有 intrinsic content size</td>
-</tr>
-<tr>
-<td>Sliders</td>
-<td>iOS 上只定义宽度，OSX 上会根据 slider 类型定义宽度或者高度</td>
-</tr>
-<tr>
-<td>Label，Button，Switch，TextFiled</td>
-<td>定义宽度和高度</td>
-</tr>
-<tr>
-<td>TextView 和 ImageView</td>
-<td>可变的 intrinsic content size</td>
-</tr>
-</tbody></table>
-<p>intrinsic content size 是基于 view 当前所含内容确定的，一个 label 或者 buttton 的 intrinsic content size 是基于其所含文案的数目和字体确定的。对于其他 view，intrinsic content size 的确定更为复杂。例如，一个空白的 imageview 没有 intrinsic content size，一旦你添加一张图片，它的固有内容尺寸就被设置成了图片的尺寸。</p>
-<p>一个 textView 的 intrinsic content size 会根据内容、是否可以滑动以及其他运用在这个 view 上的约束而变化。比如，对于可以滑动的 textView 没有 intrinsic content size，对于不能滑动的 textView，其 intrinsic content size 默认由其所包含文案不折行时的尺寸所确定。例如如果文案中没有折行符，intrinsic content size 就由布局单行文案所需的宽高来确定。如果你添加了约束来确定 view 的宽度，intrinsic content size 就会根据所给的宽度来确定展示文案所需的高度。</p>
-<p>AutoLayout 在每一个维度上用一对约束来表示一个 view 的 intrinsic content size。其中内容压缩属性 content hugging 使 view 内聚从而更好贴合其内容，而抗压缩属性 content compression 则将 view 拓展从而避免内容被截断。</p>
-<p>这些约束都用下面所示的不等式来表达，在这里 intrinsicHeight 和 intrinsicWidth 常量表示 intrinsic content size 所含的高度和宽度。</p>
-<figure class="highlight reasonml"><table><tr><td class="code"><pre><span class="line"><span class="comment">// Compression Resistance</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">View</span>.</span></span>height &gt;= <span class="number">0.0</span><span class="operator"> * </span>NotAnAttribute + IntrinsicHeight</span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">View</span>.</span></span>width &gt;= <span class="number">0.0</span><span class="operator"> * </span>NotAnAttribute + IntrinsicWidth</span><br><span class="line"> </span><br><span class="line"><span class="comment">// Content Hugging</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">View</span>.</span></span>height &lt;= <span class="number">0.0</span><span class="operator"> * </span>NotAnAttribute + IntrinsicHeight</span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">View</span>.</span></span>width &lt;= <span class="number">0.0</span><span class="operator"> * </span>NotAnAttribute + IntrinsicWidth</span><br></pre></td></tr></table></figure>
-
-<p>这些约束中的每一个约束均有其自己的优先级，默认情况下，view 的 content hugging 优先级默认为 250，compression resistance 优先级默认为 750。所以一个 view 很容易被延展，但不容易被压缩。对于大多数继承自 UIControl 的视图，这是符合预期的。例如，你可以安全地将一个 button 伸展出超出其 intrinsic content size 所定义的尺寸，但如果你压缩一个 button 则可能导致其内容被截断。Interface Builder 有时会修改这些优先级以防止被截断，具体请查看 <a href="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/WorkingwithConstraintsinInterfaceBuidler.html#//apple_ref/doc/uid/TP40010853-CH10-SW2" target="_blank" rel="noopener">Setting Content-Hugging and Compression-Resistance Priorities</a></p>
-<p>尽量在你的布局中使用 view 的 intrinsic content size，这将帮助你在内容发生变化时 view 的尺寸能动态适应，同时也会减少你需要创建的无歧义不冲突的约束的数目。但是你仍然需要配置 view 的 content-hugging 和 compression-resistance 属性（CHCR）。下面是处理 intrinsic content size 的一些指导建议：</p>
-<ul>
-<li>当你需要拉伸一系列 view 以充满一个区域时，如果所有 view 都有相同的 content-hugging 优先级，则这样的布局会产生歧义。AutoLayout 并不知道应该拉伸哪一个 view。</li>
-</ul>
-<p>一个常见的例子是一对 label 和 textfield，当你希望 label 保持 intrinsic content size，而 textfield 填满额外的空白区域时，你需要确保 textfield 的水平 content-hugging 优先级低于 label 的水平 content-hugging 优先级。</p>
-<p>事实上，由于这样的例子很常见，IB 已经自动做了这些处理，它将所有 label 的 content-hugging 优先级设置为 251。如果你使用代码来设置布局，那么你需要自己修改 content-hugging 的优先级。</p>
-<ul>
-<li><p>如果 view 含有不可见的背景时（如 button 或者 label），尝试拉伸它们超出其 intrinsic content size 的值的时候可能会出现错误的或者意想不到的布局效果。虽然问题可能没有那么明显，因为文案只是被简单地展示到了错误的地方而已。为了阻止这样意想不到的拉伸，应当增加它们的 content-hugging 优先级。</p>
-</li>
-<li><p>基线 BaseLine 约束只有在 view 的尺寸满足其 intrinsic content size 时才会起作用，如果一个 view 被垂直拉伸或者压缩了，那么 baseline 约束将不能正确地对齐。</p>
-</li>
-<li><p>一些 view，例如 switch，应当始终保持其 intrinsic content size，所以要增加它们的 CHCR 优先级来阻止其被拉伸或者压缩。</p>
-</li>
-<li><p>避免赋值给 view 一个确定的 CHCR 优先级。一个 view 出现错误的尺寸总是好过发生布局冲突。如果一个 view 需要始终保持其 intrinsic content size，那么应当考虑使用一个非常高的优先级来代替（999）。这种方法一般可以保证 view 不会被压缩或拉伸，但是仍提供了一个压缩阈值从而确保你的 view 会在一个远大于或远小于你所预期的屏幕尺寸上正常显示。</p>
-</li>
-</ul>
-<h3 id="intrinsic-content-size-与-fitting-size-对比"><a href="#intrinsic-content-size-与-fitting-size-对比" class="headerlink" title="intrinsic content size 与 fitting size 对比"></a>intrinsic content size 与 fitting size 对比</h3><p>intrinsic content size 就像是 AutoLayout 的一个输入值，当一个 view 含有 intrinsic content size 时，系统将会创建一些约束用于表示尺寸，同时根据这些约束来计算对应的布局。</p>
-<p>而 fitting size 则是 AutoLayout 引擎的输出。它是基于 view 的约束计算出的一个尺寸。如果 view 用 AutoLayout 来布局它的子 view，那么系统就可以根据其内容来计算一个 fitting size 赋予它。</p>
-<p>StackView 是一个很好的例子，如果没有其他约束，系统就会按照 StackView 的子视图和属性来计算它的尺寸。很多时候 StackView 都表现得像是有一个 intrinsic content size，你可以只使用一个水平或者垂直约束就能创建一个有效布局来定义它的位置。但其实它的尺寸是由 AutoLayout 计算得出而非输入 intrinsic content size 得出的。所以设置 StackView 的 CHCR 优先级是不会起作用的，因为它并没有 intrinsic content size 属性。</p>
-<p>如果你需要使 StackView 的 fitting size 适配其外部的元素时，你可以创建显式的约束以捕捉这些关系，或者修改 StackView 的内部元素相对于外部元素外部元素的 CHCR 优先级。</p>
-<h3 id="解读参数值"><a href="#解读参数值" class="headerlink" title="解读参数值"></a>解读参数值</h3><p>AutoLayout 的参数单位始终是 point(pt = px/scale)，然而这些测量值的确切含义取决于所涉及的属性和视图的布局方向。</p>
-<table>
-<thead>
-<tr>
-<th>AutoLayout 属性</th>
-<th>参数值</th>
-<th>注意</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>Height Width</td>
-<td>view 的尺寸</td>
-<td>这些属性可以被声明为常量，或者与其他宽高属性绑定，不能是负数</td>
-</tr>
-<tr>
-<td>Top Bottom Baseline</td>
-<td>当下滑屏幕时这些参数会增加</td>
-<td>这些参数只能与 CenterY，Top，Bottom 和 Baseline 属性绑定</td>
-</tr>
-<tr>
-<td>Leading Trailing</td>
-<td>对于一个从左到右的布局，当你向右移动时这些值会增加。对于一个从右到左的布局，当你向左移动时这些值会增加</td>
-<td>这个参数只能与  Leading, Trailing, 和 Center X 绑定</td>
-</tr>
-<tr>
-<td>Left Right</td>
-<td>当你向右移动时这些参数会增加</td>
-<td>这些参数只能与 Left、Right、CenterX 属性绑定。你应当尽量用 Leading 和 Trailing 属性来代替 Left 和 Right，这样可以使布局动态适应 view 的阅读方向。默认的阅读方向取决于用户所设置的系统语言。在 iOS 中，设置 view 的 semanticContentAttribute 属性可以确定是否在语言切换时进行布局方向转换</td>
-</tr>
-<tr>
-<td>Center X Center Y</td>
-<td>基于约束表达式其他属性而确定</td>
-<td>CenterX 可以与 CenterX、Leading、Trailing、Right 和 Left 属性绑定。CenterY 可以与 CenterY、Top、Bottom、和 Baseline 属性绑定</td>
-</tr>
-</tbody></table>
 ]]></content>
       <categories>
         <category>AutoLayout</category>
@@ -3774,6 +3562,218 @@
 <p>要记住，你需要确保对于每一种可能的 size-class 你都有可行的布局与之对应，包括所有的 size-class 基类。作为一个一般规则，选择一种布局作为你的默认布局会是一种最简单的方法。在 Any-Any size-class 下设计这种布局，然后按照需要修改 Final size-class。记住，你可以在更具体的 size-class 中添加或修改元其中的元素。</p>
 <p>要创建更复杂的布局，你可能希望在开始创建布局前绘制出 size-class 的九宫格。九宫格帮助你看到哪些约束会被多种 size-class 共享，并帮助你找到布局和 size-class 的最佳混合。</p>
 <p>查看更多使用 size-class 的信息请前往 <a href="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/TypesofErrors.html#//apple_ref/doc/uid/TP40010853-CH22-SW1" target="_blank" rel="noopener">调试 AutoLayout</a></p>
+]]></content>
+      <categories>
+        <category>AutoLayout</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>AutoLayout指南·概述·详解约束</title>
+    <url>/2017/12/26/AutoLayout/AutoLayout%E6%8C%87%E5%8D%97%C2%B7%E6%A6%82%E8%BF%B0%C2%B7%E8%AF%A6%E8%A7%A3%E7%BA%A6%E6%9D%9F/</url>
+    <content><![CDATA[<h1 id="AutoLayout指南·概述"><a href="#AutoLayout指南·概述" class="headerlink" title="AutoLayout指南·概述"></a>AutoLayout指南·概述</h1><h2 id="详解约束"><a href="#详解约束" class="headerlink" title="详解约束"></a>详解约束</h2><p>AutoLayout 用一系列的线性约束来实现视图层级的布局，每一个约束对应一个等式。你的目标就是声明一系列的等式，这些等式有且仅有一个可能的解。</p>
+<p>下面就是一个简单的等式的例子</p>
+<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/view_formula_2x.png" width=500>
+
+<p>译者注：由于APP所处环境的不同，布局可能会不同，像英文环境中，页面布局是从左到右布局，而像阿拉伯语环境中，页面布局是从右到左的布局方式，因此有了Leading和Trailing的概念，为的就是一次布局后可以正常的显示在多种语言环境中。</p>
+<p>这个约束表示红色 view 的头部(Leading)必须在蓝色 view 尾部(Trailing)之后相距 8 个单位的位置。等式由以下几个部分组成</p>
+<ul>
+<li>Item 1，在这个例子中就是等式的第一个元素红色 view，它必须是一个 view 或者是一个 layout guide</li>
+<li>Attribute 1，第一个元素被约束的属性，在这个例子中就是红色 view 的头部边缘(LeadingEdge)</li>
+<li>RelationShip，等式左边与右边的关系，可以是相等，大于等于，小于等于三种关系中的一种。在这里用到了相等关系</li>
+<li>Mutiplier，乘数因子，属性 2 的值会被乘以这个浮点数，在这里 mutiplier 等于 1.0</li>
+<li>Item 2，等式的第二个元素，在这里就是蓝色 view，不像第一个 item，这里的 item 可以为空</li>
+<li>Attribute2，第二个元素被约束的属性，在这个例子中就是蓝色 view 的尾部，如果第二个 Item 为空，则 Attitude2 就不能为一个属性</li>
+<li>Constant，常量因子，一个浮点数常量，在这里就是 8.0，这个值会和 Attribute2 的值进行加和</li>
+</ul>
+<p>在我们的界面中，大多数约束都定义了两个元素之间的关系。这些元素可以是 view 或者 layout guide。约束也可以用于定义单个元素的两个属性之间的关系，比如设置一个元素的长宽比。你也可以对一个元素的宽或高声明一个常量，此时上述表达式中的第二个元素和第二个属性就是空的，而 mutiplier 则为 0.0。</p>
+<h3 id="Auto-Layout-属性"><a href="#Auto-Layout-属性" class="headerlink" title="Auto Layout 属性"></a>Auto Layout 属性</h3><p>在 AutoLayout 中属性定义了一中可以被约束的特性。一般来说，属性包括四条边缘（Leading、Trailing、Top、Bottom），以及 width、height、centerX 和 centerY。而文本元素还包含一个或多个基线(Baseline)属性。</p>
+<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/attributes_2x.png" width=500>
+
+<p>在 <a href="https://developer.apple.com/documentation/uikit/nslayoutconstraint.attribute" target="_blank" rel="noopener">NSLayoutAttribute</a> 中枚举了全部的属性。</p>
+<blockquote>
+<p>注意</p>
+<p>虽然 OSX 和 iOS 都用到 NSLayoutAttribute 枚举值，但是它们在定义上仍有一些细微的差别。所以在查看属性列表时要确保查看的属性列表对应的是正确的平台文件</p>
+</blockquote>
+<h3 id="约束关系式示例"><a href="#约束关系式示例" class="headerlink" title="约束关系式示例"></a>约束关系式示例</h3><p>AutoLayout 的约束关系式的大量参数和属性使你可以创造出各种各样的约束。你可以定义 View 之间的间距，对齐 view 的边线，定义两个 View 之间的相对尺寸，甚至定义一个 view 的长宽比。但是并不是所有属性都可以相互兼容(搭配到一起进行约束的设置)。</p>
+<p>属性大致可以分为两类，一类是 size 属性（比如 Height 和 Width），一类是 location 属性（比如 Leading, Left, 和 Top）。size 属性被用于确定元素有多大，但没有指定这个元素的位置。location 属性被用于确定元素相对于其他元素的位置，但没有指定元素的尺寸大小。</p>
+<p>由于属性之间有这些差别，因此在约束中要注意以下几个规则：</p>
+<ul>
+<li>不能用 size 属性约束 location 属性</li>
+<li>不能用常量设置 location 属性</li>
+<li>不能用除了 1.0 之外的因子给 location 属性使用</li>
+<li>对于 location 属性，不能用垂直属性约束水平属性</li>
+<li>对于 location 属性，不能用 Leading 和 Trailing 约束 Left 和 Right</li>
+</ul>
+<p>例如，在没有其他上下文信息的情况下，将一个元素的 top 设置为常量 20.0 是没有任何意义的。你必须总是定义一个元素的 location 属性与其他元素的location属性之间的关系，比如设置一个元素在父 view 的顶部（Top）下方 20 单位长的距离处。然而，设置一个元素的高度为 20.0 却是有意义的。查阅 <a href="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/AnatomyofaConstraint.html#//apple_ref/doc/uid/TP40010853-CH9-SW22" target="_blank" rel="noopener">Interpreting Values</a> 获取更多信息。</p>
+<p>下面列举一些常见的约束关系式。</p>
+<blockquote>
+<p>注意</p>
+<p>本章节所有表达式均由伪代码组成，查看正式代码编写的关系式请前往 <a href="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/ProgrammaticallyCreatingConstraints.html#//apple_ref/doc/uid/TP40010853-CH16-SW1" target="_blank" rel="noopener">Programmatically Creating Constraints</a> 或 <a href="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/LayoutUsingStackViews.html#//apple_ref/doc/uid/TP40010853-CH3-SW1" target="_blank" rel="noopener">Auto Layout Cookbook</a></p>
+</blockquote>
+<figure class="highlight reasonml"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 设置一个常量高度</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">View</span>.</span></span>height = <span class="number">0.0</span><span class="operator"> * </span>NotAnAttribute + <span class="number">40.0</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">// 设置两个按钮的固定距离</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Button_2</span>.</span></span>leading = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Button_1</span>.</span></span>trailing + <span class="number">8.0</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">// 声明两个按钮的左边线</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Button_1</span>.</span></span>leading = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Button_2</span>.</span></span>leading + <span class="number">0.0</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">// 设置两个按钮等宽</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Button_1</span>.</span></span>width = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Button_2</span>.</span></span>width + <span class="number">0.0</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">// 将一个 view 在父 view 中居中</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">View</span>.</span></span>centerX = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Superview</span>.</span></span>centerX + <span class="number">0.0</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">View</span>.</span></span>centerY = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Superview</span>.</span></span>centerY + <span class="number">0.0</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">// 设置一个 view 的长宽比</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">View</span>.</span></span>height = <span class="number">2.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">View</span>.</span></span>width + <span class="number">0.0</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="相等、而非赋值"><a href="#相等、而非赋值" class="headerlink" title="相等、而非赋值"></a>相等、而非赋值</h3><p>一定要注意约束关系式表达的是相等关系、而非进行属性赋值。</p>
+<p>当 AutoLayout 处理这些关系式时，它不仅仅是将等式右边的值赋给左边，取而代之的是，它会计算 Attribute1 和 Attribute2 的值并保证二者符合关系式。这意味着我们可以自由地在等式中重新组合元素，下面列举了与上一节的表达式列表相同约束而不同形式的表达式。</p>
+<figure class="highlight reasonml"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 设置两个按钮之间固定距离</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Button_1</span>.</span></span>trailing = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Button_2</span>.</span></span>leading - <span class="number">8.0</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">// 声明两个按钮的左边线</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Button_2</span>.</span></span>leading = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Button_1</span>.</span></span>leading + <span class="number">0.0</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">// 设置两个按钮等宽</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Button_2</span>.</span></span>width = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Button</span>.</span></span>width + <span class="number">0.0</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">// 使一个 view 在父 view 中居中</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Superview</span>.</span></span>centerX = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">View</span>.</span></span>centerX + <span class="number">0.0</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Superview</span>.</span></span>centerY = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">View</span>.</span></span>centerY + <span class="number">0.0</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">// 设置一个 view 的长宽比</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">View</span>.</span></span>width = <span class="number">0.5</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">View</span>.</span></span>height + <span class="number">0.0</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>注意</p>
+<p>在变换元素顺序时要注意转换乘数因子和常量因子。例如常量 8.0 需要变为 -8.0，常量因子 2.0 要变换为 0.5。而常量因子 0.0 和乘数因子 1.0 则保持不变。</p>
+</blockquote>
+<p>你会发现 AutoLayout 经常提供多种方式来解决相同的问题，所以你需要选择一种最清晰的表达方式。但无疑不同的开发者对最清晰的表达方式有不同的看法，此时保持一致比保持正确更重要。如果你不能一直保持同一种表达方式，那么你将不断在使用中遇到各种问题。比如这篇指南就用到了以下一些规则：</p>
+<ul>
+<li>优先使用整数乘数因子，好过于小数乘数因子</li>
+<li>优先使用正数作为乘数因子，好过于使用负数作为常数因子</li>
+<li>在任何位置中的view， 布局都应该遵照：从前(Leading)到后(Trailing)，从上(Top)到下(Bottom)的顺序</li>
+</ul>
+<h3 id="创建无歧义、可满足的布局"><a href="#创建无歧义、可满足的布局" class="headerlink" title="创建无歧义、可满足的布局"></a>创建无歧义、可满足的布局</h3><p>使用 AutoLayout 要达到的目的是提供一系列的约束表达式，同时有且仅有一个可行解。有歧义的约束表达式则会出现多个可行解。不可满足的约束表达式没有可行解。</p>
+<p>一般来说，每一个 view 的尺寸和位置都必须被约束。假设父 view 的尺寸已经设置好（比如是 iOS 上一个 Scene 的根视图），对于每一个 View 的每一个维度，一个无歧义、可满足的表达式都需要至少两个约束来表达（不算父视图）。但是你可以采取不同的方式去实现你想要的效果。比如下面三种布局都是用无歧义、可满足的表达式实现的(只展示了水平约束)</p>
+<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/constraint_examples_2x.png" width=500>
+
+<ul>
+<li>第一个布局约束了 view 的头部与父视图头部的关系，以及 view 的固定宽度，这样根据父视图的尺寸和其他约束就可以计算边线的位置。</li>
+<li>第二个布局约束了 view 的头部及尾部与父视图的关系。根据父视图的尺寸和其他约束就可以计算出这个 view 的宽度。</li>
+<li>第三个布局约束了 view 的头部与父视图的关系，同时将 view 居中展示在父视图中。根据父视图的尺寸和其他约束就可以计算出这个 view 的边线位置和宽度。</li>
+</ul>
+<p>注意每一个布局都由一个 view 和两个水平约束组成。在每一种情况中都定义了 view 的宽度和水平位置。这意味着这些布局在水平轴向上符合无歧义、可满足的布局要求。但是当父视图的宽度发生改变时这些约束可能就无法正常生效了。</p>
+<p>在第一个布局中，view 的宽度不会改变，很多时候这并不是你需要的效果。事实上，作为一个普遍适用的规则，你应该避免将 view 的尺寸声明为一个常量。AutoLayout 是被设计用于在不同的设备环境下动态适应和改变布局的利器，而当你给 view 赋值了一个固定尺寸之后这一特性就将无法生效了。</p>
+<p>可能没有那么显著，但其实第二个布局和第三个布局的表现是相同的。它们俩都维护了当前视图与父视图之间的固定边缘留白，无论父视图的宽度如何改变。然而它们并不是完全相同的。一般来说，第二个示例会更容易理解，但第三个示例却更有效，尤其是当你需要居中放置很多元素的时候。所以你应当始终为你的布局选择最好的实现方式。</p>
+<p>现在考虑一些更复杂的布局情况。想象一下如果你想在 iPhone 的屏幕上并排展示两个 view，你需要确保它们的每条边都有合适的边缘留白，同时它们总是有相同的宽度。并且当设备屏幕发生旋转时它们应当正确地修正它们的尺寸。</p>
+<p>下面的插图展示了屏幕在竖直和水平方向时这两个 view 的展示情况。</p>
+<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/Blocks_Portrait_2x.png" width=500>
+
+<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/Blocks_Landscape_2x.png" width=500>
+
+<p>所以我们应当如何进行约束设置呢？下面的插图展示了一种最直接的约束方式。</p>
+<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/two_view_example_1_2x.png" width=500>
+
+<p>上图用到了以下这些约束</p>
+<figure class="highlight reasonml"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 垂直约束</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Red</span>.</span></span>top = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Superview</span>.</span></span>top + <span class="number">20.0</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Superview</span>.</span></span>bottom = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Red</span>.</span></span>bottom + <span class="number">20.0</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Blue</span>.</span></span>top = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Superview</span>.</span></span>top + <span class="number">20.0</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Superview</span>.</span></span>bottom = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Blue</span>.</span></span>bottom + <span class="number">20.0</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">// 水平约束</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Red</span>.</span></span>leading = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Superview</span>.</span></span>leading + <span class="number">20.0</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Blue</span>.</span></span>leading = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Red</span>.</span></span>trailing + <span class="number">8.0</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Superview</span>.</span></span>trailing = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Blue</span>.</span></span>trailing + <span class="number">20.0</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Red</span>.</span></span>width = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Blue</span>.</span></span>width + <span class="number">0.0</span></span><br></pre></td></tr></table></figure>
+
+<p>遵循前文提到的布局规则，这里有两个 view，四条垂直约束和四条水平约束。尽管不是最可靠的，但确实能保证实现你需要的效果。更重要的是，这些约束唯一确定了两个 view 的尺寸和位置，生成了无歧义、可满足的布局。移除任何一条约束都将导致约束有歧义，而添加额外的约束可能引入布局冲突。</p>
+<p>但是这并不是约束实现的唯一方式。下面有一个与之等同的实现途径</p>
+<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/two_view_example_2_2x.png" width=500>
+
+<p>除了固定蓝色视图的顶部(top)和底部(bottom)与它们的父视图之间的距离，你可以让蓝色视图的顶部(top)与红色视图的顶部(top)对齐。同样地，让蓝色视图的底部(bottom)与红色视图底部(bottom)对齐。下面是详细的约束</p>
+<figure class="highlight reasonml"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 垂直约束</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Red</span>.</span></span>top = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Superview</span>.</span></span>top + <span class="number">20.0</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Superview</span>.</span></span>bottom = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Red</span>.</span></span>bottom + <span class="number">20.0</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Red</span>.</span></span>top = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Blue</span>.</span></span>top + <span class="number">0.0</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Red</span>.</span></span>bottom = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Blue</span>.</span></span>bottom + <span class="number">0.0</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">// 水平约束</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Red</span>.</span></span>leading = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Superview</span>.</span></span>leading + <span class="number">20.0</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Blue</span>.</span></span>leading = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Red</span>.</span></span>trailing + <span class="number">8.0</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Superview</span>.</span></span>trailing = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Blue</span>.</span></span>trailing + <span class="number">20.0</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Red</span>.</span></span>width = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Blue</span>.</span></span>width + <span class="number">0.0</span></span><br></pre></td></tr></table></figure>
+
+<p>这种方式也包含了两个 view 和四条垂直约束、四条水平约束，同时也是无歧义可满足的布局。</p>
+<blockquote>
+<p>但是哪种方式更好呢？</p>
+<p>两种方式都实现了需要的布局效果，但是哪种方式更好呢？<br>很不幸，并没有客观可行的方式去证明其中一种方式优于另一种，每种方式都有其优点和不足。</p>
+<p>第一种方式在移除 view 时表现更健壮。从视图层级中移除一个 view 的同时也会移除与之相关的所有引用。所以如果你移除了红色的 view，蓝色的 view 将会剩下三条约束规则。你只需要加入一条约束就可以再次正确实现约束布局。而第二种方式下移除红色 view 将使得蓝色 view 只剩下一条约束。</p>
+<p>但另一方面，在第一种情况下，如果你需要使 view 的顶部和底部对齐，你需要保证他们的约束使用了相同的常数值，如果你改变了其中一个常数值，你需要记得同时修改 view 对应的另一个常数值。</p>
+</blockquote>
+<h3 id="约束不等式"><a href="#约束不等式" class="headerlink" title="约束不等式"></a>约束不等式</h3><p>到目前为止，所有的示例都是展示的约束等式，但这只是故事的一部分。约束也可以以不等式的形式表示。特别地，约束之间的关系可以是相等的，大于等于的，或者小于等于的。</p>
+<p>例如，你可以用约束来定义一个view的最小尺寸或最大尺寸，如表3-3：</p>
+<p>表3-3 设置一个最小和最大尺寸</p>
+<figure class="highlight angelscript"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 设置最小宽度</span></span><br><span class="line">View.width &gt;= <span class="number">0.0</span> * NotAnAttribute + <span class="number">40.0</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">// 设置最大宽度</span></span><br><span class="line">View.width &lt;= <span class="number">0.0</span> * NotAnAttribute + <span class="number">280.0</span></span><br></pre></td></tr></table></figure>
+
+<p>一旦你开始用不等式时，每个视图的每个维度的两个约束就失效了。你可以总是用两个不等式替换一个等式。在表3-4中，一个等式关系和一对不等式关系都产生相同的结果。</p>
+<p>表3-4 用两个不等式替换一个等式</p>
+<figure class="highlight reasonml"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 一个单独的等式关系</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Blue</span>.</span></span>leading = <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Red</span>.</span></span>trailing + <span class="number">8.0</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">// 可以被两个不等式关系替换</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Blue</span>.</span></span>leading &gt;= <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Red</span>.</span></span>trailing + <span class="number">8.0</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">Blue</span>.</span></span>leading &lt;= <span class="number">1.0</span><span class="operator"> * </span><span class="module-access"><span class="module"><span class="identifier">Red</span>.</span></span>trailing + <span class="number">8.0</span></span><br></pre></td></tr></table></figure>
+
+<p>相反却不一定成立，因为两个不等式不一定等于一个等式关系。例如，在表3-3中的不等式限定了这个视图的宽度的可能值范围–但是对于它们本身，它们没有定义宽度。你仍然需要在这个范围内附加横向约束来定义视图的位置和宽度。</p>
+<p>译者注：这一段的中心思想是，一个等式可以用两个不等式来表示，但是两个不等式不能表示一个等式。</p>
+<h3 id="约束优先级"><a href="#约束优先级" class="headerlink" title="约束优先级"></a>约束优先级</h3><p>默认情况下所有的约束都是必需的。AutoLayout 必需计算出满足所有约束的唯一可行解。如果无法计算出这一可行解就会出错。AutoLayout 会在控制台打印出未满足的约束的信息，并随机打破一个约束条件。然后它就会计算出没有这一约束条件下的可行解。具体请看 <a href="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/ConflictingLayouts.html#//apple_ref/doc/uid/TP40010853-CH19-SW1" target="_blank" rel="noopener">Unsatisfiable Layouts</a>。</p>
+<p>你也可以创建一些可选的约束。所有的约束都有一个从 1 到 1000 的优先级，只有优先级为 1000 的约束是必须的，其他都是可选的。</p>
+<p>当计算可行解时，AutoLayout 会按照优先级从高到低，尝试满足所有的约束条件。如果它无法满足一个可选的约束条件，则会跳过这一约束条件并继续计算下一个约束条件。</p>
+<p>可选的约束即使无法被满足仍然可以对布局产生影响。如果在跳过这一约束后布局发生了歧义，那么系统会选择一种最接近被跳过的约束条件的可行解，在这种情况下，未满足的可选约束作为一种力量让视图向它们靠拢。</p>
+<p>可选约束一般会和不等式约束成对出现。比如在 <a href="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/AnatomyofaConstraint.html#//apple_ref/doc/uid/TP40010853-CH9-SW9" target="_blank" rel="noopener">Listing 3-4</a> 中你可以给两张不等式设置不同的优先级。可以设置大于等于关系式为必须的，而小于等于关系式为可选的（优先级250）。这意味着蓝色 view 与红色 view 的间距不会小于 8 个像素点。但是其他约束可以将它们拉开更大的距离。同样的，可选约束会基于其他约束条件，确保蓝色 view 与红色 view 尽可能接近 8 个像素点的间距。</p>
+<blockquote>
+<p>注意</p>
+<p>不要认为所有优先级都设置为 1000 是最靠谱的方式。优先级应当有基本的四种系统定义的类型，low（250），medium（500），high（750），必需（1000）。你可能需要将其中一些约束优先级设置得高出其他优先级 1 到 2 个点以防止布局错乱。如果你所使用的优先级远超出这四种，你可能需要重新审查你的布局逻辑。</p>
+<p><a href="https://developer.apple.com/documentation/uikit/uilayoutpriority" target="_blank" rel="noopener">UILayoutPriority</a> 里有优先级的所有预定义值。</p>
+</blockquote>
+<h3 id="固有内容尺寸-intrinsic-content-size"><a href="#固有内容尺寸-intrinsic-content-size" class="headerlink" title="固有内容尺寸(intrinsic content size)"></a>固有内容尺寸(intrinsic content size)</h3><p>到目前为止，所有的示例都是用约束的方式来定义视图的位置和它们的大小的。然而有一些 view 可以根据所含内容确定其自身的自然尺寸。这种属性被称为 intrinsic content size。比如一个按钮的 intrinsic content size 就是它的 title 的尺寸加上一个小边距。</p>
+<p>并不是所有 view 都有 intrinsic content size，对于有这一属性的 view 来说，intrinsic content size 可以定义它的高度、宽度或者两者都有。下面是一些常见的示例</p>
+<p>一般继承自UIControl的视图都有固有内容尺寸</p>
+<table>
+<thead>
+<tr>
+<th>View</th>
+<th>Intrinsic Content Size</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>UIView 和 NSView</td>
+<td>没有 intrinsic content size</td>
+</tr>
+<tr>
+<td>Sliders</td>
+<td>iOS 上只定义宽度，OSX 上会根据 slider 类型定义宽度或者高度</td>
+</tr>
+<tr>
+<td>Label，Button，Switch，TextFiled</td>
+<td>定义宽度和高度</td>
+</tr>
+<tr>
+<td>TextView 和 ImageView</td>
+<td>可变的 intrinsic content size</td>
+</tr>
+</tbody></table>
+<p>intrinsic content size 是基于 view 当前所含内容确定的，一个 label 或者 buttton 的 intrinsic content size 是基于其所含文案的数目和字体确定的。对于其他 view，intrinsic content size 的确定更为复杂。例如，一个空白的 imageview 没有 intrinsic content size，一旦你添加一张图片，它的固有内容尺寸就被设置成了图片的尺寸。</p>
+<p>一个 textView 的 intrinsic content size 会根据内容、是否可以滑动以及其他运用在这个 view 上的约束而变化。比如，对于可以滑动的 textView 没有 intrinsic content size，对于不能滑动的 textView，其 intrinsic content size 默认由其所包含文案不折行时的尺寸所确定。例如如果文案中没有折行符，intrinsic content size 就由布局单行文案所需的宽高来确定。如果你添加了约束来确定 view 的宽度，intrinsic content size 就会根据所给的宽度来确定展示文案所需的高度。</p>
+<p>AutoLayout 在每一个维度上用一对约束来表示一个 view 的 intrinsic content size。其中内容压缩属性 content hugging 使 view 内聚从而更好贴合其内容，而抗压缩属性 content compression 则将 view 拓展从而避免内容被截断。</p>
+<p>这些约束都用下面所示的不等式来表达，在这里 intrinsicHeight 和 intrinsicWidth 常量表示 intrinsic content size 所含的高度和宽度。</p>
+<figure class="highlight reasonml"><table><tr><td class="code"><pre><span class="line"><span class="comment">// Compression Resistance</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">View</span>.</span></span>height &gt;= <span class="number">0.0</span><span class="operator"> * </span>NotAnAttribute + IntrinsicHeight</span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">View</span>.</span></span>width &gt;= <span class="number">0.0</span><span class="operator"> * </span>NotAnAttribute + IntrinsicWidth</span><br><span class="line"> </span><br><span class="line"><span class="comment">// Content Hugging</span></span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">View</span>.</span></span>height &lt;= <span class="number">0.0</span><span class="operator"> * </span>NotAnAttribute + IntrinsicHeight</span><br><span class="line"><span class="module-access"><span class="module"><span class="identifier">View</span>.</span></span>width &lt;= <span class="number">0.0</span><span class="operator"> * </span>NotAnAttribute + IntrinsicWidth</span><br></pre></td></tr></table></figure>
+
+<p>这些约束中的每一个约束均有其自己的优先级，默认情况下，view 的 content hugging 优先级默认为 250，compression resistance 优先级默认为 750。所以一个 view 很容易被延展，但不容易被压缩。对于大多数继承自 UIControl 的视图，这是符合预期的。例如，你可以安全地将一个 button 伸展出超出其 intrinsic content size 所定义的尺寸，但如果你压缩一个 button 则可能导致其内容被截断。Interface Builder 有时会修改这些优先级以防止被截断，具体请查看 <a href="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/WorkingwithConstraintsinInterfaceBuidler.html#//apple_ref/doc/uid/TP40010853-CH10-SW2" target="_blank" rel="noopener">Setting Content-Hugging and Compression-Resistance Priorities</a></p>
+<p>尽量在你的布局中使用 view 的 intrinsic content size，这将帮助你在内容发生变化时 view 的尺寸能动态适应，同时也会减少你需要创建的无歧义不冲突的约束的数目。但是你仍然需要配置 view 的 content-hugging 和 compression-resistance 属性（CHCR）。下面是处理 intrinsic content size 的一些指导建议：</p>
+<ul>
+<li>当你需要拉伸一系列 view 以充满一个区域时，如果所有 view 都有相同的 content-hugging 优先级，则这样的布局会产生歧义。AutoLayout 并不知道应该拉伸哪一个 view。</li>
+</ul>
+<p>一个常见的例子是一对 label 和 textfield，当你希望 label 保持 intrinsic content size，而 textfield 填满额外的空白区域时，你需要确保 textfield 的水平 content-hugging 优先级低于 label 的水平 content-hugging 优先级。</p>
+<p>事实上，由于这样的例子很常见，IB 已经自动做了这些处理，它将所有 label 的 content-hugging 优先级设置为 251。如果你使用代码来设置布局，那么你需要自己修改 content-hugging 的优先级。</p>
+<ul>
+<li><p>如果 view 含有不可见的背景时（如 button 或者 label），尝试拉伸它们超出其 intrinsic content size 的值的时候可能会出现错误的或者意想不到的布局效果。虽然问题可能没有那么明显，因为文案只是被简单地展示到了错误的地方而已。为了阻止这样意想不到的拉伸，应当增加它们的 content-hugging 优先级。</p>
+</li>
+<li><p>基线 BaseLine 约束只有在 view 的尺寸满足其 intrinsic content size 时才会起作用，如果一个 view 被垂直拉伸或者压缩了，那么 baseline 约束将不能正确地对齐。</p>
+</li>
+<li><p>一些 view，例如 switch，应当始终保持其 intrinsic content size，所以要增加它们的 CHCR 优先级来阻止其被拉伸或者压缩。</p>
+</li>
+<li><p>避免赋值给 view 一个确定的 CHCR 优先级。一个 view 出现错误的尺寸总是好过发生布局冲突。如果一个 view 需要始终保持其 intrinsic content size，那么应当考虑使用一个非常高的优先级来代替（999）。这种方法一般可以保证 view 不会被压缩或拉伸，但是仍提供了一个压缩阈值从而确保你的 view 会在一个远大于或远小于你所预期的屏幕尺寸上正常显示。</p>
+</li>
+</ul>
+<h3 id="intrinsic-content-size-与-fitting-size-对比"><a href="#intrinsic-content-size-与-fitting-size-对比" class="headerlink" title="intrinsic content size 与 fitting size 对比"></a>intrinsic content size 与 fitting size 对比</h3><p>intrinsic content size 就像是 AutoLayout 的一个输入值，当一个 view 含有 intrinsic content size 时，系统将会创建一些约束用于表示尺寸，同时根据这些约束来计算对应的布局。</p>
+<p>而 fitting size 则是 AutoLayout 引擎的输出。它是基于 view 的约束计算出的一个尺寸。如果 view 用 AutoLayout 来布局它的子 view，那么系统就可以根据其内容来计算一个 fitting size 赋予它。</p>
+<p>StackView 是一个很好的例子，如果没有其他约束，系统就会按照 StackView 的子视图和属性来计算它的尺寸。很多时候 StackView 都表现得像是有一个 intrinsic content size，你可以只使用一个水平或者垂直约束就能创建一个有效布局来定义它的位置。但其实它的尺寸是由 AutoLayout 计算得出而非输入 intrinsic content size 得出的。所以设置 StackView 的 CHCR 优先级是不会起作用的，因为它并没有 intrinsic content size 属性。</p>
+<p>如果你需要使 StackView 的 fitting size 适配其外部的元素时，你可以创建显式的约束以捕捉这些关系，或者修改 StackView 的内部元素相对于外部元素外部元素的 CHCR 优先级。</p>
+<h3 id="解读参数值"><a href="#解读参数值" class="headerlink" title="解读参数值"></a>解读参数值</h3><p>AutoLayout 的参数单位始终是 point(pt = px/scale)，然而这些测量值的确切含义取决于所涉及的属性和视图的布局方向。</p>
+<table>
+<thead>
+<tr>
+<th>AutoLayout 属性</th>
+<th>参数值</th>
+<th>注意</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Height Width</td>
+<td>view 的尺寸</td>
+<td>这些属性可以被声明为常量，或者与其他宽高属性绑定，不能是负数</td>
+</tr>
+<tr>
+<td>Top Bottom Baseline</td>
+<td>当下滑屏幕时这些参数会增加</td>
+<td>这些参数只能与 CenterY，Top，Bottom 和 Baseline 属性绑定</td>
+</tr>
+<tr>
+<td>Leading Trailing</td>
+<td>对于一个从左到右的布局，当你向右移动时这些值会增加。对于一个从右到左的布局，当你向左移动时这些值会增加</td>
+<td>这个参数只能与  Leading, Trailing, 和 Center X 绑定</td>
+</tr>
+<tr>
+<td>Left Right</td>
+<td>当你向右移动时这些参数会增加</td>
+<td>这些参数只能与 Left、Right、CenterX 属性绑定。你应当尽量用 Leading 和 Trailing 属性来代替 Left 和 Right，这样可以使布局动态适应 view 的阅读方向。默认的阅读方向取决于用户所设置的系统语言。在 iOS 中，设置 view 的 semanticContentAttribute 属性可以确定是否在语言切换时进行布局方向转换</td>
+</tr>
+<tr>
+<td>Center X Center Y</td>
+<td>基于约束表达式其他属性而确定</td>
+<td>CenterX 可以与 CenterX、Leading、Trailing、Right 和 Left 属性绑定。CenterY 可以与 CenterY、Top、Bottom、和 Baseline 属性绑定</td>
+</tr>
+</tbody></table>
 ]]></content>
       <categories>
         <category>AutoLayout</category>
