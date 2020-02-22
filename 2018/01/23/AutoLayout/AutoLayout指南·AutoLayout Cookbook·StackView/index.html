@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Muse","version":"7.7.1","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":3,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="下面的指南将会向你展示如何使用 StackView 来创建比较复杂的布局。StackView 是一个非常有用的工具，它可以方便快捷地设计出你的用户界面。它的属性允许你很高程度地控制它对子视图的布局设置。你可以通过一些附加的自定义约束来增强这些设置，但是这样也会增加布局的复杂度。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AutoLayout指南·AutoLayout Cookbook·StackView">
+<meta property="og:url" content="http://yoursite.com/2018/01/23/AutoLayout/AutoLayout%E6%8C%87%E5%8D%97%C2%B7AutoLayout%20Cookbook%C2%B7StackView/index.html">
+<meta property="og:site_name" content="Yasic Yu">
+<meta property="og:description" content="下面的指南将会向你展示如何使用 StackView 来创建比较复杂的布局。StackView 是一个非常有用的工具，它可以方便快捷地设计出你的用户界面。它的属性允许你很高程度地控制它对子视图的布局设置。你可以通过一些附加的自定义约束来增强这些设置，但是这样也会增加布局的复杂度。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/Simple_Stack_View_Screenshot_2x.png">
+<meta property="og:image" content="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/simple_stack_2x.png">
+<meta property="og:image" content="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/Nested_Stack_Views_Screenshot_2x.png">
+<meta property="og:image" content="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/nested_stack_views_2x.png">
+<meta property="og:image" content="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/Dynamic_Stack_View_Screenshot_2x.png">
+<meta property="og:image" content="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/dynamic_stack_view_2x.png">
+<meta property="article:published_time" content="2018-01-22T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-02-22T08:11:33.994Z">
+<meta property="article:author" content="Yasic Yu">
+<meta property="article:tag" content="iOS">
+<meta property="article:tag" content=" ObjectiveC">
+<meta property="article:tag" content=" Swift">
+<meta property="article:tag" content=" XCode">
+<meta property="article:tag" content=" Computer">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/Simple_Stack_View_Screenshot_2x.png">
+
+<link rel="canonical" href="http://yoursite.com/2018/01/23/AutoLayout/AutoLayout%E6%8C%87%E5%8D%97%C2%B7AutoLayout%20Cookbook%C2%B7StackView/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>AutoLayout指南·AutoLayout Cookbook·StackView | Yasic Yu</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Yasic Yu</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">In Code We Trust</p>
+  </div>
+
+  <div class="site-nav-right"></div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类<span class="badge">4</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">46</span></a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/yasic" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/01/23/AutoLayout/AutoLayout%E6%8C%87%E5%8D%97%C2%B7AutoLayout%20Cookbook%C2%B7StackView/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Yasic Yu">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yasic Yu">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AutoLayout指南·AutoLayout Cookbook·StackView
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-01-23 00:00:00" itemprop="dateCreated datePublished" datetime="2018-01-23T00:00:00+08:00">2018-01-23</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/AutoLayout/" itemprop="url" rel="index">
+                    <span itemprop="name">AutoLayout</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">下面的指南将会向你展示如何使用 StackView 来创建比较复杂的布局。StackView 是一个非常有用的工具，它可以方便快捷地设计出你的用户界面。它的属性允许你很高程度地控制它对子视图的布局设置。你可以通过一些附加的自定义约束来增强这些设置，但是这样也会增加布局的复杂度。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="AutoLayout指南·AutoLayout-Cookbook"><a href="#AutoLayout指南·AutoLayout-Cookbook" class="headerlink" title="AutoLayout指南·AutoLayout Cookbook"></a>AutoLayout指南·AutoLayout Cookbook</h1><h2 id="StackView"><a href="#StackView" class="headerlink" title="StackView"></a>StackView</h2><p>下面的指南将会向你展示如何使用 StackView 来创建比较复杂的布局。StackView 是一个非常有用的工具，它可以方便快捷地设计出你的用户界面。它的属性允许你很高程度地控制它对子视图的布局设置。你可以通过一些附加的自定义约束来增强这些设置，但是这样也会增加布局的复杂度。</p>
+<p>查看此指南的源码请查阅 <a href="https://developer.apple.com/sample-code/xcode/downloads/Auto-Layout-Cookbook.zip" target="_blank" rel="noopener">Auto Layout Cookbook</a></p>
+<h3 id="简单的-StackView"><a href="#简单的-StackView" class="headerlink" title="简单的 StackView"></a>简单的 StackView</h3><p>这里我们用一个垂直的 StackView 来布局一个 label、一个 imageview、一个 button。</p>
+<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/Simple_Stack_View_Screenshot_2x.png" width=500>
+
+<h4 id="视图和约束"><a href="#视图和约束" class="headerlink" title="视图和约束"></a>视图和约束</h4><p>在 Interface Builder 中，首先拖进一个垂直的 StackView，然后添加一个 flower label，一个 imageview，一个编辑的 button，然后将它们的约束配置成下图</p>
+<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/simple_stack_2x.png" width=500>
+
+<figure class="highlight mathematica"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">Stack</span> View.Leading = Superview.LeadingMargin</span><br><span class="line"><span class="keyword">Stack</span> View.Trailing = Superview.TrailingMargin</span><br><span class="line"><span class="keyword">Stack</span> View.<span class="keyword">Top</span> = <span class="keyword">Top</span> Layout Guide.<span class="keyword">Bottom</span> + Standard</span><br><span class="line"><span class="keyword">Bottom</span> Layout Guide.<span class="keyword">Top</span> = <span class="keyword">Stack</span> View.<span class="keyword">Bottom</span> + Standard</span><br></pre></td></tr></table></figure>
+
+<h4 id="属性"><a href="#属性" class="headerlink" title="属性"></a>属性</h4><p>在属性检查器中，需要设置下列 StackView 属性</p>
+<table>
+<thead>
+<tr>
+<th>Stack</th>
+<th>Axis</th>
+<th>Alignment</th>
+<th>Distribution</th>
+<th>Spacing</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>StackView</td>
+<td>Vertical</td>
+<td>Fill</td>
+<td>Fill</td>
+<td>8</td>
+</tr>
+</tbody></table>
+<p>然后将 imageview 属性设置如下</p>
+<table>
+<thead>
+<tr>
+<th>View</th>
+<th>Attribute</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ImageView</td>
+<td>Image</td>
+<td>一个花朵的图片</td>
+</tr>
+<tr>
+<td>ImageView</td>
+<td>Mode</td>
+<td>Aspect Fit</td>
+</tr>
+</tbody></table>
+<p>最后在属性检查器中将 imageview 的 content-hugging 和 compression-resistance（CHCR）优先级设置如下</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Horizontal hugging</th>
+<th>Verticle hugging</th>
+<th>Horizontal resistance</th>
+<th>Vertical resistance</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Imageview</td>
+<td>250</td>
+<td>249</td>
+<td>750</td>
+<td>749</td>
+</tr>
+</tbody></table>
+<h4 id="讨论"><a href="#讨论" class="headerlink" title="讨论"></a>讨论</h4><p>你必须将 StackView 加到父 view 上，否则 StackView 就会因为缺少参考约束而无法设置整个布局。</p>
+<p>在这里我们将 StackView 填充父 view，并设置了一个很小的标准边距。而 StackView 的子视图将会重新设置尺寸以填充 StackView 的内部区域。水平方向上，所有的 view 都会被拉伸以匹配 StackView 的宽度。竖直方向上，view 会按照它们的 CHCR 优先级而被拉伸。由于 Imageview 要始终保持填满可填充区域，所以它的 Vertical content-hugging 和 compression-resistance 优先级要低于 label 和 button 的默认优先级。</p>
+<p>最后我们设置了 Imageview 的展示模式为 Aspect Fit。这个设置强制使 imageView 调整自身 image，让图片以不改变宽高比的方式适应进 imageView 中。这样可以保证在 StackView 任意改变 Imageview 的尺寸时不会让它上面的 image 改变自身宽高比而导致图片扭曲变形。</p>
+<h3 id="嵌套-StackView"><a href="#嵌套-StackView" class="headerlink" title="嵌套 StackView"></a>嵌套 StackView</h3><p>这里我们将用嵌套 StackView 的方式实现一个比较复杂的多层布局。但是在示例中仅凭 StackView 是不能完成效果的，还要借助一些约束来更好的配置布局。</p>
+<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/Nested_Stack_Views_Screenshot_2x.png" width=500>
+
+<p>我们会在构建完视图层级后，在下一节 <a href="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/LayoutUsingStackViews.html#//apple_ref/doc/uid/TP40010853-CH11-SW12" target="_blank" rel="noopener">Views and Constraints</a> 添加额外的约束。</p>
+<h4 id="视图和约束-1"><a href="#视图和约束-1" class="headerlink" title="视图和约束"></a>视图和约束</h4><p>当使用内嵌的 stackView 时，从内向外布局是最容易的。首先将姓名行放置在 IB 中，然后将 label 和 textfield 放置在正确的位置，选中它们然后点击 Editor-&gt;Embed In-&gt;Stack View 选项，这样就创建了一个水平的 StackView 来装载这一行。</p>
+<p>然后将这些行水平放置好，选中所有姓名行，再次点击 Editor-&gt;Embed In-&gt;Stack View。这样就创建了一个水平 StackView 来装载所有姓名行。依据下图继续创建界面。</p>
+<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/nested_stack_views_2x.png" width=500>
+
+<figure class="highlight mathematica"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">Root</span> <span class="keyword">Stack</span> View.Leading = Superview.LeadingMargin</span><br><span class="line"><span class="keyword">Root</span> <span class="keyword">Stack</span> View.Trailing = Superview.TrailingMargin</span><br><span class="line"><span class="keyword">Root</span> <span class="keyword">Stack</span> View.<span class="keyword">Top</span> = <span class="keyword">Top</span> Layout Guide.<span class="keyword">Bottom</span> + <span class="number">20.0</span></span><br><span class="line"><span class="keyword">Bottom</span> Layout Guide.<span class="keyword">Top</span> = <span class="keyword">Root</span> <span class="keyword">Stack</span> View.<span class="keyword">Bottom</span> + <span class="number">20.0</span></span><br><span class="line"><span class="keyword">Image</span> View.Height = <span class="keyword">Image</span> View.Width</span><br><span class="line"><span class="keyword">First</span> Name <span class="keyword">Text</span> Field.Width = Middle Name <span class="keyword">Text</span> Field.Width</span><br><span class="line"><span class="keyword">First</span> Name <span class="keyword">Text</span> Field.Width = <span class="keyword">Last</span> Name <span class="keyword">Text</span> Field.Width</span><br></pre></td></tr></table></figure>
+
+<h4 id="属性-1"><a href="#属性-1" class="headerlink" title="属性"></a>属性</h4><p>每一个 StackView 都有其自己的属性集合，这些属性定义了 StackView 如何布局它的子视图。在属性检查器中设置这些属性</p>
+<table>
+<thead>
+<tr>
+<th>Stack</th>
+<th>Axis</th>
+<th>Alignment</th>
+<th>Distribution</th>
+<th>Spacing</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>First Name</td>
+<td>Horizontal</td>
+<td>First Baseline</td>
+<td>Fill</td>
+<td>8</td>
+</tr>
+<tr>
+<td>Middle Name</td>
+<td>Horizontal</td>
+<td>First Baseline</td>
+<td>Fill</td>
+<td>8</td>
+</tr>
+<tr>
+<td>Last Name</td>
+<td>Horizontal</td>
+<td>First Baseline</td>
+<td>Fill</td>
+<td>8</td>
+</tr>
+<tr>
+<td>NameRows</td>
+<td>Vertical</td>
+<td>Fill</td>
+<td>Fill</td>
+<td>8</td>
+</tr>
+<tr>
+<td>Upper</td>
+<td>Horizontal</td>
+<td>Fill</td>
+<td>Fill</td>
+<td>8</td>
+</tr>
+<tr>
+<td>Button</td>
+<td>horizontal</td>
+<td>First Baseline</td>
+<td>Fill Equally</td>
+<td>8</td>
+</tr>
+<tr>
+<td>Root</td>
+<td>Vertical</td>
+<td>Fill</td>
+<td>Fill</td>
+<td>8</td>
+</tr>
+</tbody></table>
+<p>另外，对 textView，需要设置一个亮灰色背景颜色，从而可以看出当设备旋转时 textview 是如何重新计算尺寸的。</p>
+<p>|View|Attribute|Value|<br>|textView|Background|Light Gray Color|</p>
+<p>最后在属性检查器中设置 view 的 CHCR 优先级</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Horizontal hugging</th>
+<th>Verticle hugging</th>
+<th>Horizontal resistance</th>
+<th>Vertical resistance</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ImageView</td>
+<td>250</td>
+<td>250</td>
+<td>48</td>
+<td>48</td>
+</tr>
+<tr>
+<td>TextView</td>
+<td>250</td>
+<td>249</td>
+<td>250</td>
+<td>250</td>
+</tr>
+<tr>
+<td>First,Middle,Last Name Label</td>
+<td>251</td>
+<td>251</td>
+<td>750</td>
+<td>750</td>
+</tr>
+<tr>
+<td>First,Middle,Last Name textfield</td>
+<td>48</td>
+<td>250</td>
+<td>749</td>
+<td>750</td>
+</tr>
+</tbody></table>
+<h4 id="讨论-1"><a href="#讨论-1" class="headerlink" title="讨论"></a>讨论</h4><p>在这里，我们用多个 StackView 创建了大部分的布局，但是并不能完全依靠 StackView 来实现所有想要的效果。例如我们想让图片在 imageview 改变尺寸时保持自己的长宽比，就无法使用 <a href="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/LayoutUsingStackViews.html#//apple_ref/doc/uid/TP40010853-CH11-SW2" target="_blank" rel="noopener">Simple Stack View</a> 中的技术来实现了。这个布局需要紧贴图片的边线，而使用 Aspect Fit 模式会在横向或纵向的某个维度上添加额外的空白。幸运的是，在这个例子中我们用到的图片都是正方形的，所以你可以确保图片一定能完美地紧贴边线，同时将图片的长宽比约束为 1：1。</p>
+<blockquote>
+<p>注意</p>
+<p>在 IB 中一个长宽比约束代表一个 view 的长宽之间的约束，IB 还可以用一些方法来设置长宽比约束的乘数因子，一般来说 IB 会将约束表达为一个比率，例如一个表示宽高相等的约束可以表达为 1：1.</p>
+</blockquote>
+<p>另外，所有的 textfield 都要等宽度，不幸的是这些 textfield 都在不同的 StackView 中，所以这几个 StackView 无法实现自动让 textfield 等宽，因此，你必须显式地为这些 textfield 添加等宽约束。</p>
+<p>同时就像示例中一样，你需要修改一些 CHCR 优先级，从而定义当父视图的区域变化时，view 如何伸缩。</p>
+<p>垂直方向上，你想要 textView 扩展自己从而填满 upper Stack 和 button Stack 之间的空白区域，所以 textView 的 Vertical content-hugging 优先级就必须小于其他两个 Stackview 的 Vertical content-hugging 优先级。</p>
+<p>水平方向上，label 需要按照其 intrinsic content size 来展示，而 textfield 要伸缩自己从而填满可填充区域。默认的 CHCR 优先级对于 label 来说可以实现这样的效果，因为 IB 已经将所有 label 的 content-hugging 设置为 251，保证其大于 textfield 的 content-hugging。但是你还是应该使 textfield 的 Horizontal content-hugging 和 Horizontal content-hugging 尽量小。</p>
+<p>imageview 应当伸缩自身以保证其高度和包含三行 name 的 StackView 一致，然而 StackView 自身的 content-hugging 优先级是小于其子视图的，所以为了避免 StackView 被拉伸，而保证 imageview 被压缩来适应 StackView 的内部区域，需要将 imageview 的 Vertical compression resistance 设置非常低。另外，imageview 的长宽比使得布局变得较为复杂，因为长宽比使得水平约束与竖直约束互相之间发生了影响。这意味着 textfield 的 Horizontal content-hugging 必须非常小，或阻止 image view 压缩。考虑上述情况，需要将 textfield 的 Horizontal content-hugging 设置为小于 48 的值。<strong>此处有疑问</strong></p>
+<h3 id="动态-StackView"><a href="#动态-StackView" class="headerlink" title="动态 StackView"></a>动态 StackView</h3><p>这里演示了如何在运行时动态向一个 StackView 添加和移除元素，并且所有发生在 StackView 的变化都有动画效果。另外还将 StackView 放进了一个 ScrollView 中，从而保证当列表中的元素过多时可以滑动查看。</p>
+<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/Dynamic_Stack_View_Screenshot_2x.png" width=500>
+
+<blockquote>
+<p>注意</p>
+<p>这里只是故意演示如何用 StackView 动态地实现布局效果，以及如何将 StackView 放进 scrollView 中使用。在一个需要实际上线的 app 中应当使用 UITableView 代替这种方式。一般来说，你不应当只是使用动态 StackView 来实现一个粗糙简陋的 TableView，而是应当将其用于实现一些其他技术无法方便实现的用户界面。</p>
+</blockquote>
+<h4 id="视图和约束-2"><a href="#视图和约束-2" class="headerlink" title="视图和约束"></a>视图和约束</h4><p>初始界面很简单，你需要放置一个 scrollView 在 IB 的场景中，然后设置它的大小铺满整个场景，再把一个 StackView 放进 scrollView 中，并在 StackView 中加入一个添加元素的按钮。当所有元素都添加完毕后，将约束设置如下</p>
+<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/dynamic_stack_view_2x.png" width=500>
+
+<figure class="highlight pgsql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">Scroll <span class="keyword">View</span>.<span class="keyword">Leading</span> = Superview.LeadingMargin</span><br><span class="line"></span><br><span class="line">Scroll <span class="keyword">View</span>.<span class="keyword">Trailing</span> = Superview.TrailingMargin</span><br><span class="line"></span><br><span class="line">Scroll <span class="keyword">View</span>.Top = Superview.TopMargin</span><br><span class="line"></span><br><span class="line">Bottom Layout Guide.Top = Scroll <span class="keyword">View</span>.Bottom + <span class="number">20.0</span></span><br><span class="line"></span><br><span class="line">Stack <span class="keyword">View</span>.<span class="keyword">Leading</span> = Scroll <span class="keyword">View</span>.<span class="keyword">Leading</span></span><br><span class="line"></span><br><span class="line">Stack <span class="keyword">View</span>.<span class="keyword">Trailing</span> = Scroll <span class="keyword">View</span>.<span class="keyword">Trailing</span></span><br><span class="line"></span><br><span class="line">Stack <span class="keyword">View</span>.Top = Scroll <span class="keyword">View</span>.Top</span><br><span class="line"></span><br><span class="line">Stack <span class="keyword">View</span>.Bottom = Scroll <span class="keyword">View</span>.Bottom</span><br><span class="line"></span><br><span class="line">Stack <span class="keyword">View</span>.Width = Scroll <span class="keyword">View</span>.Width</span><br></pre></td></tr></table></figure>
+
+<h4 id="属性-2"><a href="#属性-2" class="headerlink" title="属性"></a>属性</h4><p>在属性检查器中，设置 StackView 的属性如下</p>
+<table>
+<thead>
+<tr>
+<th>Stack</th>
+<th>Axis</th>
+<th>Alignment</th>
+<th>Distribution</th>
+<th>Spacing</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>StackView</td>
+<td>Vertical</td>
+<td>Fill</td>
+<td>Equal Spacing</td>
+<td>0</td>
+</tr>
+</tbody></table>
+<h4 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h4><p>这里需要一些代码来实现向 StackView 添加和移除元素，所以为你的场景创建 ViewController，并添加 scrollView 和 StackView 的 outlet。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">DynamicStackViewController</span>: <span class="title">UIViewController</span> </span>&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@IBOutlet</span> <span class="keyword">weak</span> <span class="keyword">private</span> <span class="keyword">var</span> scrollView: <span class="type">UIScrollView!</span></span><br><span class="line">    <span class="meta">@IBOutlet</span> <span class="keyword">weak</span> <span class="keyword">private</span> <span class="keyword">var</span> stackView: <span class="type">UIStackView!</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">// Method implementations will go here...</span></span><br><span class="line">    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>接下来覆写 viewDidLoad 函数，设置 scrollView 的初始位置在状态栏下面。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">override</span> <span class="function"><span class="keyword">func</span> <span class="title">viewDidLoad</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">super</span>.viewDidLoad()</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// setup scrollview</span></span><br><span class="line">    <span class="keyword">let</span> insets = <span class="type">UIEdgeInsetsMake</span>(<span class="number">20.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>)</span><br><span class="line">    scrollView.contentInset = insets</span><br><span class="line">    scrollView.scrollIndicatorInsets = insets</span><br><span class="line">    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>然后给添加元素的按钮设置一个 action</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// MARK: Action Methods</span></span><br><span class="line"> </span><br><span class="line"><span class="meta">@IBAction</span> <span class="function"><span class="keyword">func</span> <span class="title">addEntry</span><span class="params">(sender: AnyObject)</span></span> &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">let</span> stack = stackView</span><br><span class="line">    <span class="keyword">let</span> index = stack.arrangedSubviews.<span class="built_in">count</span> - <span class="number">1</span></span><br><span class="line">    <span class="keyword">let</span> addView = stack.arrangedSubviews[index]</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">let</span> scroll = scrollView</span><br><span class="line">    <span class="keyword">let</span> offset = <span class="type">CGPoint</span>(x: scroll.contentOffset.x,</span><br><span class="line">                         y: scroll.contentOffset.y + addView.frame.size.height)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">let</span> newView = createEntry()</span><br><span class="line">    newView.hidden = <span class="literal">true</span></span><br><span class="line">    stack.insertArrangedSubview(newView, atIndex: index)</span><br><span class="line">    </span><br><span class="line">    <span class="type">UIView</span>.animateWithDuration(<span class="number">0.25</span>) &#123; () -&gt; <span class="type">Void</span> <span class="keyword">in</span></span><br><span class="line">        newView.hidden = <span class="literal">false</span></span><br><span class="line">        scroll.contentOffset = offset</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个方法为 scrollView 计算了一个新的 offset 值，然后创建了一个新的实体视图并添加到 StackView 中，这个视图是隐藏的。隐藏的 view 不会影响到 StackView 的布局或界面。然后在动画代码块中，视图会被显示出来，scroll offset 也会被更新，同时伴随 view 的显示动画。</p>
+<p>添加一个类似的方法用于删除实体。删除实体的方法不像 addEntity，这个方法不会与 IB 的任何控制器相连，app 将会在创建 view 时用代码配置每一个实体 view 与这个方法相连。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">deleteStackView</span><span class="params">(sender: UIButton)</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">let</span> view = sender.superview &#123;</span><br><span class="line">        <span class="type">UIView</span>.animateWithDuration(<span class="number">0.25</span>, animations: &#123; () -&gt; <span class="type">Void</span> <span class="keyword">in</span></span><br><span class="line">            view.hidden = <span class="literal">true</span></span><br><span class="line">        &#125;, completion: &#123; (success) -&gt; <span class="type">Void</span> <span class="keyword">in</span></span><br><span class="line">            view.removeFromSuperview()</span><br><span class="line">        &#125;)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个方法在动画代码块中隐藏了一个 view，动画结束后将这个 view 从视图层级中移除，同时也会自动从 StackView 的子视图列表中删除这个视图。</p>
+<p>尽管实体 view 可以是任何 view，但我们在这里会将一个日期 label、一个显示随机十六进制数字的 label、一个删除按钮放进 StackView。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// MARK: - Private Methods</span></span><br><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">func</span> <span class="title">createEntry</span><span class="params">()</span></span> -&gt; <span class="type">UIView</span> &#123;</span><br><span class="line">    <span class="keyword">let</span> date = <span class="type">NSDateFormatter</span>.localizedStringFromDate(<span class="type">NSDate</span>(), dateStyle: .<span class="type">ShortStyle</span>, timeStyle: .<span class="type">NoStyle</span>)</span><br><span class="line">    <span class="keyword">let</span> number = <span class="string">"\(randomHexQuad())-\(randomHexQuad())-\(randomHexQuad())-\(randomHexQuad())"</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">let</span> stack = <span class="type">UIStackView</span>()</span><br><span class="line">    stack.axis = .<span class="type">Horizontal</span></span><br><span class="line">    stack.alignment = .<span class="type">FirstBaseline</span></span><br><span class="line">    stack.distribution = .<span class="type">Fill</span></span><br><span class="line">    stack.spacing = <span class="number">8</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">let</span> dateLabel = <span class="type">UILabel</span>()</span><br><span class="line">    dateLabel.text = date</span><br><span class="line">    dateLabel.font = <span class="type">UIFont</span>.preferredFontForTextStyle(<span class="type">UIFontTextStyleBody</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">let</span> numberLabel = <span class="type">UILabel</span>()</span><br><span class="line">    numberLabel.text = number</span><br><span class="line">    numberLabel.font = <span class="type">UIFont</span>.preferredFontForTextStyle(<span class="type">UIFontTextStyleHeadline</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">let</span> deleteButton = <span class="type">UIButton</span>(type: .<span class="type">RoundedRect</span>)</span><br><span class="line">    deleteButton.setTitle(<span class="string">"Delete"</span>, forState: .<span class="type">Normal</span>)</span><br><span class="line">    deleteButton.addTarget(<span class="keyword">self</span>, action: <span class="string">"deleteStackView:"</span>, forControlEvents: .<span class="type">TouchUpInside</span>)</span><br><span class="line">    </span><br><span class="line">    stack.addArrangedSubview(dateLabel)</span><br><span class="line">    stack.addArrangedSubview(numberLabel)</span><br><span class="line">    stack.addArrangedSubview(deleteButton)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> stack</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">func</span> <span class="title">randomHexQuad</span><span class="params">()</span></span> -&gt; <span class="type">String</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="type">NSString</span>(format: <span class="string">"%X%X%X%X"</span>,</span><br><span class="line">                    arc4random() % <span class="number">16</span>,</span><br><span class="line">                    arc4random() % <span class="number">16</span>,</span><br><span class="line">                    arc4random() % <span class="number">16</span>,</span><br><span class="line">                    arc4random() % <span class="number">16</span></span><br><span class="line">        ) <span class="keyword">as</span> <span class="type">String</span></span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="讨论-2"><a href="#讨论-2" class="headerlink" title="讨论"></a>讨论</h4><p>正如本节所演示的，视图可以在运行时被添加到或移除出 StackView，StackView 的布局会自动适应其子视图列表的变化。但是这里仍然有一些需要注意的点</p>
+<ul>
+<li>隐藏的视图仍然会被加入到 StackView 的子视图列表中，但是不会被显示也不会对其他子视图的布局产生影响</li>
+<li>向 StackView 添加一个视图会自动将其加入到视图层级中</li>
+<li>从 StackView 的子视图列表中移除一个视图不会将其移除出视图层级，但是将视图从视图层级移除时会自动从 StackView 的子视图列表中移除</li>
+<li>在 iOS 中，view 的隐藏属性正常来说不会有动画效果，但是一旦将其放入到 StackView 的子视图列表中，隐藏属性就会带有动画效果了。真正的动画动作是由 StackView 而非 view 自身完成的，所以可以使用 hidden 属性实现添加删除 view 时的动画效果</li>
+</ul>
+<p>这一节也介绍了如何将 AutoLayout 与 scrollView 放在一起使用，这里利用了 StackView 与 scrollView 之间的约束来设置 scrollView 的内容区尺寸。垂直方向上，内容区尺寸会基于 StackView 的适应尺寸而变化。StackView 会因为内容区的元素增加而变长，scrollView 的滑动性会由于内容区元素超出一屏的内容而自动激活。</p>
+<p>查看更多信息请看 <a href="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/WorkingwithScrollViews.html#//apple_ref/doc/uid/TP40010853-CH24-SW1" target="_blank" rel="noopener">Working with Scroll Views</a></p>
+
+    </div>
+
+    
+    
+    
+      
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/01/22/AutoLayout/Autolayout%E6%8C%87%E5%8D%97%C2%B7AutoLayout%20%E9%AB%98%E7%BA%A7%E6%8C%87%E5%8D%97%C2%B7%E4%BD%BF%E7%94%A8ScrollView/" rel="prev" title="Autolayout指南·AutoLayout 高级指南·使用ScrollView">
+      <i class="fa fa-chevron-left"></i> Autolayout指南·AutoLayout 高级指南·使用ScrollView
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/02/02/iOS%E5%BC%80%E5%8F%91/Swift%E5%8F%AF%E9%80%89%E7%B1%BB%E5%9E%8B%E3%80%81%E9%9A%90%E5%BC%8F%E5%8F%AF%E9%80%89%E7%B1%BB%E5%9E%8B%E4%B8%8E%E5%8F%AF%E9%80%89%E9%93%BE/" rel="next" title="Swift可选类型、隐式可选类型与可选链">
+      Swift可选类型、隐式可选类型与可选链 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#AutoLayout指南·AutoLayout-Cookbook"><span class="nav-text">AutoLayout指南·AutoLayout Cookbook</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#StackView"><span class="nav-text">StackView</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#简单的-StackView"><span class="nav-text">简单的 StackView</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#视图和约束"><span class="nav-text">视图和约束</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#属性"><span class="nav-text">属性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#讨论"><span class="nav-text">讨论</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#嵌套-StackView"><span class="nav-text">嵌套 StackView</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#视图和约束-1"><span class="nav-text">视图和约束</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#属性-1"><span class="nav-text">属性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#讨论-1"><span class="nav-text">讨论</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#动态-StackView"><span class="nav-text">动态 StackView</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#视图和约束-2"><span class="nav-text">视图和约束</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#属性-2"><span class="nav-text">属性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#代码"><span class="nav-text">代码</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#讨论-2"><span class="nav-text">讨论</span></a></li></ol></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Yasic Yu"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Yasic Yu</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">46</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Yasic" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Yasic" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:yuxuan2580@gmail.com" title="E-Mail → mailto:yuxuan2580@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yasic Yu</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.1
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

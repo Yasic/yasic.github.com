@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Muse","version":"7.7.1","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":3,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="逻辑错误都是一些简单的 bug。有时候你会有一些错误的假设，可能是一个有关 Autolayout 如何计算 view 的 frame 的假设，可能是一个有关你创建的一系列约束，或者设置的一些视图属性的假设，也可能是一个有关约束如何互动从而创造出复杂布局表现的假设，总之都是一些并不符合你所预想的模型的地方。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Autolayout指南·调试 AutoLayout·逻辑错误">
+<meta property="og:url" content="http://yoursite.com/2018/01/14/AutoLayout/Autolayout%E6%8C%87%E5%8D%97%C2%B7%E8%B0%83%E8%AF%95%20AutoLayout%C2%B7%E9%80%BB%E8%BE%91%E9%94%99%E8%AF%AF/index.html">
+<meta property="og:site_name" content="Yasic Yu">
+<meta property="og:description" content="逻辑错误都是一些简单的 bug。有时候你会有一些错误的假设，可能是一个有关 Autolayout 如何计算 view 的 frame 的假设，可能是一个有关你创建的一系列约束，或者设置的一些视图属性的假设，也可能是一个有关约束如何互动从而创造出复杂布局表现的假设，总之都是一些并不符合你所预想的模型的地方。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-01-13T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-02-22T08:11:33.964Z">
+<meta property="article:author" content="Yasic Yu">
+<meta property="article:tag" content="iOS">
+<meta property="article:tag" content=" ObjectiveC">
+<meta property="article:tag" content=" Swift">
+<meta property="article:tag" content=" XCode">
+<meta property="article:tag" content=" Computer">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://yoursite.com/2018/01/14/AutoLayout/Autolayout%E6%8C%87%E5%8D%97%C2%B7%E8%B0%83%E8%AF%95%20AutoLayout%C2%B7%E9%80%BB%E8%BE%91%E9%94%99%E8%AF%AF/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>Autolayout指南·调试 AutoLayout·逻辑错误 | Yasic Yu</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Yasic Yu</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">In Code We Trust</p>
+  </div>
+
+  <div class="site-nav-right"></div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类<span class="badge">4</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">46</span></a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/yasic" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/01/14/AutoLayout/Autolayout%E6%8C%87%E5%8D%97%C2%B7%E8%B0%83%E8%AF%95%20AutoLayout%C2%B7%E9%80%BB%E8%BE%91%E9%94%99%E8%AF%AF/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Yasic Yu">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yasic Yu">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Autolayout指南·调试 AutoLayout·逻辑错误
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-01-14 00:00:00" itemprop="dateCreated datePublished" datetime="2018-01-14T00:00:00+08:00">2018-01-14</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/AutoLayout/" itemprop="url" rel="index">
+                    <span itemprop="name">AutoLayout</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">逻辑错误都是一些简单的 bug。有时候你会有一些错误的假设，可能是一个有关 Autolayout 如何计算 view 的 frame 的假设，可能是一个有关你创建的一系列约束，或者设置的一些视图属性的假设，也可能是一个有关约束如何互动从而创造出复杂布局表现的假设，总之都是一些并不符合你所预想的模型的地方。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="010-Autolayout指南·调试-AutoLayout"><a href="#010-Autolayout指南·调试-AutoLayout" class="headerlink" title="010-Autolayout指南·调试 AutoLayout"></a>010-Autolayout指南·调试 AutoLayout</h1><h2 id="逻辑错误"><a href="#逻辑错误" class="headerlink" title="逻辑错误"></a>逻辑错误</h2><p>逻辑错误都是一些简单的 bug。有时候你会有一些错误的假设，可能是一个有关 Autolayout 如何计算 view 的 frame 的假设，可能是一个有关你创建的一系列约束，或者设置的一些视图属性的假设，也可能是一个有关约束如何互动从而创造出复杂布局表现的假设，总之都是一些并不符合你所预想的模型的地方。</p>
+<p>逻辑错误也是最难被发现的，当你已经排除了其他所有可能性，那么无论多么不可置信，剩下的问题就只能是逻辑错误的问题了。然而即使你已经确信你的布局有 bug，你也仍然必须找到错误假设到底存在于何处。</p>
+<p>没有工具或是说明步骤能够帮助你，修复逻辑错误通常需要实验和迭代测试，既要识别出问题，又要确定解决如何解决它。不过这里仍然有一些建议也许能够帮助到你：</p>
+<ul>
+<li>检查当前约束，确保没有遗漏约束或者突然添加了不想要的约束，确保所有的约束都被绑定在正确的 view 和正确的属性上</li>
+<li>检查 view 的 frame，确保未发生意料之外的压缩或延展，这一步对于有不可见背景的 view 尤为重要，比如 label 或者 button。但是当这些元素被意外重设尺寸时可能并没有那样明显。被意外调整大小的一个症状是所有的基线对齐视图都不再正确地排列了，因为只有当 view 按照其 intrinsic content 高度来设置时基线才能正常对齐。如果你在竖直方向上压缩或者延展视图，文案就会神秘地出现在错误的位置</li>
+<li>如果一个控制器需要始终保持它的 intrinsic content size，那么就给它的 content-hugging 和 compression-resistance 一个很高的优先级</li>
+<li>寻找所有你用来创建当前布局的假设，并用显式的约束确保所有假设都成立。记住，无法满足的约束导致的问题一般都容易找到和修复，所以可以一直添加额外的约束，一直到你遇到了冲突，然后去检查和修复冲突</li>
+<li>尝试理解为什么给定的约束会产生你看到的结果，如果你理解了它，那么你就很容易找到方法修复它</li>
+<li>测试一些替代约束，Autolayout 一般会为一个相同的问题提供给你一些不同的解决方案，尝试一个不同的方案有可能会解决问题，或者至少能使定位错误变得容易一些</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+      
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/01/13/AutoLayout/Autolayout%E6%8C%87%E5%8D%97%C2%B7%E8%B0%83%E8%AF%95%20AutoLayout%C2%B7%E6%9C%89%E6%AD%A7%E4%B9%89%E7%9A%84%E5%B8%83%E5%B1%80/" rel="prev" title="Autolayout指南·调试 AutoLayout·有歧义的布局">
+      <i class="fa fa-chevron-left"></i> Autolayout指南·调试 AutoLayout·有歧义的布局
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/01/15/AutoLayout/Autolayout%E6%8C%87%E5%8D%97%C2%B7AutoLayout%20%E9%AB%98%E7%BA%A7%E6%8C%87%E5%8D%97%C2%B7%E7%BC%96%E7%A8%8B%E5%88%9B%E5%BB%BA%E7%BA%A6%E6%9D%9F/" rel="next" title="Autolayout指南·AutoLayout 高级指南·编程创建约束">
+      Autolayout指南·AutoLayout 高级指南·编程创建约束 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#010-Autolayout指南·调试-AutoLayout"><span class="nav-text">010-Autolayout指南·调试 AutoLayout</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#逻辑错误"><span class="nav-text">逻辑错误</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Yasic Yu"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Yasic Yu</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">46</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Yasic" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Yasic" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:yuxuan2580@gmail.com" title="E-Mail → mailto:yuxuan2580@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yasic Yu</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.1
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

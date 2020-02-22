@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Muse","version":"7.7.1","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":3,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="二叉搜索树的性质如下：">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Swift实现二叉搜索树与字典树">
+<meta property="og:url" content="http://yoursite.com/2018/03/08/iOS%E5%BC%80%E5%8F%91/Swift%E5%AE%9E%E7%8E%B0%E4%BA%8C%E5%8F%89%E6%90%9C%E7%B4%A2%E6%A0%91%E4%B8%8E%E5%AD%97%E5%85%B8%E6%A0%91/index.html">
+<meta property="og:site_name" content="Yasic Yu">
+<meta property="og:description" content="二叉搜索树的性质如下：">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/Trie_example.svg/500px-Trie_example.svg.png">
+<meta property="og:image" content="https://github.com/julycoding/The-Art-Of-Programming-By-July/raw/master/ebook/images/8/8.4/2.gif">
+<meta property="article:published_time" content="2018-03-07T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-02-22T08:11:34.129Z">
+<meta property="article:author" content="Yasic Yu">
+<meta property="article:tag" content="iOS">
+<meta property="article:tag" content=" ObjectiveC">
+<meta property="article:tag" content=" Swift">
+<meta property="article:tag" content=" XCode">
+<meta property="article:tag" content=" Computer">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/Trie_example.svg/500px-Trie_example.svg.png">
+
+<link rel="canonical" href="http://yoursite.com/2018/03/08/iOS%E5%BC%80%E5%8F%91/Swift%E5%AE%9E%E7%8E%B0%E4%BA%8C%E5%8F%89%E6%90%9C%E7%B4%A2%E6%A0%91%E4%B8%8E%E5%AD%97%E5%85%B8%E6%A0%91/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>Swift实现二叉搜索树与字典树 | Yasic Yu</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Yasic Yu</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">In Code We Trust</p>
+  </div>
+
+  <div class="site-nav-right"></div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类<span class="badge">4</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">46</span></a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/yasic" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/03/08/iOS%E5%BC%80%E5%8F%91/Swift%E5%AE%9E%E7%8E%B0%E4%BA%8C%E5%8F%89%E6%90%9C%E7%B4%A2%E6%A0%91%E4%B8%8E%E5%AD%97%E5%85%B8%E6%A0%91/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Yasic Yu">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yasic Yu">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Swift实现二叉搜索树与字典树
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-03-08 00:00:00" itemprop="dateCreated datePublished" datetime="2018-03-08T00:00:00+08:00">2018-03-08</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS%E5%BC%80%E5%8F%91/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS开发</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">二叉搜索树的性质如下：</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="二叉搜索树"><a href="#二叉搜索树" class="headerlink" title="二叉搜索树"></a>二叉搜索树</h2><p>二叉搜索树的性质如下：</p>
+<ul>
+<li>若任意节点的左子树不空，则左子树所有节点的值小于根节点的值</li>
+<li>若任意节点的右子树不空，则左子树所有节点的值大于根节点的值</li>
+<li>任意节点的左右子树也为二叉搜索树</li>
+<li>没有键值相等的节点</li>
+</ul>
+<p>其基本操作有如下四个</p>
+<ul>
+<li>empty——返回一个空的二叉搜索树</li>
+<li>isEmpty——检查二叉搜索树是否为空</li>
+<li>contains——检查二叉搜索树是否包含某元素</li>
+<li>insert——向二叉搜索树插入元素</li>
+</ul>
+<h4 id="具体实现过程"><a href="#具体实现过程" class="headerlink" title="具体实现过程"></a>具体实现过程</h4><ul>
+<li>用一个递归枚举定义二叉搜索树的数据结构</li>
+</ul>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">indirect</span> <span class="class"><span class="keyword">enum</span> <span class="title">BinarySearchTree</span>&lt;<span class="title">E</span>:<span class="title">Comparable</span>&gt;</span>&#123; <span class="comment">// indirect 表明是递归枚举</span></span><br><span class="line">    <span class="keyword">case</span> <span class="type">Leaf</span></span><br><span class="line">    <span class="keyword">case</span> <span class="type">Node</span>(<span class="type">BinarySearchTree</span>&lt;<span class="type">E</span>&gt;, <span class="type">E</span>, <span class="type">BinarySearchTree</span>&lt;<span class="type">E</span>&gt;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>通过关联值指定一个节点的左右子树及其自身。</p>
+<ul>
+<li>初始化方法，可以初始化一个空树或者一个根节点有值的树</li>
+</ul>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">init</span>()&#123;</span><br><span class="line">    <span class="keyword">self</span> = .<span class="type">Leaf</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">init</span>(value:<span class="type">E</span>) &#123;</span><br><span class="line">    <span class="keyword">self</span> = .<span class="type">Node</span>(.<span class="type">Leaf</span>, value, .<span class="type">Leaf</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>打印所有元素的方法</li>
+</ul>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> elements:[<span class="type">E</span>] &#123;</span><br><span class="line">    <span class="keyword">switch</span> <span class="keyword">self</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> .<span class="type">Leaf</span>:</span><br><span class="line">        <span class="keyword">return</span> []</span><br><span class="line">    <span class="keyword">case</span> <span class="keyword">let</span> .<span class="type">Node</span>(<span class="keyword">left</span>, x, <span class="keyword">right</span>):</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">left</span>.elements + [x] + <span class="keyword">right</span>.elements</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个方法可以按照中序排列方式打印出所有元素</p>
+<ul>
+<li>判断是否为空以及是否为二叉搜索树的方法</li>
+</ul>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> isEmpty:<span class="type">Bool</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">case</span> .<span class="type">Leaf</span> = <span class="keyword">self</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> isBST:<span class="type">Bool</span> &#123;</span><br><span class="line">    <span class="keyword">switch</span> <span class="keyword">self</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> .<span class="type">Leaf</span>:</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">    <span class="keyword">case</span> <span class="keyword">let</span> .<span class="type">Node</span>(<span class="keyword">left</span>, x, <span class="keyword">right</span>):</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">left</span>.elements.<span class="built_in">reduce</span>(<span class="literal">true</span>, &#123; (result, y) -&gt; <span class="type">Bool</span> <span class="keyword">in</span></span><br><span class="line">            result &amp;&amp; (y &lt; x)</span><br><span class="line">        &#125;) &amp;&amp; <span class="keyword">right</span>.elements.<span class="built_in">reduce</span>(<span class="literal">true</span>, &#123; (result, y) -&gt; <span class="type">Bool</span> <span class="keyword">in</span></span><br><span class="line">            result &amp;&amp; (y &gt; x)</span><br><span class="line">        &#125;) &amp;&amp; <span class="keyword">left</span>.isBST &amp;&amp; <span class="keyword">right</span>.isBST</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其中 isBST 方法会根据二叉搜索树的前三个特性来检测一个树。</p>
+<ul>
+<li>检测是否包含某元素的方法</li>
+</ul>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">contains</span><span class="params">(x:E)</span></span> -&gt; <span class="type">Bool</span> &#123;</span><br><span class="line">    <span class="keyword">switch</span> <span class="keyword">self</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> .<span class="type">Leaf</span>:</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">    <span class="keyword">case</span> <span class="keyword">let</span> .<span class="type">Node</span>(<span class="number">_</span>, y, <span class="number">_</span>) <span class="keyword">where</span> x == y:</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">    <span class="keyword">case</span> <span class="keyword">let</span> .<span class="type">Node</span>(<span class="keyword">left</span>, y, <span class="number">_</span>) <span class="keyword">where</span> x &lt; y:</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">left</span>.<span class="built_in">contains</span>(x: x)</span><br><span class="line">    <span class="keyword">case</span> <span class="keyword">let</span> .<span class="type">Node</span>(<span class="number">_</span>, y, <span class="keyword">right</span>) <span class="keyword">where</span> x &gt; y:</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">right</span>.<span class="built_in">contains</span>(x: x)</span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">        <span class="built_in">fatalError</span>()</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果树是空的，则 x 不在树中，返回 false。</p>
+<p>如果树不为空，且储存在根节点的值与 x 相等，返回 true。</p>
+<p>如果树不为空，且储存在根节点的值大于 x，那么如果 x 在树中的话，它一定是在左子树中，所以，我们在左子树中递归搜索 x。</p>
+<p>类似地，如果根节点的值小于 x，我们就在右子树中继续搜索。</p>
+<ul>
+<li>插入一个元素</li>
+</ul>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">mutating</span> <span class="function"><span class="keyword">func</span> <span class="title">insert</span><span class="params">(x:E)</span></span> &#123;</span><br><span class="line">    <span class="keyword">switch</span> <span class="keyword">self</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> .<span class="type">Leaf</span>:</span><br><span class="line">        <span class="keyword">self</span> = <span class="type">BinarySearchTree</span>.<span class="keyword">init</span>(value: x)</span><br><span class="line">    <span class="keyword">case</span> .<span class="type">Node</span>(<span class="keyword">var</span> <span class="keyword">left</span>, <span class="keyword">let</span> y, <span class="keyword">var</span> <span class="keyword">right</span>):</span><br><span class="line">        <span class="keyword">if</span> x &lt; y &#123;<span class="keyword">left</span>.insert(x: x)&#125;</span><br><span class="line">        <span class="keyword">if</span> x &gt; y &#123;<span class="keyword">right</span>.insert(x: x)&#125;</span><br><span class="line">        <span class="keyword">self</span> = .<span class="type">Node</span>(<span class="keyword">left</span>, y, <span class="keyword">right</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>由于需要对二叉搜索树进行修改，所以该方法用到了 mutating 来修饰。方法递归遍历二叉搜索树，直到找到一个空叶子节点就加入。</p>
+<p>使用如下</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> binaryTree = <span class="type">BinarySearchTree</span>.<span class="keyword">init</span>(value: <span class="number">5</span>)</span><br><span class="line">binaryTree.insert(x: <span class="number">1</span>)</span><br><span class="line">binaryTree.insert(x: <span class="number">2</span>)</span><br><span class="line">binaryTree.insert(x: <span class="number">3</span>)</span><br><span class="line">binaryTree.insert(x: <span class="number">4</span>)</span><br><span class="line">binaryTree.insert(x: <span class="number">5</span>)</span><br><span class="line">binaryTree.insert(x: <span class="number">6</span>)</span><br><span class="line">binaryTree.insert(x: <span class="number">7</span>)</span><br><span class="line">binaryTree.insert(x: <span class="number">8</span>)</span><br><span class="line">binaryTree.insert(x: <span class="number">9</span>)</span><br><span class="line">binaryTree.insert(x: <span class="number">10</span>)</span><br><span class="line"><span class="built_in">print</span>(binaryTree.elements)</span><br><span class="line"><span class="comment">// [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="字典树"><a href="#字典树" class="headerlink" title="字典树"></a>字典树</h2><p>字典树 Trie 是一种有序树，用于保存关联数组，通常是字符串，字典树的键不是直接保存在节点里，而是由一串节点的值组合而成。</p>
+<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/Trie_example.svg/500px-Trie_example.svg.png" width=350>
+
+<h4 id="具体实现过程-1"><a href="#具体实现过程-1" class="headerlink" title="具体实现过程"></a>具体实现过程</h4><ul>
+<li>用结构体定义一个字典树的数据结构</li>
+</ul>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Trie</span>&lt;<span class="title">Element</span>:<span class="title">Hashable</span>&gt;</span>&#123;</span><br><span class="line">    <span class="keyword">var</span> children:[<span class="type">Element</span>:<span class="type">Trie</span>]</span><br><span class="line">    <span class="keyword">var</span> isElement: <span class="type">Bool</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其中 children 就是一个字典，值是一个子字典树，键是子树的前缀值，而 isElement 定义了当前节点为止的组合是否是一个元素</p>
+<img src="https://github.com/julycoding/The-Art-Of-Programming-By-July/raw/master/ebook/images/8/8.4/2.gif" width=350>
+
+<p>例如上图中，“at” 节点的 isElement 就是 true，而 ag 由于不是一个有意义的单词所以 isElement 为 false。</p>
+<ul>
+<li>初始化方法</li>
+</ul>
+<p>首先是两个基础的初始化方法</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">init</span>() &#123;</span><br><span class="line">    isElement = <span class="literal">false</span></span><br><span class="line">    children = [:]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">init</span>(isElement:<span class="type">Bool</span>, children:[<span class="type">Element</span>:<span class="type">Trie</span>]) &#123;</span><br><span class="line">    <span class="keyword">self</span>.isElement = isElement;</span><br><span class="line">    <span class="keyword">self</span>.children = children;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>但是正常使用过程中，我们更需要一个能接受一个数组作为入参的初始化方法，然后形成一个单元素的字典树。</p>
+<p>此时我们首先需要实现一个数组的递归方式，即从最原始的数组逐渐去除一定数量的元素形成子数组，我们将其定义为 Array 的一个拓展方法</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">extension</span> <span class="title">Array</span> </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> decompose: (<span class="type">Element</span>, [<span class="type">Element</span>])? &#123;</span><br><span class="line">        <span class="keyword">return</span> isEmpty ? <span class="literal">nil</span> : (<span class="keyword">self</span>[startIndex], <span class="type">Array</span>(<span class="keyword">self</span>.<span class="built_in">dropFirst</span>()))</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到，如果数组为空则返回 nil，否则返回一个元组，元组第一个元素是当前数组的头元素，第二个元素是去掉第一个元素之后由该数组其余元素组成的新数组。我们可以通过重复调用一个数组的 decompose 方法递归地遍历一个数组。</p>
+<p>接下来就可以定义一个接收数组参数的初始化方法了</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">init</span>(key:[<span class="type">Element</span>]) &#123;</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">let</span> (head, tail) = key.decompose &#123;</span><br><span class="line">        <span class="keyword">let</span> children = [head: <span class="type">Trie</span>.<span class="keyword">init</span>(key: tail)]</span><br><span class="line">        <span class="keyword">self</span> = <span class="type">Trie</span>(isElement: <span class="literal">false</span>, children: children)</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">self</span> = <span class="type">Trie</span>(isElement: <span class="literal">true</span>, children: [:])</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到它遍历传入的数组，生成以数组中元素为节点的单元素字典树。</p>
+<ul>
+<li>插入操作</li>
+</ul>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">insert</span><span class="params">(key:[Element])</span></span> -&gt; <span class="type">Trie</span>&lt;<span class="type">Element</span>&gt; &#123;</span><br><span class="line">    <span class="keyword">guard</span> <span class="keyword">let</span> (head, tail) = key.decompose <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="type">Trie</span>.<span class="keyword">init</span>(isElement: <span class="literal">true</span>, children: <span class="keyword">self</span>.children)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">var</span> newChildren = <span class="keyword">self</span>.children</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">let</span> nextTrie = <span class="keyword">self</span>.children[head] &#123;</span><br><span class="line">        newChildren[head] = nextTrie.insert(key: tail)</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        newChildren[head] = <span class="type">Trie</span>.<span class="keyword">init</span>(key: tail)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="type">Trie</span>.<span class="keyword">init</span>(isElement: isElement, children: newChildren)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>遍历传入的数组并检查每一个节点的 children 键组。</p>
+<p>如果键组为空，我们将 isElement 设置为 true，然后不再修改剩余的字典树，表明已经插入完毕了。</p>
+<p>如果键组不为空，且键组的 head 已经存在于当前节点的 children 字典中，我们只需要递归地调用该函数，将键组的 tail 插入到对应的子字典树中。</p>
+<p>如果键组不为空，且第一个键 head 并不是该字典树中 children 字典的某条记录，就创建一棵新的字典树来储存键组中剩下的键。然后，以 head 键和 tail 数组生成对应新的字典树，储存在当前节点中，完成插入操作。</p>
+<p>然后我们就可以定义一个方法来将一个关联数组组合成字典树</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">buildStringTrie</span><span class="params">(words:[String])</span></span> -&gt; <span class="type">Trie</span>&lt;<span class="type">Character</span>&gt; &#123;</span><br><span class="line">    <span class="keyword">let</span> emptyTrie = <span class="type">Trie</span>&lt;<span class="type">Character</span>&gt;.<span class="keyword">init</span>()</span><br><span class="line">    <span class="keyword">return</span> words.<span class="built_in">reduce</span>(emptyTrie, &#123; (result, word) -&gt; <span class="type">Trie</span>&lt;<span class="type">Character</span>&gt; <span class="keyword">in</span></span><br><span class="line">        result.insert(key: <span class="type">Array</span>.<span class="keyword">init</span>(word))</span><br><span class="line">    &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>打印方法，打印出字典树中包含的所有关联元素</li>
+</ul>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> elements: [[<span class="type">Element</span>]] &#123;</span><br><span class="line">    <span class="keyword">var</span> result: [[<span class="type">Element</span>]] = isElement ? [[]] : []</span><br><span class="line">    <span class="keyword">for</span> (key, value) <span class="keyword">in</span> children &#123;</span><br><span class="line">        result += value.elements.<span class="built_in">map</span> &#123; [key] + $<span class="number">0</span> &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> result</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个方法很精巧，同时也很难懂，首先需要注意下面一些操作的结果</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[] + [[<span class="string">"r"</span>]] = [[<span class="string">"r"</span>]]</span><br><span class="line">[[]] + [[<span class="string">"r"</span>]] = [[], [<span class="string">"r"</span>]]</span><br></pre></td></tr></table></figure>
+
+<p>对于一个嵌套的二维数组，直接加一个空的一维数组，这个空的一维数组就被加入为二维数组的一个元素，而两个嵌套的二维数组相加，则会合并为一个二维数组。</p>
+<p>现在来看这段代码，它的思路其实是：</p>
+<ul>
+<li>对于 isElement 为 true 的节点，返回类似 [[]] 或 [[], [“X”]] 的数组，里面一定包含一个空数组，开始将此节点回溯的所有父节点组合为元素</li>
+<li>对于 isElement 为 false 的节点，由于它一定是某个 isElement 为 true 的节点的父节点，所以返回类似 [[“X”], [“Y”, “Z”]] 的数组，不会生成多余的数组来组合新的元素</li>
+<li>依次遍历，最终生成包含所有元素的数组</li>
+</ul>
+<p>让我们用一个简单的例子来测试，首先用 [“cart”, “car”] 数组来生成一个字典树，然后在 elements 过程中进行打印</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">        <span class="keyword">let</span> contents = [<span class="string">"cart"</span>, <span class="string">"car"</span>]</span><br><span class="line">        <span class="keyword">let</span> trie = buildStringTrie(words:contents)</span><br><span class="line">        <span class="built_in">print</span>(trie.elements)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">var</span> elements: [[<span class="type">Element</span>]] &#123;</span><br><span class="line">        <span class="keyword">var</span> result: [[<span class="type">Element</span>]] = isElement ? [[]] : []</span><br><span class="line">        <span class="keyword">for</span> (key, value) <span class="keyword">in</span> children &#123;</span><br><span class="line">            result += value.elements.<span class="built_in">map</span> &#123; [key] + $<span class="number">0</span> &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">print</span>(result)</span><br><span class="line">        <span class="keyword">return</span> result</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>最终结果如下</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[[]]</span><br><span class="line">[[], [<span class="string">"t"</span>]]</span><br><span class="line">[[<span class="string">"r"</span>], [<span class="string">"r"</span>, <span class="string">"t"</span>]]</span><br><span class="line">[[<span class="string">"a"</span>, <span class="string">"r"</span>], [<span class="string">"a"</span>, <span class="string">"r"</span>, <span class="string">"t"</span>]]</span><br><span class="line">[[<span class="string">"c"</span>, <span class="string">"a"</span>, <span class="string">"r"</span>], [<span class="string">"c"</span>, <span class="string">"a"</span>, <span class="string">"r"</span>, <span class="string">"t"</span>]]</span><br><span class="line">[[<span class="string">"c"</span>, <span class="string">"a"</span>, <span class="string">"r"</span>], [<span class="string">"c"</span>, <span class="string">"a"</span>, <span class="string">"r"</span>, <span class="string">"t"</span>]]</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>检索某个字符串是否在字典树的方法和检索某个前缀对应的字典树的方法</li>
+</ul>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">lookup</span><span class="params">(key: [Element])</span></span> -&gt; <span class="type">Bool</span> &#123;</span><br><span class="line">    <span class="keyword">guard</span> <span class="keyword">let</span> (head, tail) = key.decompose <span class="keyword">else</span> &#123; <span class="keyword">return</span> isElement &#125;</span><br><span class="line">    <span class="keyword">guard</span> <span class="keyword">let</span> subtrie = children[head] <span class="keyword">else</span> &#123; <span class="keyword">return</span> <span class="literal">false</span> &#125;</span><br><span class="line">    <span class="keyword">return</span> subtrie.lookup(key: tail)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">withPrefix</span><span class="params">(<span class="keyword">prefix</span>:[Element])</span></span> -&gt; <span class="type">Trie</span>&lt;<span class="type">Element</span>&gt;?&#123;</span><br><span class="line">    <span class="keyword">guard</span> <span class="keyword">let</span> (head, tail) = <span class="keyword">prefix</span>.decompose <span class="keyword">else</span> &#123;<span class="keyword">return</span> <span class="keyword">self</span>&#125;</span><br><span class="line">    <span class="keyword">guard</span> <span class="keyword">let</span> remainder = children[head] <span class="keyword">else</span> &#123;<span class="keyword">return</span> <span class="literal">nil</span>&#125;</span><br><span class="line">    <span class="keyword">return</span> remainder.withPrefix(<span class="keyword">prefix</span>: tail)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>思路大致一样，遍历传入的数组，当遍历结束时返回结果。</p>
+
+    </div>
+
+    
+    
+    
+      
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/03/02/iOS%E5%BC%80%E5%8F%91/Swift%E7%9A%84autoclosure%E4%B8%8Eescaping%E6%A0%87%E7%AD%BE/" rel="prev" title="Swift的autoclosure与escaping标签">
+      <i class="fa fa-chevron-left"></i> Swift的autoclosure与escaping标签
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/03/16/iOS%E5%BC%80%E5%8F%91/%E8%A7%86%E9%A2%91%E5%88%97%E8%A1%A8%E5%BC%82%E6%AD%A5%E8%8E%B7%E5%8F%96%E8%A7%86%E9%A2%91%E5%A4%A7%E5%B0%8F%E7%9A%84%E4%BC%98%E5%8C%96%E6%96%B9%E6%A1%88/" rel="next" title="视频列表异步获取视频大小的优化方案">
+      视频列表异步获取视频大小的优化方案 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#二叉搜索树"><span class="nav-text">二叉搜索树</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#具体实现过程"><span class="nav-text">具体实现过程</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#字典树"><span class="nav-text">字典树</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#具体实现过程-1"><span class="nav-text">具体实现过程</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Yasic Yu"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Yasic Yu</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">46</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Yasic" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Yasic" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:yuxuan2580@gmail.com" title="E-Mail → mailto:yuxuan2580@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yasic Yu</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.1
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

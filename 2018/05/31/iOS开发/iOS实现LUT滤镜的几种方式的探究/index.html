@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Muse","version":"7.7.1","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":3,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="在 app 内利用各种图形算法可以对图片进行一些变换，这样的效果也称为“滤镜”，滤镜效果大致可以分为以下几类：">
+<meta property="og:type" content="article">
+<meta property="og:title" content="iOS实现LUT滤镜的几种方式的探究">
+<meta property="og:url" content="http://yoursite.com/2018/05/31/iOS%E5%BC%80%E5%8F%91/iOS%E5%AE%9E%E7%8E%B0LUT%E6%BB%A4%E9%95%9C%E7%9A%84%E5%87%A0%E7%A7%8D%E6%96%B9%E5%BC%8F%E7%9A%84%E6%8E%A2%E7%A9%B6/index.html">
+<meta property="og:site_name" content="Yasic Yu">
+<meta property="og:description" content="在 app 内利用各种图形算法可以对图片进行一些变换，这样的效果也称为“滤镜”，滤镜效果大致可以分为以下几类：">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1000992-852f4c476db2f3c3.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/300">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1000992-c777bfc79da65659.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/300">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/1000992-fd3714627648e7e7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/300">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/1000992-eac5e0a21b8b8746.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/200">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/1000992-5d77580d41cbe1cc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/300">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/1000992-f4f2b4f9b2b2e681.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/300">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/1000992-ad53a1779a2fce71.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/300">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/1000992-0c81388b8bbb48b2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/300">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/1000992-c9d57726bad5d5f0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/300">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/1000992-2811944b586055db.jpeg?imageMogr2/auto-orient/strip%7CimageView2/2/w/300">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/1000992-e04ccbd090519eb2.jpeg?imageMogr2/auto-orient/strip%7CimageView2/2/w/300">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1000992-8b96799868a5e202?imageMogr2/auto-orient/strip%7CimageView2/2/w/300">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/1000992-e04ccbd090519eb2.jpeg?imageMogr2/auto-orient/strip%7CimageView2/2/w/300">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/1000992-e04ccbd090519eb2.jpeg?imageMogr2/auto-orient/strip%7CimageView2/2/w/300">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/1000992-a38326e5fc51fd4c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1000">
+<meta property="article:published_time" content="2018-05-30T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-02-22T08:11:34.125Z">
+<meta property="article:author" content="Yasic Yu">
+<meta property="article:tag" content="iOS">
+<meta property="article:tag" content=" ObjectiveC">
+<meta property="article:tag" content=" Swift">
+<meta property="article:tag" content=" XCode">
+<meta property="article:tag" content=" Computer">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://upload-images.jianshu.io/upload_images/1000992-852f4c476db2f3c3.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/300">
+
+<link rel="canonical" href="http://yoursite.com/2018/05/31/iOS%E5%BC%80%E5%8F%91/iOS%E5%AE%9E%E7%8E%B0LUT%E6%BB%A4%E9%95%9C%E7%9A%84%E5%87%A0%E7%A7%8D%E6%96%B9%E5%BC%8F%E7%9A%84%E6%8E%A2%E7%A9%B6/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>iOS实现LUT滤镜的几种方式的探究 | Yasic Yu</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Yasic Yu</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">In Code We Trust</p>
+  </div>
+
+  <div class="site-nav-right"></div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类<span class="badge">4</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">46</span></a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/yasic" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/31/iOS%E5%BC%80%E5%8F%91/iOS%E5%AE%9E%E7%8E%B0LUT%E6%BB%A4%E9%95%9C%E7%9A%84%E5%87%A0%E7%A7%8D%E6%96%B9%E5%BC%8F%E7%9A%84%E6%8E%A2%E7%A9%B6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Yasic Yu">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yasic Yu">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          iOS实现LUT滤镜的几种方式的探究
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-05-31 00:00:00" itemprop="dateCreated datePublished" datetime="2018-05-31T00:00:00+08:00">2018-05-31</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS%E5%BC%80%E5%8F%91/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS开发</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">在 app 内利用各种图形算法可以对图片进行一些变换，这样的效果也称为“滤镜”，滤镜效果大致可以分为以下几类：</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>在 app 内利用各种图形算法可以对图片进行一些变换，这样的效果也称为“滤镜”，滤镜效果大致可以分为以下几类：</p>
+<ul>
+<li>独立像素点变换，包括亮度、对比、饱和度、色调、灰色化、分离RGB通道等</li>
+<li>像素卷积变换，包括边缘检测、浮雕化、模糊、锐化</li>
+<li>仿射矩阵变换。包括缩放、旋转、倾斜、扭曲、液化等</li>
+<li>多图像合成</li>
+</ul>
+<p>其中最简单的就是进行独立像素点变换，利用 LUT 技术还可以提供给设计师灵活的方式来自定义各种滤镜效果。</p>
+<h2 id="1-LUT-技术"><a href="#1-LUT-技术" class="headerlink" title="1.LUT 技术"></a>1.LUT 技术</h2><h3 id="1-1-LUT-技术简介"><a href="#1-1-LUT-技术简介" class="headerlink" title="1.1 LUT 技术简介"></a>1.1 LUT 技术简介</h3><p>LUT 是 LookUpTable 的简称，也称作颜色查找表技术，它可以分为一维 LUT（1DLUT） 和 三维 LUT（3DLUT）。简单来说，LUT 就是一个 RGB 组合到 RGB 组合的映射，对于一维 LUT，假设映射关系为 LUT1，则</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">LUT</span><span class="params">(R1)</span></span> = R2</span><br><span class="line"><span class="function"><span class="title">LUT</span><span class="params">(G1)</span></span> = G2</span><br><span class="line"><span class="function"><span class="title">LUT</span><span class="params">(B1)</span></span> = B2</span><br></pre></td></tr></table></figure>
+
+<p>其中 R1、G1、B1 为原像素值，R2、G2、B2 为映射像素值，可以看出 1DLUT 的映射颜色值的每一个分量仅与其原始像素值的分量有关，用图像表示如下</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/1000992-852f4c476db2f3c3.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/300" alt=""></p>
+<p>对于 3DLUT，假设其映射关系为 LUT3，则</p>
+<p>LUT(R1, G1, B1) = (R2, G2, B2)</p>
+<p>3DLUT 相比于 1DLUT 能够实现全立体的色彩空间控制，非常适合用于精确的颜色控制工作，它的示意图如下</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/1000992-c777bfc79da65659.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/300" alt=""></p>
+<p>可以简单做一个计算，如果 RGB 三个分量分别可以取 256 种值的话，那么 3DLUT 技术就可以包含 256X256X256 种情况，大约占 48MB 空间，这样一个 3DLUT 映射关系的数据量有些庞大，通常会采取采样方式来降低数据量，例如可以对每一个分量按照每 4 个变化值为间距，进行 64 次采样，获得一个 64X64X64 大小的映射关系表，对于不在表内的颜色值进行内插法获得其相似结果。</p>
+<p>那么获得了 LUT 映射表以后，如何对任意一张图片进行滤镜变换呢。我们可以遍历图片的像素点，对于每一个像素点，获得其 RGB 组合，在 LUT 表格中查找此 RGB 组合及其对应的 RGB 映射值，然后用 RGB 映射值替换原图的像素点，就可以完成滤镜变换了。</p>
+<h3 id="1-2-3DLUT-数据存储方式"><a href="#1-2-3DLUT-数据存储方式" class="headerlink" title="1.2 3DLUT 数据存储方式"></a>1.2 3DLUT 数据存储方式</h3><p>3DLUT 是一个三维颜色空间体，通过下面的方式可以将其数据压入一张二维图片中。这里以一张 64X64X64 数据量的 LUT 图为例，它的大小是 512X512</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1000992-fd3714627648e7e7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/300" alt=""></p>
+<p>它在横竖方向上分成了 8X8 一共 64 个小方格，每一个小方格内的 B 分量为一个定值，总共就表示了 B 分量的 64 种可能值。同时对于每一个小方格，横竖方向又各自分为 64 个小格，横向小格的 R 分量依次增加，纵向小格的 G 分量依次增加，通过放大图片可以看到如下细节</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1000992-eac5e0a21b8b8746.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/200" alt=""></p>
+<p>这样就将所有数据都存储到一张 LUT 图中了，从图中也可以看出色值随着 RGB 分量变化而变化的情况。</p>
+<p>上面所展示的 LUT 图是一张特殊的 LUT 图，因为它的映射关系最简单，原始 RGB 颜色是什么，映射 RGB 颜色就是什么，这样的 LUT 图我们可以将其作为 LUT 参照图，设计师将想实现的滤镜效果分别作用于 LUT  参照图上，可以生成 LUT 滤镜图，其可能情况如下图所示</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1000992-5d77580d41cbe1cc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/300" alt=""></p>
+<p>通过对比 LUT 参照图和 LUT 滤镜图，就能获知任何原始 RGB 色值的映射颜色值是多少了。</p>
+<h2 id="2-LUT-滤镜变换过程实现"><a href="#2-LUT-滤镜变换过程实现" class="headerlink" title="2. LUT 滤镜变换过程实现"></a>2. LUT 滤镜变换过程实现</h2><p>iOS 中与图像处理有关的框架大致有以下几个：CoreImage，Metal，OpenGL-ES，第三方框架 GPUImage 等，它们都可以实现 LUT 映射。下面分点阐述。</p>
+<h3 id="2-1-CoreImage"><a href="#2-1-CoreImage" class="headerlink" title="2.1 CoreImage"></a>2.1 CoreImage</h3><p>CoreImage 是 iOS5 新加入到 iOS 平台的一个图像处理框架，提供了强大高效的图像处理功能， 用来对基于像素的图像进行操作与分析， 内置了很多强大的滤镜(Filter) (目前数量超过了 180 种)。CoreImage 实现 LUT 有两种方式：</p>
+<ul>
+<li>CIColorCube 过滤器</li>
+<li>CIKernel</li>
+</ul>
+<h4 id="2-1-1-CIColorCube-过滤器"><a href="#2-1-1-CIColorCube-过滤器" class="headerlink" title="2.1.1 CIColorCube 过滤器"></a>2.1.1 CIColorCube 过滤器</h4><p>CIColorCube 接受一个 LUT 映射颜色矩阵作为输入参数，对于输入图片进行色值映射，具体实现如下</p>
+<ul>
+<li>获取 LUT 图的 bitmap</li>
+</ul>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">+ (<span class="keyword">unsigned</span> <span class="keyword">char</span> *)createRGBABitmapFromImage:(<span class="built_in">CGImageRef</span>)image</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">CGContextRef</span> context = <span class="literal">NULL</span>;</span><br><span class="line">    <span class="built_in">CGColorSpaceRef</span> colorSpace;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">char</span> *bitmap;</span><br><span class="line">    <span class="built_in">NSInteger</span> bitmapSize;</span><br><span class="line">    <span class="built_in">NSInteger</span> bytesPerRow;</span><br><span class="line">    </span><br><span class="line">    size_t width = <span class="built_in">CGImageGetWidth</span>(image);</span><br><span class="line">    size_t height = <span class="built_in">CGImageGetHeight</span>(image);</span><br><span class="line">    </span><br><span class="line">    bytesPerRow = width * <span class="number">4</span>;</span><br><span class="line">    bitmapSize = bytesPerRow * height;</span><br><span class="line">    </span><br><span class="line">    bitmap = malloc(bitmapSize);</span><br><span class="line">    <span class="keyword">if</span> (bitmap == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    colorSpace = <span class="built_in">CGColorSpaceCreateDeviceRGB</span>();</span><br><span class="line">    <span class="keyword">if</span> (colorSpace == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        free(bitmap);</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    context = <span class="built_in">CGBitmapContextCreate</span> (bitmap,</span><br><span class="line">                                     width,</span><br><span class="line">                                     height,</span><br><span class="line">                                     <span class="number">8</span>,</span><br><span class="line">                                     bytesPerRow,</span><br><span class="line">                                     colorSpace,</span><br><span class="line">                                     kCGImageAlphaPremultipliedLast);</span><br><span class="line">    <span class="built_in">CGColorSpaceRelease</span>(colorSpace);</span><br><span class="line">    <span class="keyword">if</span> (context == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        free(bitmap);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">CGContextDrawImage</span>(context, <span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, width, height), image);</span><br><span class="line">    <span class="built_in">CGContextRelease</span>(context);</span><br><span class="line">    <span class="keyword">return</span> bitmap;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>生成 CIColorCube 所需的 inputCubeData</li>
+</ul>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line">+ (<span class="built_in">CIFilter</span> *)filterWithLUTImage:(<span class="built_in">UIImage</span> *)image dimension:(<span class="built_in">NSInteger</span>)n</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">NSInteger</span> width = <span class="built_in">CGImageGetWidth</span>(image.CGImage);</span><br><span class="line">    <span class="built_in">NSInteger</span> height = <span class="built_in">CGImageGetHeight</span>(image.CGImage);</span><br><span class="line">    <span class="built_in">NSInteger</span> row = height/n;</span><br><span class="line">    <span class="built_in">NSInteger</span> column = width/n;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> ((width % n != <span class="number">0</span>) || (height % n != <span class="number">0</span>) || (row * column != n)) &#123;<span class="keyword">return</span> <span class="literal">nil</span>;&#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">char</span> *bitmap = [<span class="keyword">self</span> createRGBABitmapFromImage:image.CGImage];</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (!bitmap) &#123;<span class="keyword">return</span> <span class="literal">nil</span>;&#125;</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">NSInteger</span> z = <span class="number">0</span>;</span><br><span class="line">    <span class="built_in">NSUInteger</span> size = n * n * n * <span class="keyword">sizeof</span>(<span class="keyword">float</span>) * <span class="number">4</span>; <span class="comment">// 所有像素点的 rgba 值个数 64 * 64 * 64 * 4</span></span><br><span class="line">    <span class="keyword">float</span> *data = malloc(size); <span class="comment">// 存储空间</span></span><br><span class="line">    <span class="built_in">NSInteger</span> bitmapOffest = <span class="number">0</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span> (<span class="built_in">NSInteger</span> rowIndex = <span class="number">0</span>; rowIndex &lt; row; rowIndex++) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="built_in">NSInteger</span> y = <span class="number">0</span>; y &lt; n; y++) &#123;</span><br><span class="line">            <span class="built_in">NSInteger</span> originalZ = z;</span><br><span class="line">            <span class="keyword">for</span> (<span class="built_in">NSInteger</span> columnIndex = <span class="number">0</span>; columnIndex &lt; column; columnIndex++) &#123;</span><br><span class="line">                <span class="keyword">for</span> (<span class="built_in">NSInteger</span> x = <span class="number">0</span>; x &lt; n; x++) &#123;</span><br><span class="line">                    <span class="keyword">double</span> r = (<span class="keyword">unsigned</span> <span class="keyword">int</span>)bitmap[bitmapOffest];</span><br><span class="line">                    <span class="keyword">double</span> g = (<span class="keyword">unsigned</span> <span class="keyword">int</span>)bitmap[bitmapOffest + <span class="number">1</span>];</span><br><span class="line">                    <span class="keyword">double</span> b = (<span class="keyword">unsigned</span> <span class="keyword">int</span>)bitmap[bitmapOffest + <span class="number">2</span>];</span><br><span class="line">                    <span class="keyword">double</span> a = (<span class="keyword">unsigned</span> <span class="keyword">int</span>)bitmap[bitmapOffest + <span class="number">3</span>];</span><br><span class="line">                    <span class="built_in">NSInteger</span> dataOffset = (z * n * n + y * n + x) * <span class="number">4</span>; <span class="comment">// 在大存储空间中的偏移，z 从 0 开始，z 偏移一个，总共偏移 64 * 64 个点，y 偏移一个，总共偏移 64 个点，加上 x 个点，乘以 rgba 的 4 个点</span></span><br><span class="line">                    <span class="comment">// 存储值</span></span><br><span class="line">                    data[dataOffset] = r / <span class="number">255.0</span>;</span><br><span class="line">                    data[dataOffset + <span class="number">1</span>] = g / <span class="number">255.0</span>;</span><br><span class="line">                    data[dataOffset + <span class="number">2</span>] = b / <span class="number">255.0</span>;</span><br><span class="line">                    data[dataOffset + <span class="number">3</span>] = a / <span class="number">255.0</span>;</span><br><span class="line">                    </span><br><span class="line">                    bitmapOffest += <span class="number">4</span>; <span class="comment">// 偏移 4 个点</span></span><br><span class="line">                &#125;</span><br><span class="line">                z++;</span><br><span class="line">            &#125;</span><br><span class="line">            z = originalZ; <span class="comment">// 每一行遍历完，z 恢复到行头所属块的 index</span></span><br><span class="line">        &#125;</span><br><span class="line">        z += column;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    free(bitmap); <span class="comment">// 释放位图</span></span><br><span class="line">    </span><br><span class="line">    <span class="built_in">CIFilter</span> *filter = [<span class="built_in">CIFilter</span> filterWithName:<span class="string">@"CIColorCube"</span>];</span><br><span class="line">    [filter setValue:[<span class="built_in">NSData</span> dataWithBytesNoCopy:data length:size freeWhenDone:<span class="literal">YES</span>] forKey:<span class="string">@"inputCubeData"</span>];</span><br><span class="line">    [filter setValue:[<span class="built_in">NSNumber</span> numberWithInteger:n] forKey:<span class="string">@"inputCubeDimension"</span>];</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> filter;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里读取的时候就是按照 3DLUT 存储方式来读取到一个存储空间里的。</p>
+<ul>
+<li>封装并使用</li>
+</ul>
+<p>将上述过程封装为一个 Category，传入原图，得到处理后的图片</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">CIImage</span> *image = [[<span class="built_in">CIImage</span> alloc] initWithImage:<span class="keyword">self</span>.mediaAsset.assetImage];</span><br><span class="line"><span class="built_in">CIFilter</span> *filter = [<span class="built_in">CIFilter</span> filterWithLUTImage:[<span class="built_in">UIImage</span> imageNamed:<span class="string">@"lookup_yth002"</span>] dimension:<span class="number">64</span>];</span><br><span class="line">[filter setValue:image forKey:<span class="string">@"inputImage"</span>];</span><br><span class="line"><span class="built_in">CIImage</span> *outputImage = [filter outputImage];</span><br><span class="line"><span class="built_in">CIContext</span> *context = [<span class="built_in">CIContext</span> contextWithOptions:<span class="literal">nil</span>];</span><br><span class="line"><span class="built_in">CGImageRef</span> cgImage = [context createCGImage:outputImage fromRect:[outputImage extent]];</span><br><span class="line"><span class="built_in">UIImage</span> *result = [<span class="built_in">UIImage</span> imageWithCGImage:cgImage];</span><br><span class="line"><span class="built_in">CGImageRelease</span>(cgImage);</span><br></pre></td></tr></table></figure>
+
+<p>下面以一个具体图片进行效果对比</p>
+<p>我们用下面这张图作为原始待处理的图片</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1000992-f4f2b4f9b2b2e681.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/300" alt=""></p>
+<p>通过 PS 进行一系列处理后的目标效果图如下</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1000992-ad53a1779a2fce71.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/300" alt=""></p>
+<p>对 LUT 参照图进行相同处理后得到 LUT 滤镜图</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1000992-0c81388b8bbb48b2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/300" alt=""></p>
+<p>拿着 LUT 通过 CIColorCube 过滤器得到效果图如下</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1000992-c9d57726bad5d5f0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/300" alt=""></p>
+<p>可以看到效果不是太理想，因此我换了一种方式进行转换。</p>
+<h3 id="2-2-CIKernel"><a href="#2-2-CIKernel" class="headerlink" title="2.2 CIKernel"></a>2.2 CIKernel</h3><p>CoreImage 除了自带的很多 Filter，还支持用户自定义 Filter，这需要用到 CIKernel 脚本，它使用 Core Image Kernel Language (CIKL) 语言来编写，CIKL 语言是 OpenGL Shading Language (GLSL) 的子集，因此很多语法、变量都和 GLSL 类似。</p>
+<p>这里我们编写一个 CIKernel 脚本，传入原图和 LUT 图，并进行颜色映射</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">kernel vec4 <span class="title">YasicLUT</span><span class="params">(sampler inputImage, sampler inputLUT, <span class="keyword">float</span> intensity)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// sample 函数从图片的指定坐标提取颜色值 rgba</span></span><br><span class="line">    vec4 textureColor = sample(inputImage,samplerCoord(inputImage));</span><br><span class="line">    <span class="comment">// clamp 函数对 rgba 进行归一化，转化为 0 到 1.0 之间的值</span></span><br><span class="line">    textureColor = clamp(textureColor, vec4(<span class="number">0.0</span>), vec4(<span class="number">1.0</span>));</span><br><span class="line">    <span class="comment">// 获取 b 值，从而确定在 LUT 图中的大方格下标</span></span><br><span class="line">    <span class="keyword">float</span> blueColor = textureColor.b * <span class="number">63.0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 取下边界方格和上边界方格，下边界指与此 b 分量最接近的下边界方格，如 b 分量为 2，则下边界方格 为 0 方格，上边界方格为 1 方格 </span></span><br><span class="line">    highp vec2 quad1;</span><br><span class="line">    quad1.y = <span class="built_in">floor</span>(<span class="built_in">floor</span>(blueColor) / <span class="number">8.0</span>);</span><br><span class="line">    quad1.x = <span class="built_in">floor</span>(blueColor) - (quad1.y * <span class="number">8.0</span>);</span><br><span class="line">    highp vec2 quad2;</span><br><span class="line">    quad2.y = <span class="built_in">floor</span>(<span class="built_in">ceil</span>(blueColor) / <span class="number">7.999</span>);</span><br><span class="line">    quad2.x = <span class="built_in">ceil</span>(blueColor) - (quad2.y * <span class="number">8.0</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 从下边界大方格中，获取对应的小方格坐标，通过 r 值确定横坐标，通过 g 值确定纵坐标</span></span><br><span class="line">    <span class="comment">// 这里进行的乘法操作是为了将坐标进行归一化，也就是都除了 LUT 图宽 512，同时由于所求坐标值必须是每个像素格的中心位置，所以进行了 0.5 像素偏移和 1 像素偏移，它的效果是，如果 r 或者 g 分量为 0，则刚好向右偏移 0.5 像素，不为 0 则向左偏移 0.5 像素，从而保证取到正确的像素格。</span></span><br><span class="line">    highp vec2 texPos1;</span><br><span class="line">    texPos1.x = (quad1.x * <span class="number">0.125</span>) + <span class="number">0.5</span>/<span class="number">512.0</span> + ((<span class="number">0.125</span> - <span class="number">1.0</span>/<span class="number">512.0</span>) * textureColor.r);</span><br><span class="line">    texPos1.y = (quad1.y * <span class="number">0.125</span>) + <span class="number">0.5</span>/<span class="number">512.0</span> + ((<span class="number">0.125</span> - <span class="number">1.0</span>/<span class="number">512.0</span>) * textureColor.g);</span><br><span class="line"></span><br><span class="line">    highp vec2 texPos2;</span><br><span class="line">    texPos2.x = (quad2.x * <span class="number">0.125</span>) + <span class="number">0.5</span>/<span class="number">512.0</span> + ((<span class="number">0.125</span> - <span class="number">1.0</span>/<span class="number">512.0</span>) * textureColor.r);</span><br><span class="line">    texPos2.y = (quad2.y * <span class="number">0.125</span>) + <span class="number">0.5</span>/<span class="number">512.0</span> + ((<span class="number">0.125</span> - <span class="number">1.0</span>/<span class="number">512.0</span>) * textureColor.g);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 取上下边界对应像素值</span></span><br><span class="line">    vec4 newColor1 = sample(inputLUT, texPos1);</span><br><span class="line">    vec4 newColor2 = sample(inputLUT, texPos2);</span><br><span class="line">    <span class="comment">// mix 方法根据 b 分量进行两个像素值的混合</span></span><br><span class="line">    vec4 newColor = mix(newColor1, newColor2, fract(blueColor));</span><br><span class="line">    <span class="keyword">return</span> mix(textureColor, vec4(newColor.rgb, textureColor.a), intensity);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>将此 kernel 文件读取到内存中，生成对应的 CIKernel 对象</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSString</span> *kernelString = [[<span class="built_in">NSString</span> alloc] initWithContentsOfURL:[[<span class="built_in">NSBundle</span> bundleForClass:<span class="keyword">self</span>.class] URLForResource:<span class="string">@"YasicLUT"</span> withExtension:<span class="string">@"cikernel"</span>] encoding:<span class="built_in">NSUTF8StringEncoding</span> error:<span class="literal">nil</span>];</span><br><span class="line"><span class="built_in">CIKernel</span> *kernel = [<span class="built_in">CIKernel</span> kernelWithString:kernelString];</span><br></pre></td></tr></table></figure>
+
+<p>然后对图片进行变换</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">self</span>.resultImageView.image = [<span class="built_in">UIImage</span> imageWithCIImage:[kernel applyWithExtent:ciTargetImage.extent roiCallback:^<span class="built_in">CGRect</span>(<span class="keyword">int</span> index, <span class="built_in">CGRect</span> destRect) &#123;</span><br><span class="line">    <span class="keyword">if</span> (index == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="comment">// 原图</span></span><br><span class="line">        <span class="keyword">return</span> destRect;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// LUT 图</span></span><br><span class="line">        <span class="keyword">return</span> ciLUTImage.extent;</span><br><span class="line">    &#125;</span><br><span class="line">&#125; arguments:@[ciTargetImage, ciLUTImage], @(<span class="number">1.0</span>)]]];</span><br></pre></td></tr></table></figure>
+
+<p>这里用到了一个重要函数</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">nullable</span> <span class="built_in">CIImage</span> *)applyWithExtent:(<span class="built_in">CGRect</span>)extent</span><br><span class="line">                          roiCallback:(<span class="built_in">CIKernelROICallback</span>)callback</span><br><span class="line">                            arguments:(<span class="keyword">nullable</span> <span class="built_in">NSArray</span>&lt;<span class="keyword">id</span>&gt; *)args;</span><br></pre></td></tr></table></figure>
+
+<p>它接受四个参数</p>
+<ul>
+<li>extent，表示当前 Filter 处理的图片区域，此处就是待处理图片的区域</li>
+<li>callBack，需要返回 ROI，即在一定的时间内特别感兴趣的区域，这里根据 index 值，如果 index 为 0，表示是原图，就将传入的 destRect 直接返回即可，如果 index 为 1，表示 LUT 图，则需要将整个 LUT 图的区域都返回，因为我们并不能根据原图待处理区域确定 LUT 图对应的感兴趣区域</li>
+<li>arguments，CIKernel 脚本所需参数，根据我们前面写的 CIKernel 脚本，这里依次传入原图和 LUT  图即可。</li>
+</ul>
+<p>下面是 CIKernel 处理的效果图</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1000992-2811944b586055db.jpeg?imageMogr2/auto-orient/strip%7CimageView2/2/w/300" alt=""></p>
+<p>效果也不是很理想，猜测可能是 CIImage 内部对图片进行了一些处理，导致 LUT 映射出现偏差，我们用 GPUImage 库验证 LUT 技术的可行性。</p>
+<h3 id="2-3-GPUImage"><a href="#2-3-GPUImage" class="headerlink" title="2.3 GPUImage"></a>2.3 GPUImage</h3><p>GPUImage 是一个非常强大的开源图像处理库，基于 GPU 进行图像处理，性能相比 CoreImage 要好很多。GPUImage 本身提供一个 GPUImageLookupFilter 滤镜，只需要传入 LUT 图即可实现 LUT 映射效果，使用如下</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">UIImage</span> *)generateImage:(<span class="built_in">UIImage</span> *)inputImage</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">UIImage</span> *outputImage;</span><br><span class="line">    GPUImagePicture *stillImageSource = [[GPUImagePicture alloc] initWithImage:inputImage];    </span><br><span class="line">    <span class="comment">//添加滤镜</span></span><br><span class="line">    GPUImageLookupFilter *lookUpFilter = [[GPUImageLookupFilter alloc] init];</span><br><span class="line">    GPUImagePicture *lookupImg = [[GPUImagePicture alloc] initWithImage:[<span class="built_in">UIImage</span> imageNamed:<span class="string">@"lookup_freeze"</span>]];    </span><br><span class="line">    [lookupImg addTarget:lookUpFilter atTextureLocation:<span class="number">1</span>];    </span><br><span class="line">    [stillImageSource addTarget:lookUpFilter atTextureLocation:<span class="number">0</span>];    </span><br><span class="line">    [lookUpFilter useNextFrameForImageCapture];    </span><br><span class="line">    <span class="keyword">if</span>([lookupImg processImageWithCompletionHandler:<span class="literal">nil</span>] &amp;&amp; [stillImageSource processImageWithCompletionHandler:<span class="literal">nil</span>]) &#123;</span><br><span class="line">        outputImage = [lookUpFilter imageFromCurrentFramebuffer];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> outputImage;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>最终 GPUImage 的处理效果图如下</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1000992-e04ccbd090519eb2.jpeg?imageMogr2/auto-orient/strip%7CimageView2/2/w/300" alt=""></p>
+<p>可以看到跟 PS 处理的目标效果图非常接近了，证明用 LUT 技术实现滤镜效果是可行的，接下来可以用 OpenGL-ES 实现这一效果。</p>
+<h3 id="2-4-OpenGL-ES"><a href="#2-4-OpenGL-ES" class="headerlink" title="2.4 OpenGL-ES"></a>2.4 OpenGL-ES</h3><p>OpenGL-ES 的基础知识网上有很多，这里列举一些我觉得写得不错的教程和博客，下面就不再赘述一些技术性的概念和函数</p>
+<ul>
+<li><a href="http://colin1994.github.io/2017/04/01/OpenGLES-Lesson01/" target="_blank" rel="noopener">OpenGL ES 基础概念及系列文章</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/31202175" target="_blank" rel="noopener">从 0 打造一个 GPUImage 系列文章</a></li>
+<li><a href="https://www.jianshu.com/nb/2135411" target="_blank" rel="noopener">OpenGLES 系列文章</a></li>
+</ul>
+<p>iOS 原生支持 OpenGL-ES，OpenGL-ES 利用图形渲染管线（Graphic Pipeline）将原始图像数据经过变换处理后展示到屏幕上，其具体的流程如下</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/1000992-8b96799868a5e202?imageMogr2/auto-orient/strip%7CimageView2/2/w/300" alt=""></p>
+<p>其中顶点着色器（VertexShader）和片段着色器（FragmentShader）是可编程部分，也是主要开发部分，它们就是用前面提到的 GLSL 语法实现的。简单来说，我们需要向 OpenGL-ES 输入一系列的顶点，它们标识了某一帧的边界，以及每一个顶点上的色值或者纹理坐标值（用于寻找对应的纹理贴图），OpenGL-ES 执行顶点着色器处理顶点数据，然后将顶点间划分成一个个片段，并行地进行片段着色，也就是执行片段着色器，最终形成完整的图形数据。</p>
+<p>OpenGL-ES 将图形数据定义为帧缓存（frameBuffer），它类似于一个指针，而真正保存像素值等具体色值的对象是渲染缓存（renderBuffer），帧缓存则保存并维护了渲染缓存的索引。通过 OpenGL-ES 绘制一帧到屏幕的流程如下</p>
+<ul>
+<li>设置 EAGLContext</li>
+<li>设置 RenderBuffer</li>
+<li>设置 FrameBuffer</li>
+<li>设置 ViewPort</li>
+<li>编译 Shader</li>
+<li>传入顶点数据</li>
+<li>绘制到屏幕</li>
+</ul>
+<p>但是这里我们最终需要获取 OpenGL-ES 生成的图片，而不是将其渲染到屏幕上，所以流程略有不同</p>
+<ul>
+<li>设置 EAGLContext</li>
+<li>创建离屏帧缓存</li>
+<li>设置 ViewPort</li>
+<li>编译 Shader</li>
+<li>传入顶点数据和纹理数据</li>
+<li>绘制到帧缓存</li>
+<li>获取渲染图片</li>
+</ul>
+<p>具体代码如下</p>
+<h4 id="2-4-1-设置-EAGLContext"><a href="#2-4-1-设置-EAGLContext" class="headerlink" title="2.4.1 设置 EAGLContext"></a>2.4.1 设置 EAGLContext</h4><p>需要确定使用的 OpenGL-ES 版本，这里选择 OpenGL-ES2.0 API，同时设置 CAEAGLLayer 对象作为绘制对象，它的作用有两个，其一是为渲染缓存分配共享存储，其二是将渲染缓存区呈现给 CoreAnimation，用 renderBuffer 的数据替换之前的内容，相当于是承接 RenderBuffer 和上层 UI 的抽象层。这里还设置了 kEAGLDrawablePropertyRetainedBacking 为 YES，表示每次显示时必须完全重绘，不保存上次显示的内容。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">self</span>.eagLayer = (<span class="built_in">CAEAGLLayer</span> *)<span class="keyword">self</span>.layer;</span><br><span class="line"><span class="keyword">self</span>.eagLayer.drawableProperties = @&#123;kEAGLDrawablePropertyRetainedBacking: @YES,</span><br><span class="line">                                  kEAGLDrawablePropertyColorFormat: kEAGLColorFormatRGBA8&#125;;</span><br><span class="line"><span class="keyword">self</span>.eaglContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-4-2-创建离屏帧缓存"><a href="#2-4-2-创建离屏帧缓存" class="headerlink" title="2.4.2 创建离屏帧缓存"></a>2.4.2 创建离屏帧缓存</h4><figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)createOffScreenFrameBuffer:(<span class="built_in">UIImage</span> *)image</span><br><span class="line">&#123;</span><br><span class="line">    glGenFramebuffers(<span class="number">1</span>, &amp;_offscreenFrameBuffer);</span><br><span class="line">    glBindFramebuffer(GL_FRAMEBUFFER, _offscreenFrameBuffer);</span><br><span class="line">    </span><br><span class="line">    GLuint texture;</span><br><span class="line">    glGenTextures(<span class="number">1</span>, &amp;texture);</span><br><span class="line">    glBindTexture(GL_TEXTURE_2D, texture);</span><br><span class="line">    glTexImage2D(GL_TEXTURE_2D, <span class="number">0</span>, GL_RGBA, image.size.width, image.size.height, <span class="number">0</span>, GL_RGBA, GL_UNSIGNED_BYTE, <span class="literal">NULL</span>);</span><br><span class="line">    </span><br><span class="line">    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);</span><br><span class="line">    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);</span><br><span class="line">    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);</span><br><span class="line">    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);</span><br><span class="line">    </span><br><span class="line">    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, <span class="number">0</span>);</span><br><span class="line">    </span><br><span class="line">    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);</span><br><span class="line">    <span class="keyword">if</span>(status != GL_FRAMEBUFFER_COMPLETE) &#123;</span><br><span class="line">        printf(<span class="string">"failed to make complete framebuffer object %x"</span>, status);</span><br><span class="line">    &#125;</span><br><span class="line">    glBindFramebuffer(GL_FRAMEBUFFER, <span class="number">0</span>);</span><br><span class="line">    glBindTexture(GL_TEXTURE_2D, <span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里并未将待渲染的图片纹理直接索引到帧缓存中，因为图片尚未处理过，所以只是开辟足够大的空间就可以了。</p>
+<h4 id="2-4-3-设置-ViewPort"><a href="#2-4-3-设置-ViewPort" class="headerlink" title="2.4.3 设置 ViewPort"></a>2.4.3 设置 ViewPort</h4><p>ViewPort 能告诉 OpenGL-ES 应该把渲染之后的图形绘制在渲染窗体（如 CAEAGLLayer）的哪一部分</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">glViewport(<span class="number">0</span>, <span class="number">0</span>, <span class="keyword">self</span>.targetImage.size.width, <span class="keyword">self</span>.targetImage.size.height);</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-4-4-编译-Shader"><a href="#2-4-4-编译-Shader" class="headerlink" title="2.4.4 编译 Shader"></a>2.4.4 编译 Shader</h4><p>GLSL 编写的顶点着色器和片段着色器都需要在运行时读取到内存中进行编译，这里将它们存储在 Bundle 中</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">attribute vec4 <span class="built_in">position</span>;</span><br><span class="line">attribute vec2 a_texCoordIn;</span><br><span class="line">varying vec2 v_TexCoordOut;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span> </span>&#123;</span><br><span class="line">    v_TexCoordOut = a_texCoordIn;</span><br><span class="line">    gl_Position = <span class="built_in">position</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>顶点着色器传入顶点坐标后直接赋值给内部参数 gl_Position，纹理坐标传输给片段着色器用于采样纹理。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">precision mediump <span class="keyword">float</span>;</span><br><span class="line"></span><br><span class="line">varying vec2 v_TexCoordOut;</span><br><span class="line">uniform sampler2D inputImageTexture;</span><br><span class="line">uniform sampler2D inputImageTexture2; <span class="comment">// lookup texture</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    vec4 textureColor = texture2D(inputImageTexture, v_TexCoordOut);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">float</span> blueColor = textureColor.b * <span class="number">63.0</span>;</span><br><span class="line">    </span><br><span class="line">    vec2 quad1;</span><br><span class="line">    quad1.y = <span class="built_in">floor</span>(<span class="built_in">floor</span>(blueColor) / <span class="number">8.0</span>);</span><br><span class="line">    quad1.x = <span class="built_in">floor</span>(blueColor) - (quad1.y * <span class="number">8.0</span>);</span><br><span class="line">    </span><br><span class="line">    vec2 quad2;</span><br><span class="line">    quad2.y = <span class="built_in">floor</span>(<span class="built_in">ceil</span>(blueColor) / <span class="number">8.0</span>);</span><br><span class="line">    quad2.x = <span class="built_in">ceil</span>(blueColor) - (quad2.y * <span class="number">8.0</span>);</span><br><span class="line">    </span><br><span class="line">    vec2 texPos1;</span><br><span class="line">    texPos1.x = (quad1.x * <span class="number">0.125</span>) + <span class="number">0.5</span>/<span class="number">512.0</span> + ((<span class="number">0.125</span> - <span class="number">1.0</span>/<span class="number">512.0</span>) * textureColor.r);</span><br><span class="line">    texPos1.y = (quad1.y * <span class="number">0.125</span>) + <span class="number">0.5</span>/<span class="number">512.0</span> + ((<span class="number">0.125</span> - <span class="number">1.0</span>/<span class="number">512.0</span>) * textureColor.g);</span><br><span class="line">    </span><br><span class="line">    vec2 texPos2;</span><br><span class="line">    texPos2.x = (quad2.x * <span class="number">0.125</span>) + <span class="number">0.5</span>/<span class="number">512.0</span> + ((<span class="number">0.125</span> - <span class="number">1.0</span>/<span class="number">512.0</span>) * textureColor.r);</span><br><span class="line">    texPos2.y = (quad2.y * <span class="number">0.125</span>) + <span class="number">0.5</span>/<span class="number">512.0</span> + ((<span class="number">0.125</span> - <span class="number">1.0</span>/<span class="number">512.0</span>) * textureColor.g);</span><br><span class="line">    </span><br><span class="line">    vec4 newColor1 = texture2D(inputImageTexture2, texPos1);</span><br><span class="line">    vec4 newColor2 = texture2D(inputImageTexture2, texPos2);</span><br><span class="line">    </span><br><span class="line">    vec4 newColor = mix(newColor1, newColor2, fract(blueColor));</span><br><span class="line">    gl_FragColor = mix(textureColor, vec4(newColor.rgb, textureColor.w), <span class="number">1.0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>片段着色器与之前的 CIKernel 脚本类似，根据原图的 rgb 值，从 LUT 纹理中提取对应位置的色值，混合后赋值给内部参数 gl_FragColor。</p>
+<p>然后进行着色器编译</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    GLuint vertexShader = [<span class="keyword">self</span> compileShader:<span class="string">@"MyTestVertexShader.vsh"</span> withType:GL_VERTEX_SHADER];</span><br><span class="line">    GLuint fragmentShader = [<span class="keyword">self</span> compileShader:<span class="string">@"MyTestFragmentShader.fsh"</span> withType:GL_FRAGMENT_SHADER];</span><br><span class="line">    <span class="keyword">self</span>.programHandle = glCreateProgram();</span><br><span class="line">    glAttachShader(<span class="keyword">self</span>.programHandle, vertexShader);</span><br><span class="line">    glAttachShader(<span class="keyword">self</span>.programHandle, fragmentShader);</span><br><span class="line">    glLinkProgram(<span class="keyword">self</span>.programHandle);</span><br><span class="line">    GLint linkSuccess;</span><br><span class="line">    glGetProgramiv(<span class="keyword">self</span>.programHandle, GL_LINK_STATUS, &amp;linkSuccess);</span><br><span class="line">    <span class="keyword">if</span> (linkSuccess == GL_FALSE) &#123;</span><br><span class="line">        GLchar messages[<span class="number">256</span>];</span><br><span class="line">        glGetProgramInfoLog(<span class="keyword">self</span>.programHandle, <span class="keyword">sizeof</span>(messages), <span class="number">0</span>, &amp;messages[<span class="number">0</span>]);</span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"GLGetProgramInfo error:%@"</span>, [<span class="built_in">NSString</span> stringWithUTF8String:messages]);</span><br><span class="line">        exit(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    glUseProgram(<span class="keyword">self</span>.programHandle);</span><br><span class="line">    glDeleteShader(vertexShader);</span><br><span class="line">    glDeleteShader(fragmentShader);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (GLuint)compileShader:(<span class="built_in">NSString</span> *)shaderName withType:(GLenum)shaderType &#123;</span><br><span class="line">    <span class="built_in">NSString</span> *shaderPath = [[<span class="built_in">NSBundle</span> mainBundle] pathForResource:shaderName ofType:<span class="literal">nil</span>];</span><br><span class="line">    <span class="built_in">NSError</span> *error = <span class="literal">nil</span>;</span><br><span class="line">    <span class="built_in">NSString</span> *shaderString = [<span class="built_in">NSString</span> stringWithContentsOfFile:shaderPath encoding:<span class="built_in">NSUTF8StringEncoding</span> error:&amp;error];</span><br><span class="line">    <span class="keyword">if</span> (!shaderString) &#123;</span><br><span class="line">        exit(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span>* shaderStringUTF8 = [shaderString UTF8String];</span><br><span class="line">    <span class="keyword">int</span> shaderStringLength = (<span class="keyword">int</span>)[shaderString length];</span><br><span class="line">    </span><br><span class="line">    GLuint shaderHandle = glCreateShader(shaderType);</span><br><span class="line">    </span><br><span class="line">    glShaderSource(shaderHandle, <span class="number">1</span>, &amp;shaderStringUTF8, &amp;shaderStringLength);</span><br><span class="line">    glCompileShader(shaderHandle);</span><br><span class="line">    </span><br><span class="line">    GLint compileSuccess;</span><br><span class="line">    glGetShaderiv(shaderHandle, GL_COMPILE_STATUS, &amp;compileSuccess);</span><br><span class="line">    <span class="keyword">if</span> (compileSuccess == GL_FALSE) &#123;</span><br><span class="line">        GLchar messages[<span class="number">256</span>];</span><br><span class="line">        glGetShaderInfoLog(shaderHandle, <span class="keyword">sizeof</span>(messages), <span class="number">0</span>, &amp;messages[<span class="number">0</span>]);</span><br><span class="line">        <span class="built_in">NSString</span> *messageString = [<span class="built_in">NSString</span> stringWithUTF8String:messages];</span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"GLGetShaderiv error:%@"</span>, messageString);</span><br><span class="line">        exit(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> shaderHandle;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-4-5-传入顶点和纹理数据"><a href="#2-4-5-传入顶点和纹理数据" class="headerlink" title="2.4.5 传入顶点和纹理数据"></a>2.4.5 传入顶点和纹理数据</h4><p>OpenGL-ES 坐标系是三维空间坐标系，按照右手法则，以屏幕中心为原点，横向为 X 轴，竖向为 Y 轴，纵向为 Z 轴，进行了归一化，所以订单数据如下</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> GLfloat vertices[] = &#123;</span><br><span class="line">    <span class="number">-1</span>, <span class="number">-1</span>, <span class="number">0</span>,   <span class="comment">//左下</span></span><br><span class="line">    <span class="number">1</span>,  <span class="number">-1</span>, <span class="number">0</span>,   <span class="comment">//右下</span></span><br><span class="line">    <span class="number">-1</span>, <span class="number">1</span>,  <span class="number">0</span>,   <span class="comment">//左上</span></span><br><span class="line">    <span class="number">1</span>,  <span class="number">1</span>,  <span class="number">0</span> &#125;; <span class="comment">//右上</span></span><br><span class="line">glEnableVertexAttribArray(glGetAttribLocation(<span class="keyword">self</span>.programHandle, <span class="string">"position"</span>));</span><br><span class="line">glVertexAttribPointer(glGetAttribLocation(<span class="keyword">self</span>.programHandle, <span class="string">"position"</span>), <span class="number">3</span>, GL_FLOAT, GL_FALSE, <span class="number">0</span>, vertices);</span><br></pre></td></tr></table></figure>
+
+<p>纹理数据与之对应，但是纹理数据是二维的，并且变化范围是 0 到 1。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">const</span> GLfloat coords[] = &#123;</span><br><span class="line">    <span class="number">0</span>, <span class="number">0</span>,</span><br><span class="line">    <span class="number">1</span>, <span class="number">0</span>,</span><br><span class="line">    <span class="number">0</span>, <span class="number">1</span>,</span><br><span class="line">    <span class="number">1</span>, <span class="number">1</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">glVertexAttribPointer(glGetAttribLocation(<span class="keyword">self</span>.programHandle, <span class="string">"a_texCoordIn"</span>), <span class="number">2</span>, GL_FLOAT, GL_FALSE, <span class="number">0</span>, coords);</span><br><span class="line">glEnableVertexAttribArray(glGetAttribLocation(<span class="keyword">self</span>.programHandle, <span class="string">"a_texCoordIn"</span>));</span><br></pre></td></tr></table></figure>
+
+<p>接下来还需要将待处理的图片和 LUT 转换为 2D 纹理</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">- (GLuint)getTextureFromImage:(<span class="built_in">UIImage</span> *)image needTranslate:(<span class="built_in">BOOL</span>)need &#123;</span><br><span class="line">    <span class="built_in">CGImageRef</span> imageRef = [image <span class="built_in">CGImage</span>];</span><br><span class="line">    size_t width = <span class="built_in">CGImageGetWidth</span>(imageRef);</span><br><span class="line">    size_t height = <span class="built_in">CGImageGetHeight</span>(imageRef);</span><br><span class="line">    <span class="built_in">CGRect</span> rect = <span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, width, height);</span><br><span class="line">    GLubyte *textureData = (GLubyte *)malloc(width * height * <span class="number">4</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">CGColorSpaceRef</span> colorSpaceRef = <span class="built_in">CGColorSpaceCreateDeviceRGB</span>();</span><br><span class="line">    <span class="built_in">NSUInteger</span> bytesPerPixel = <span class="number">4</span>;</span><br><span class="line">    <span class="built_in">NSUInteger</span> bytesPerRow = bytesPerPixel * width;</span><br><span class="line">    <span class="built_in">NSUInteger</span> bitsPerComponent = <span class="number">8</span>;</span><br><span class="line">    <span class="built_in">CGContextRef</span> context = <span class="built_in">CGBitmapContextCreate</span>(textureData, width, height, bitsPerComponent, bytesPerRow, colorSpaceRef, kCGImageAlphaPremultipliedLast|kCGBitmapByteOrder32Big);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (need) &#123;</span><br><span class="line">        <span class="built_in">CGContextTranslateCTM</span>(context, <span class="number">0</span>, height);</span><br><span class="line">        <span class="built_in">CGContextScaleCTM</span>(context, <span class="number">1.0</span>f, <span class="number">-1.0</span>f);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">CGContextClearRect</span>(context, rect);</span><br><span class="line">    <span class="built_in">CGContextDrawImage</span>(context, rect, imageRef);</span><br><span class="line">    </span><br><span class="line">    glEnable(GL_TEXTURE_2D);</span><br><span class="line">    </span><br><span class="line">    GLuint texureName;</span><br><span class="line">    glGenTextures(<span class="number">1</span>, &amp;texureName);</span><br><span class="line">    glBindTexture(GL_TEXTURE_2D, texureName);</span><br><span class="line">    </span><br><span class="line">    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);</span><br><span class="line">    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);</span><br><span class="line">    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);</span><br><span class="line">    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);</span><br><span class="line">    </span><br><span class="line">    glTexImage2D(GL_TEXTURE_2D, <span class="number">0</span>, GL_RGBA, (GLsizei)width, (GLsizei)height, <span class="number">0</span>, GL_RGBA, GL_UNSIGNED_BYTE, textureData);</span><br><span class="line">    glBindTexture(GL_TEXTURE_2D, <span class="number">0</span>); <span class="comment">//解绑</span></span><br><span class="line">    <span class="built_in">CGContextRelease</span>(context);</span><br><span class="line">    <span class="built_in">CGColorSpaceRelease</span>(colorSpaceRef);</span><br><span class="line">    free(textureData);</span><br><span class="line">    <span class="keyword">return</span> texureName;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>根据坐标系来看纹理图片从 UIKit 读取到 OpenGL 是需要进行上下翻转的，但是经过我实际使用发现，LUT 图不能进行翻转，具体原因不明，所以这里进行了翻转操作的 BOOL 控制</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">glActiveTexture(GL_TEXTURE0);</span><br><span class="line">GLuint texName = [<span class="keyword">self</span> getTextureFromImage:<span class="keyword">self</span>.targetImage needTranslate:<span class="literal">YES</span>];</span><br><span class="line">glBindTexture(GL_TEXTURE_2D, texName);</span><br><span class="line">glUniform1i(glGetUniformLocation(<span class="keyword">self</span>.programHandle, <span class="string">"inputImageTexture"</span>), <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">glActiveTexture(GL_TEXTURE1);</span><br><span class="line">GLuint LUTName = [<span class="keyword">self</span> getTextureFromImage:[<span class="built_in">UIImage</span> imageNamed:<span class="string">@"lookup_yth002"</span>] needTranslate:<span class="literal">NO</span>];</span><br><span class="line">glBindTexture(GL_TEXTURE_2D, LUTName);</span><br><span class="line">glUniform1i(glGetUniformLocation(<span class="keyword">self</span>.programHandle, <span class="string">"inputImageTexture2"</span>), <span class="number">1</span>);</span><br></pre></td></tr></table></figure>
+
+<p>将两个纹理数据分别绑定到索引 0 和 1所属的纹理单元上，并传输给 shader 作为参数。</p>
+<h4 id="2-4-6-绘制到帧缓存"><a href="#2-4-6-绘制到帧缓存" class="headerlink" title="2.4.6 绘制到帧缓存"></a>2.4.6 绘制到帧缓存</h4><figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">glBindFramebuffer(GL_FRAMEBUFFER, _offscreenFrameBuffer);    </span><br><span class="line">glDrawArrays(GL_TRIANGLE_STRIP, <span class="number">0</span>, <span class="number">4</span>);</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-4-7-获取渲染图片"><a href="#2-4-7-获取渲染图片" class="headerlink" title="2.4.7 获取渲染图片"></a>2.4.7 获取渲染图片</h4><figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)getImageFromBuffe:(<span class="keyword">int</span>)width withHeight:(<span class="keyword">int</span>)height &#123;</span><br><span class="line">    GLint x = <span class="number">0</span>, y = <span class="number">0</span>;</span><br><span class="line">    <span class="built_in">NSInteger</span> dataLength = width * height * <span class="number">4</span>;</span><br><span class="line">    GLubyte *data = (GLubyte*)malloc(dataLength * <span class="keyword">sizeof</span>(GLubyte));</span><br><span class="line">    </span><br><span class="line">    glPixelStorei(GL_PACK_ALIGNMENT, <span class="number">4</span>);</span><br><span class="line">    glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">CGDataProviderRef</span> ref = <span class="built_in">CGDataProviderCreateWithData</span>(<span class="literal">NULL</span>, data, dataLength, <span class="literal">NULL</span>);</span><br><span class="line">    <span class="built_in">CGColorSpaceRef</span> colorspace = <span class="built_in">CGColorSpaceCreateDeviceRGB</span>();</span><br><span class="line">    <span class="built_in">CGImageRef</span> iref = <span class="built_in">CGImageCreate</span>(width, height, <span class="number">8</span>, <span class="number">32</span>, width * <span class="number">4</span>, colorspace, kCGBitmapByteOrder32Big | kCGImageAlphaPremultipliedLast,</span><br><span class="line">                                    ref, <span class="literal">NULL</span>, <span class="literal">true</span>, kCGRenderingIntentDefault);</span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line">    <span class="built_in">UIGraphicsBeginImageContext</span>(<span class="built_in">CGSizeMake</span>(width, height));</span><br><span class="line">    <span class="built_in">CGContextRef</span> cgcontext = <span class="built_in">UIGraphicsGetCurrentContext</span>();</span><br><span class="line">    <span class="built_in">CGContextSetBlendMode</span>(cgcontext, kCGBlendModeCopy);</span><br><span class="line">    <span class="built_in">CGContextDrawImage</span>(cgcontext, <span class="built_in">CGRectMake</span>(<span class="number">0.0</span>, <span class="number">0.0</span>, width, height), iref);</span><br><span class="line">    <span class="built_in">UIImage</span> *image = <span class="built_in">UIGraphicsGetImageFromCurrentImageContext</span>();</span><br><span class="line">    <span class="keyword">self</span>.targetImageView.image = image;</span><br><span class="line">    <span class="built_in">UIGraphicsEndImageContext</span>();</span><br><span class="line">    </span><br><span class="line">    free(data);</span><br><span class="line">    <span class="built_in">CFRelease</span>(ref);</span><br><span class="line">    <span class="built_in">CFRelease</span>(colorspace);</span><br><span class="line">    <span class="built_in">CGImageRelease</span>(iref);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>最终效果图如下所示</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1000992-e04ccbd090519eb2.jpeg?imageMogr2/auto-orient/strip%7CimageView2/2/w/300" alt=""></p>
+<p>可以看到 OpenGL 处理的效果很理想。</p>
+<h3 id="2-5-CPU-像素替换与-OpenGL-ES-性能对比"><a href="#2-5-CPU-像素替换与-OpenGL-ES-性能对比" class="headerlink" title="2.5 CPU 像素替换与 OpenGL-ES 性能对比"></a>2.5 CPU 像素替换与 OpenGL-ES 性能对比</h3><p>其实考虑到 LUT 技术的原理就可以想到，对于图片的每一个像素进行查找替换的操作完全可以在 CPU 内存中就能完成，我们通过 CGContextDrawImage 方法获取到原始图片和 LUT 滤镜图的 bitmap，之后通过遍历原始图的 bitmap，根据每一个像素点的 RGB 值查找 LUT 图中对应的像素值，生成一个新的 bitmap，转换为图片，就是一次 LUT 转换。</p>
+<p>具体代码如下</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)bitmapTransition:(<span class="built_in">UIImage</span> *)originalImage LUTImage:(<span class="built_in">UIImage</span> *)LUTImage</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">NSInteger</span> width = <span class="built_in">CGImageGetWidth</span>(originalImage.CGImage);</span><br><span class="line">    <span class="built_in">NSInteger</span> height = <span class="built_in">CGImageGetHeight</span>(originalImage.CGImage);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">char</span> *originalBitmap = [<span class="keyword">self</span> createRGBABitmapFromImage:originalImage.CGImage];</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">char</span> *LUTBitmap = [<span class="keyword">self</span> createRGBABitmapFromImage:LUTImage.CGImage];</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">char</span> *finalBitmap = malloc(width * height * <span class="number">4</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> row = <span class="number">0</span>; row &lt; height; row++) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> column = <span class="number">0</span>; column &lt; width; column++) &#123;</span><br><span class="line">            <span class="keyword">double</span> r = (<span class="keyword">double</span>)originalBitmap[row * width * <span class="number">4</span> + column * <span class="number">4</span>];</span><br><span class="line">            <span class="keyword">double</span> g = (<span class="keyword">double</span>)originalBitmap[row * width * <span class="number">4</span> + column * <span class="number">4</span> + <span class="number">1</span>];</span><br><span class="line">            <span class="keyword">double</span> b = (<span class="keyword">double</span>)originalBitmap[row * width * <span class="number">4</span> + column * <span class="number">4</span> + <span class="number">2</span>];</span><br><span class="line">            <span class="keyword">double</span> a = (<span class="keyword">double</span>)originalBitmap[row * width * <span class="number">4</span> + column * <span class="number">4</span> + <span class="number">3</span>];</span><br><span class="line">            </span><br><span class="line">            <span class="keyword">double</span> ro = r/<span class="number">255.0</span>;</span><br><span class="line">            <span class="keyword">double</span> go = g/<span class="number">255.0</span>;</span><br><span class="line">            <span class="keyword">double</span> bo = b/<span class="number">255.0</span>;</span><br><span class="line">            <span class="keyword">double</span> ao = a/<span class="number">255.0</span>;</span><br><span class="line">            </span><br><span class="line">            <span class="keyword">double</span> bIndex = bo * <span class="number">63.0</span>;</span><br><span class="line">            </span><br><span class="line">            <span class="keyword">double</span> y1 = floor(floor(bIndex) / <span class="number">8.0</span>);</span><br><span class="line">            <span class="keyword">double</span> x1 = floor(bIndex) - (y1 * <span class="number">8.0</span>);</span><br><span class="line">            </span><br><span class="line">            <span class="keyword">double</span> y2 = floor(ceil(bIndex) / <span class="number">7.99</span>);</span><br><span class="line">            <span class="keyword">double</span> x2 = ceil(bIndex) - (y2 * <span class="number">8.0</span>);</span><br><span class="line">            </span><br><span class="line">            <span class="keyword">int</span> xl1 = (x1 * <span class="number">64.0</span> + <span class="number">0.5</span> + ro * <span class="number">63.0</span>);</span><br><span class="line">            <span class="keyword">int</span> yl1 = (y1 * <span class="number">64.0</span> + <span class="number">0.5</span> + go * <span class="number">63.0</span>);</span><br><span class="line">            </span><br><span class="line">            <span class="keyword">int</span> xl2 = (x2 * <span class="number">64.0</span> + <span class="number">0.5</span> + ro * <span class="number">63.0</span>);</span><br><span class="line">            <span class="keyword">int</span> yl2 = (y2 * <span class="number">64.0</span> + <span class="number">0.5</span> + go * <span class="number">63.0</span>);</span><br><span class="line">            </span><br><span class="line">            <span class="keyword">double</span> rf1 = (<span class="keyword">double</span>)LUTBitmap[yl1 * <span class="number">512</span> * <span class="number">4</span> + xl1 * <span class="number">4</span>];</span><br><span class="line">            <span class="keyword">double</span> gf1 = (<span class="keyword">double</span>)LUTBitmap[yl1 * <span class="number">512</span> * <span class="number">4</span>+ xl1 * <span class="number">4</span> + <span class="number">1</span>];</span><br><span class="line">            <span class="keyword">double</span> bf1 = (<span class="keyword">double</span>)LUTBitmap[yl1 * <span class="number">512</span> * <span class="number">4</span> + xl1 * <span class="number">4</span> + <span class="number">2</span>];</span><br><span class="line">            </span><br><span class="line">            <span class="keyword">double</span> rf2 = (<span class="keyword">double</span>)LUTBitmap[yl2 * <span class="number">512</span> * <span class="number">4</span> + xl2 * <span class="number">4</span>];</span><br><span class="line">            <span class="keyword">double</span> gf2 = (<span class="keyword">double</span>)LUTBitmap[yl2 * <span class="number">512</span> * <span class="number">4</span> + xl2 * <span class="number">4</span> + <span class="number">1</span>];</span><br><span class="line">            <span class="keyword">double</span> bf2 = (<span class="keyword">double</span>)LUTBitmap[yl2 * <span class="number">512</span> * <span class="number">4</span> + xl2 * <span class="number">4</span> + <span class="number">2</span>];</span><br><span class="line">            </span><br><span class="line">            <span class="keyword">double</span> rf0 = rf1 * (<span class="number">1.0</span> - bo) + rf2 * bo;</span><br><span class="line">            <span class="keyword">double</span> gf0 = gf1 * (<span class="number">1.0</span> - bo) + gf2 * bo;</span><br><span class="line">            <span class="keyword">double</span> bf0 = bf1 * (<span class="number">1.0</span> - bo) + bf2 * bo;</span><br><span class="line">            </span><br><span class="line">            finalBitmap[row * width * <span class="number">4</span> + column * <span class="number">4</span>] = rf0;</span><br><span class="line">            finalBitmap[row * width * <span class="number">4</span> + column * <span class="number">4</span> + <span class="number">1</span>] = gf0;</span><br><span class="line">            finalBitmap[row * width * <span class="number">4</span> + column * <span class="number">4</span> + <span class="number">2</span>] = bf0;</span><br><span class="line">            finalBitmap[row * width * <span class="number">4</span> + column * <span class="number">4</span> + <span class="number">3</span>] = a;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">CGColorSpaceRef</span> colorSpace = <span class="built_in">CGColorSpaceCreateDeviceRGB</span>();</span><br><span class="line">    <span class="built_in">CGContextRef</span> context = <span class="built_in">CGBitmapContextCreate</span>(finalBitmap,</span><br><span class="line">                                                 width,</span><br><span class="line">                                                 height,</span><br><span class="line">                                                 <span class="number">8</span>,</span><br><span class="line">                                                 width * <span class="number">4</span>,</span><br><span class="line">                                                 colorSpace,</span><br><span class="line">                                                 kCGImageAlphaPremultipliedLast);</span><br><span class="line">    <span class="built_in">CGImageRef</span> imageRef = <span class="built_in">CGBitmapContextCreateImage</span>(context);</span><br><span class="line">    <span class="built_in">CGContextRelease</span>(context);</span><br><span class="line">    <span class="built_in">CGColorSpaceRelease</span>(colorSpace);</span><br><span class="line">    <span class="built_in">UIImage</span> *image = [<span class="built_in">UIImage</span> imageWithCGImage:imageRef];</span><br><span class="line">    <span class="built_in">CGImageRelease</span>(imageRef);</span><br><span class="line">    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里 createRGBABitmapFromImage 方法在开头就提到了，下面的替换操作也是将之前的着色器代码进行了改写，基本思路是相同的，其最终效果图如下</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1000992-e04ccbd090519eb2.jpeg?imageMogr2/auto-orient/strip%7CimageView2/2/w/300" alt=""></p>
+<p>可以看到效果和 OpenGL-ES 非常接近，也是很理想的处理效果。但是 CPU 处理像素相比于 GPU 的并行计算性能是很糟糕的，这里以几张不同尺寸的图片，在 iPhone 8 Plus 上对两种方式进行了测试，获得性能比较结果如下。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1000992-a38326e5fc51fd4c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1000" alt=""></p>
+<p>这样的耗时差距在处理一张图片时尚可接受，但是在相机捕获时实时渲染每一帧图片的时候，就会有显著的性能差别，尤其是 iPhone 8 Plus 相机捕获的每一帧大小几乎都是最后几种情况那么大（4032x3024），因此很有必要采用 OpenGL-ES 实现 LUT 滤镜效果。</p>
+
+    </div>
+
+    
+    
+    
+      
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/04/28/AVFoundation/%E8%A7%86%E9%A2%91%E4%B8%8E%E5%8A%A8%E7%94%BB%E5%9B%BE%E5%B1%82/" rel="prev" title="视频与动画图层">
+      <i class="fa fa-chevron-left"></i> 视频与动画图层
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/08/22/iOS%E5%BC%80%E5%8F%91/%E5%88%A9%E7%94%A8category%E5%AE%9A%E4%B9%89%E4%B8%80%E6%AE%B5%E5%AE%8F%E4%BB%A3%E7%A0%81/" rel="next" title="利用category定义一段宏代码">
+      利用category定义一段宏代码 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-LUT-技术"><span class="nav-text">1.LUT 技术</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-LUT-技术简介"><span class="nav-text">1.1 LUT 技术简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-3DLUT-数据存储方式"><span class="nav-text">1.2 3DLUT 数据存储方式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-LUT-滤镜变换过程实现"><span class="nav-text">2. LUT 滤镜变换过程实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-CoreImage"><span class="nav-text">2.1 CoreImage</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-1-CIColorCube-过滤器"><span class="nav-text">2.1.1 CIColorCube 过滤器</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-CIKernel"><span class="nav-text">2.2 CIKernel</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-GPUImage"><span class="nav-text">2.3 GPUImage</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-OpenGL-ES"><span class="nav-text">2.4 OpenGL-ES</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-4-1-设置-EAGLContext"><span class="nav-text">2.4.1 设置 EAGLContext</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-4-2-创建离屏帧缓存"><span class="nav-text">2.4.2 创建离屏帧缓存</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-4-3-设置-ViewPort"><span class="nav-text">2.4.3 设置 ViewPort</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-4-4-编译-Shader"><span class="nav-text">2.4.4 编译 Shader</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-4-5-传入顶点和纹理数据"><span class="nav-text">2.4.5 传入顶点和纹理数据</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-4-6-绘制到帧缓存"><span class="nav-text">2.4.6 绘制到帧缓存</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-4-7-获取渲染图片"><span class="nav-text">2.4.7 获取渲染图片</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-CPU-像素替换与-OpenGL-ES-性能对比"><span class="nav-text">2.5 CPU 像素替换与 OpenGL-ES 性能对比</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Yasic Yu"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Yasic Yu</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">46</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Yasic" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Yasic" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:yuxuan2580@gmail.com" title="E-Mail → mailto:yuxuan2580@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yasic Yu</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.1
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

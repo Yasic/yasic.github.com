@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Muse","version":"7.7.1","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":3,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="AV Foundation 是 OSX 系统和 iOS 系统中用于处理基于时间的媒体数据的高级 objectivec 框架，其设计过程高度依赖多线程机制，充分利用了多核硬件优势，大量使用 Block 和 GCD 机制。AVFoundation 能与高层级框架无缝衔接，也能提供低层级框架的功能和性能。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AVFoundation-入门">
+<meta property="og:url" content="http://yoursite.com/2018/04/24/AVFoundation/AVFoundation-%E5%85%A5%E9%97%A8/index.html">
+<meta property="og:site_name" content="Yasic Yu">
+<meta property="og:description" content="AV Foundation 是 OSX 系统和 iOS 系统中用于处理基于时间的媒体数据的高级 objectivec 框架，其设计过程高度依赖多线程机制，充分利用了多核硬件优势，大量使用 Block 和 GCD 机制。AVFoundation 能与高层级框架无缝衔接，也能提供低层级框架的功能和性能。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://lea.hamradio.si/~s51kq/subsample.gif">
+<meta property="article:published_time" content="2018-04-23T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-02-22T08:11:34.071Z">
+<meta property="article:author" content="Yasic Yu">
+<meta property="article:tag" content="iOS">
+<meta property="article:tag" content=" ObjectiveC">
+<meta property="article:tag" content=" Swift">
+<meta property="article:tag" content=" XCode">
+<meta property="article:tag" content=" Computer">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://lea.hamradio.si/~s51kq/subsample.gif">
+
+<link rel="canonical" href="http://yoursite.com/2018/04/24/AVFoundation/AVFoundation-%E5%85%A5%E9%97%A8/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>AVFoundation-入门 | Yasic Yu</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Yasic Yu</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">In Code We Trust</p>
+  </div>
+
+  <div class="site-nav-right"></div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类<span class="badge">4</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">46</span></a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/yasic" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/04/24/AVFoundation/AVFoundation-%E5%85%A5%E9%97%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Yasic Yu">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yasic Yu">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AVFoundation-入门
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-04-24 00:00:00" itemprop="dateCreated datePublished" datetime="2018-04-24T00:00:00+08:00">2018-04-24</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/AVFoundation/" itemprop="url" rel="index">
+                    <span itemprop="name">AVFoundation</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">AV Foundation 是 OSX 系统和 iOS 系统中用于处理基于时间的媒体数据的高级 objectivec 框架，其设计过程高度依赖多线程机制，充分利用了多核硬件优势，大量使用 Block 和 GCD 机制。AVFoundation 能与高层级框架无缝衔接，也能提供低层级框架的功能和性能。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>AV Foundation 是 OSX 系统和 iOS 系统中用于处理基于时间的媒体数据的高级 objectivec 框架，其设计过程高度依赖多线程机制，充分利用了多核硬件优势，大量使用 Block 和 GCD 机制。AVFoundation 能与高层级框架无缝衔接，也能提供低层级框架的功能和性能。</p>
+<h2 id="1-AVFoundation-核心功能"><a href="#1-AVFoundation-核心功能" class="headerlink" title="1. AVFoundation 核心功能"></a>1. AVFoundation 核心功能</h2><p>AVFoundation 提供的核心功能如下所示</p>
+<ul>
+<li>音频播放和记录——AVAudioPlayer 和 AVAudioRecorder</li>
+<li>媒体文件检查——AVMetadataItem</li>
+<li>视频播放——AVPalyer 和 AVPlayerItem</li>
+<li>媒体捕捉——AVCaptureSession</li>
+<li>媒体编辑</li>
+<li>媒体处理——AVAssetReader、AVAssetWriter</li>
+</ul>
+<h2 id="2-数字媒体"><a href="#2-数字媒体" class="headerlink" title="2. 数字媒体"></a>2. 数字媒体</h2><h3 id="2-1-数字媒体采样"><a href="#2-1-数字媒体采样" class="headerlink" title="2.1 数字媒体采样"></a>2.1 数字媒体采样</h3><p>将现实世界的模拟信号转换为能够被计算机存储和传输的数字信号，需要经过模拟-数字转换过程，也称为采样。数字化采样有两种方式，一种是时间采样，即捕捉一个信号周期内的变化，一种是空间采样，一般用于图片数字化和其他可视化媒体内容数字化上，它对一个图片在一定分辨率下捕捉其亮度和色度，进而创建出由该图片的像素点数据所构成的数字化结果。视频既有空间属性又有时间属性，所以数字化时都可以使用。</p>
+<h3 id="2-2-音频采样"><a href="#2-2-音频采样" class="headerlink" title="2.2 音频采样"></a>2.2 音频采样</h3><p>对于一个音频，麦克风负责将物理振动转化为相同频率和振幅的电流信号，之后通过线性脉冲编码调制（LPCM）进行编码。LPCM 采样或测量一个固定的音频信号，其周期率被称为采样率。采样频率达到奈奎斯特频率（采样对象最高频率的 2 倍）时即可准确表现原始信号的信息。另一方面编码字节数（也称位元深度）表现了采样精度，如位元深度为 8 位的编码能够提供 256 个离散级别的数据，CD 音质位元深度为 16。</p>
+<h2 id="3-数字媒体压缩"><a href="#3-数字媒体压缩" class="headerlink" title="3. 数字媒体压缩"></a>3. 数字媒体压缩</h2><p>原始、未压缩的数字化媒体数据需要大量的存储空间，因此需要进行压缩。</p>
+<h3 id="3-1-色彩二次抽样"><a href="#3-1-色彩二次抽样" class="headerlink" title="3.1 色彩二次抽样"></a>3.1 色彩二次抽样</h3><p>由于人类的眼睛对亮度的敏感度高于颜色的敏感度，因此可以大幅降低存储在每个像素中的颜色信息，而不至于图片质量严重受损，这一过程称为色彩二次采样。</p>
+<p>视频数据都使用 YCbCr 颜色模式，也称为 YUV 模式，与 RGB 视频信号传输相比，它最大的优点在于只需占用极少的频宽。其中 “Y” 表示明亮度（Luminance或Luma），也就是灰阶值；而 “U” 和 “V” 表示的则是色度。</p>
+<p>色彩二次抽样通常用一个三分比值表示，J:a:b（例如4:2:2），形容一个以J个像素宽及两个像素高的概念上区域：</p>
+<p>J：水平抽样参照（概念上区域的宽度）。通常为4<br>a：在J个像素第一行中的色度抽样数目（Cr, Cb）<br>b：在J个像素第二行中的额外色度抽样数目（Cr, Cb）</p>
+<p>下面是抽样示意图</p>
+<img src="http://lea.hamradio.si/~s51kq/subsample.gif" width=500>
+
+<p>4:4:4 比例下全彩色信息都可被保存，在 4:2:2 比例下色彩信息为每两个水平像素的平均值，在 4:2:0 比例下色彩信息为水平和垂直 4 个像素的平均值。</p>
+<h3 id="3-2-编解码器压缩"><a href="#3-2-编解码器压缩" class="headerlink" title="3.2 编解码器压缩"></a>3.2 编解码器压缩</h3><p>编解码器使用高级压缩算法对需要保存或发送的音频或视频数据进行压缩和编码，同时可以将压缩文件解码成适合播放和编辑的媒体资源文件。编解码器分无损压缩和有损压缩，zip 和 gzip 就是无损压缩。</p>
+<h3 id="3-3-视频编解码器"><a href="#3-3-视频编解码器" class="headerlink" title="3.3 视频编解码器"></a>3.3 视频编解码器</h3><p>AVFoundation 只提供 H.264 和 Apple ProRes 两种媒体类型的支持，但 iOS 只支持 H.264。</p>
+<h4 id="3-3-1-H-264"><a href="#3-3-1-H-264" class="headerlink" title="3.3.1 H.264"></a>3.3.1 H.264</h4><p>H.264 规范是 Motion Picture Experts Group（MPEG）定义的 PMEG-4 的一部分，与其他 MPEG 压缩一样，H.264 通过下面两个维度来压缩视频文件尺寸：</p>
+<ul>
+<li>空间：压缩独立视频帧，被称为帧内压缩</li>
+<li>时间：以组为单位压缩视频帧冗余数据，称为帧间压缩</li>
+</ul>
+<p>帧内压缩通过消除包含在每个独立视频帧内的色彩及结构中的冗余信息来进行压缩，因此可以在不降低图片质量情况下尽可能缩小尺寸，这一过程创建的帧称为 I-frames。</p>
+<p>帧间压缩将很多帧组合为一组图片（简称 GOP），对于 GOP 所存在的时间维度的冗余可以被消除。GOP 存储三种不同类型的帧：</p>
+<ul>
+<li>I-frames：关键帧，创建完整图片所需要的所有数据，尺寸大但解压快</li>
+<li>P-frames：预测帧，基于最近的 I-frames 或 P-frames 的可预测图片进行编码得到</li>
+<li>B-frames：双向帧，基于使用之前和之后的帧信息编码得到的帧，解压过程费时</li>
+</ul>
+<h3 id="3-4-音频解码器"><a href="#3-4-音频解码器" class="headerlink" title="3.4 音频解码器"></a>3.4 音频解码器</h3><p>AVFoundation 广泛使用 AAC（高级音频编码） 作为音频解码器，它是 H.264 标准相应的音频处理方式，优于 MP3 格式。</p>
+
+    </div>
+
+    
+    
+    
+      
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/04/24/AVFoundation/%E9%AB%98%E7%BA%A7%E6%8D%95%E6%8D%89%E5%8A%9F%E8%83%BD/" rel="prev" title="高级捕捉功能">
+      <i class="fa fa-chevron-left"></i> 高级捕捉功能
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/04/26/AVFoundation/%E8%AF%BB%E5%8F%96%E5%92%8C%E5%86%99%E5%85%A5%E5%AA%92%E4%BD%93/" rel="next" title="读取和写入媒体">
+      读取和写入媒体 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-AVFoundation-核心功能"><span class="nav-text">1. AVFoundation 核心功能</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-数字媒体"><span class="nav-text">2. 数字媒体</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-数字媒体采样"><span class="nav-text">2.1 数字媒体采样</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-音频采样"><span class="nav-text">2.2 音频采样</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-数字媒体压缩"><span class="nav-text">3. 数字媒体压缩</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-色彩二次抽样"><span class="nav-text">3.1 色彩二次抽样</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-编解码器压缩"><span class="nav-text">3.2 编解码器压缩</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-视频编解码器"><span class="nav-text">3.3 视频编解码器</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-3-1-H-264"><span class="nav-text">3.3.1 H.264</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-音频解码器"><span class="nav-text">3.4 音频解码器</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Yasic Yu"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Yasic Yu</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">46</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Yasic" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Yasic" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:yuxuan2580@gmail.com" title="E-Mail → mailto:yuxuan2580@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yasic Yu</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.1
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

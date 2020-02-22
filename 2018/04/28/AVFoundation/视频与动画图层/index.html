@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Muse","version":"7.7.1","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":3,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="在编辑视频的过程中，时常有场景需要对视频增添更多个性化的内容，如字幕、水印或者表情等，此时需要对视频增加一个动画叠加层，在实现上来讲就需要结合 AVFoundation 和 CoreAnimation 一同使用。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="视频与动画图层">
+<meta property="og:url" content="http://yoursite.com/2018/04/28/AVFoundation/%E8%A7%86%E9%A2%91%E4%B8%8E%E5%8A%A8%E7%94%BB%E5%9B%BE%E5%B1%82/index.html">
+<meta property="og:site_name" content="Yasic Yu">
+<meta property="og:description" content="在编辑视频的过程中，时常有场景需要对视频增添更多个性化的内容，如字幕、水印或者表情等，此时需要对视频增加一个动画叠加层，在实现上来讲就需要结合 AVFoundation 和 CoreAnimation 一同使用。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-04-27T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-02-22T08:11:34.027Z">
+<meta property="article:author" content="Yasic Yu">
+<meta property="article:tag" content="iOS">
+<meta property="article:tag" content=" ObjectiveC">
+<meta property="article:tag" content=" Swift">
+<meta property="article:tag" content=" XCode">
+<meta property="article:tag" content=" Computer">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://yoursite.com/2018/04/28/AVFoundation/%E8%A7%86%E9%A2%91%E4%B8%8E%E5%8A%A8%E7%94%BB%E5%9B%BE%E5%B1%82/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>视频与动画图层 | Yasic Yu</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Yasic Yu</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">In Code We Trust</p>
+  </div>
+
+  <div class="site-nav-right"></div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类<span class="badge">4</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">46</span></a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/yasic" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/04/28/AVFoundation/%E8%A7%86%E9%A2%91%E4%B8%8E%E5%8A%A8%E7%94%BB%E5%9B%BE%E5%B1%82/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Yasic Yu">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yasic Yu">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          视频与动画图层
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-04-28 00:00:00" itemprop="dateCreated datePublished" datetime="2018-04-28T00:00:00+08:00">2018-04-28</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/AVFoundation/" itemprop="url" rel="index">
+                    <span itemprop="name">AVFoundation</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">在编辑视频的过程中，时常有场景需要对视频增添更多个性化的内容，如字幕、水印或者表情等，此时需要对视频增加一个动画叠加层，在实现上来讲就需要结合 AVFoundation 和 CoreAnimation 一同使用。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>在编辑视频的过程中，时常有场景需要对视频增添更多个性化的内容，如字幕、水印或者表情等，此时需要对视频增加一个动画叠加层，在实现上来讲就需要结合 AVFoundation 和 CoreAnimation 一同使用。</p>
+<p>在 AVFoundation 中使用 CoreAnimation 和在 iOS 其他地方使用 CoreAnimation 一样，但是最大的差别在于时间模型。正常使用 CoreAnimation 的时候，时间模型取决于系统主机，但是视频动画有其自己的时间线，同时需要支持停止、暂停、回退或快进等效果，所以不能直接用系统主机的时间模型向一个视频中添加基于时间的动画。</p>
+<p>针对这一特性，AVFoundation 在两个场景下提供了两个工具实现此效果</p>
+<ul>
+<li>需要在播放视频时加入 CoreAnimation，提供 AVSynchronizedLayer 类</li>
+<li>需要在导出视频时加入 CoreAnimation，提供 AVVideoCompositionCoreAnimationTool</li>
+</ul>
+<p>不清楚为什么需要两个类实现同一个效果，这样做会导致在实现带有 CoreAnimation 的 layer 时，要保证 layer 的坐标与尺寸保持一致会非常麻烦。</p>
+<h2 id="1-AVSynchronizedLayer-与播放"><a href="#1-AVSynchronizedLayer-与播放" class="headerlink" title="1. AVSynchronizedLayer 与播放"></a>1. AVSynchronizedLayer 与播放</h2><p>首先实现一个简单的 CALayer 来展示一段字符串组成的字幕</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">CGFloat</span> fontSize = <span class="number">32.0</span>f;</span><br><span class="line"><span class="built_in">UIFont</span> *font = [<span class="built_in">UIFont</span> fontWithName:<span class="string">@"GillSans-Bold"</span> size:fontSize];</span><br><span class="line"><span class="built_in">NSDictionary</span> *attrs = @&#123;<span class="built_in">NSFontAttributeName</span> : font, <span class="built_in">NSForegroundColorAttributeName</span> : (<span class="keyword">id</span>)[<span class="built_in">UIColor</span> whiteColor].CGColor&#125;;</span><br><span class="line"><span class="built_in">NSAttributedString</span> *string = [[<span class="built_in">NSAttributedString</span> alloc] initWithString:<span class="string">@"hello yasic"</span> attributes:attrs];</span><br><span class="line"><span class="built_in">CGSize</span> textSize = [<span class="string">@"hello yasic"</span> sizeWithAttributes:attrs];</span><br><span class="line"><span class="built_in">CATextLayer</span> *layer = [<span class="built_in">CATextLayer</span> layer];</span><br><span class="line">layer.opacity = <span class="number">0.0</span>;</span><br><span class="line">layer.string = string;</span><br><span class="line">layer.frame = <span class="built_in">CGRectMake</span>((SCREEN_WIDTH - textSize.width)/<span class="number">2.0</span>, (SCREEN_HEIGHT - textSize.height)/<span class="number">2.0</span>, textSize.width, textSize.height);</span><br><span class="line">layer.backgroundColor = [<span class="built_in">UIColor</span> clearColor].CGColor;</span><br></pre></td></tr></table></figure>
+
+<p>然后对这个 layer 加上 CoreAnimation</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">CAKeyframeAnimation</span> *animation = [<span class="built_in">CAKeyframeAnimation</span> animationWithKeyPath:<span class="string">@"opacity"</span>];</span><br><span class="line">animation.values = @[@<span class="number">0.0</span>f, @<span class="number">1.0</span>f, @<span class="number">1.0</span>f, @<span class="number">0.0</span>f];</span><br><span class="line">animation.keyTimes = @[@<span class="number">0.0</span>f, @<span class="number">0.3</span>f, @<span class="number">0.7</span>f, @<span class="number">1.0</span>f];</span><br><span class="line">animation.beginTime = <span class="built_in">CMTimeGetSeconds</span>(<span class="built_in">CMTimeMake</span>(<span class="number">1</span>, <span class="number">1</span>));</span><br><span class="line">animation.duration = <span class="number">5.0</span>f;</span><br><span class="line">animation.removedOnCompletion = <span class="literal">NO</span>;</span><br><span class="line">[layer addAnimation:animation forKey:<span class="string">@"opacity"</span>];</span><br></pre></td></tr></table></figure>
+
+<p>这里一定要设置起始时间，如果要表示影片片头，不能用 0.0 来赋值 beginTime，因为 CoreAnimation 会将 0.0 的 beginTime 转为 CACurrentMediaTime()，所以要用 AVCoreAnimationBeginTimeAtZero 来代替。</p>
+<p>另外，需要注意要将 CoreAnimation 的 removedOnCompletion 属性设置为 NO，否则在播放过程中动画执行一次后就从图层树上移除了，之后就不会出现动画了。</p>
+<p>CoreAnimation 提供了 CAAnimationGroup 来组合多个动画，但是书中建议在视频动画中避免使用 CAAnimationGroup。</p>
+<p>最终将这个 layer 加入到 AVSynchronizedLayer 上</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">AVSynchronizedLayer *syncLayer &#x3D; [AVSynchronizedLayer synchronizedLayerWithPlayerItem:self.avPlayerItem];</span><br><span class="line">[syncLayer addSublayer:[self makeTextLayer]];</span><br><span class="line">syncLayer.frame &#x3D; CGRectMake(0, 0, 1280, 720);</span><br><span class="line">[self.layer addSublayer:syncLayer];</span><br></pre></td></tr></table></figure>
+
+<p>可以看到 AVSynchronizedLayer 是与 AVPlayerItem 绑定的，这样就能实现时间同步了。</p>
+<h2 id="2-AVVideoCompositionCoreAnimationTool-与导出"><a href="#2-AVVideoCompositionCoreAnimationTool-与导出" class="headerlink" title="2. AVVideoCompositionCoreAnimationTool 与导出"></a>2. AVVideoCompositionCoreAnimationTool 与导出</h2><p>导出时也需要创建 CALayer</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">CALayer</span> *animationLayer = [<span class="built_in">CALayer</span> layer];</span><br><span class="line">animationLayer.frame = <span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="number">1280.</span>f, <span class="number">720.</span>f);</span><br><span class="line"><span class="built_in">CALayer</span> *videoLayer = [<span class="built_in">CALayer</span> layer];</span><br><span class="line">videoLayer.frame = <span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="number">1280.</span>f, <span class="number">720.</span>f);                            </span><br><span class="line">[animationLayer addSublayer:videoLayer];</span><br><span class="line">[animationLayer addSublayer:[<span class="keyword">self</span> makeTextLayer]];</span><br><span class="line">animationLayer.geometryFlipped = <span class="literal">YES</span>; <span class="comment">// 避免错位现象</span></span><br><span class="line"><span class="built_in">AVVideoCompositionCoreAnimationTool</span> *animationTool = [<span class="built_in">AVVideoCompositionCoreAnimationTool</span> videoCompositionCoreAnimationToolWithPostProcessingAsVideoLayer:videoLayer inLayer:animationLayer];</span><br></pre></td></tr></table></figure>
+
+<p>得到 animationTool 后将其绑定到 AVMutableVideoComposition 上，即可用于导出了。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">AVMutableVideoComposition</span> *finalVideocomposition = [videoComposition <span class="keyword">copy</span>];</span><br><span class="line">finalVideocomposition.animationTool = animationTool;</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+      
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/04/27/AVFoundation/%E6%B7%B7%E5%90%88%E9%9F%B3%E9%A2%91/" rel="prev" title="混合音频">
+      <i class="fa fa-chevron-left"></i> 混合音频
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/05/31/iOS%E5%BC%80%E5%8F%91/iOS%E5%AE%9E%E7%8E%B0LUT%E6%BB%A4%E9%95%9C%E7%9A%84%E5%87%A0%E7%A7%8D%E6%96%B9%E5%BC%8F%E7%9A%84%E6%8E%A2%E7%A9%B6/" rel="next" title="iOS实现LUT滤镜的几种方式的探究">
+      iOS实现LUT滤镜的几种方式的探究 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-AVSynchronizedLayer-与播放"><span class="nav-text">1. AVSynchronizedLayer 与播放</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-AVVideoCompositionCoreAnimationTool-与导出"><span class="nav-text">2. AVVideoCompositionCoreAnimationTool 与导出</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Yasic Yu"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Yasic Yu</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">46</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Yasic" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Yasic" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:yuxuan2580@gmail.com" title="E-Mail → mailto:yuxuan2580@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yasic Yu</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.1
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Muse","version":"7.7.1","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":3,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="iOS 7.0 为 AVCaptureDevice 提供了一个 videoZoomFactor 属性用于对视频输出和捕捉提供缩放效果，这个属性的最小值为 1.0，最大值由下面的方法提供">
+<meta property="og:type" content="article">
+<meta property="og:title" content="高级捕捉功能">
+<meta property="og:url" content="http://yoursite.com/2018/04/24/AVFoundation/%E9%AB%98%E7%BA%A7%E6%8D%95%E6%8D%89%E5%8A%9F%E8%83%BD/index.html">
+<meta property="og:site_name" content="Yasic Yu">
+<meta property="og:description" content="iOS 7.0 为 AVCaptureDevice 提供了一个 videoZoomFactor 属性用于对视频输出和捕捉提供缩放效果，这个属性的最小值为 1.0，最大值由下面的方法提供">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-04-23T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-02-22T08:11:34.042Z">
+<meta property="article:author" content="Yasic Yu">
+<meta property="article:tag" content="iOS">
+<meta property="article:tag" content=" ObjectiveC">
+<meta property="article:tag" content=" Swift">
+<meta property="article:tag" content=" XCode">
+<meta property="article:tag" content=" Computer">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://yoursite.com/2018/04/24/AVFoundation/%E9%AB%98%E7%BA%A7%E6%8D%95%E6%8D%89%E5%8A%9F%E8%83%BD/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>高级捕捉功能 | Yasic Yu</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Yasic Yu</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">In Code We Trust</p>
+  </div>
+
+  <div class="site-nav-right"></div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类<span class="badge">4</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">46</span></a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/yasic" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/04/24/AVFoundation/%E9%AB%98%E7%BA%A7%E6%8D%95%E6%8D%89%E5%8A%9F%E8%83%BD/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Yasic Yu">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yasic Yu">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          高级捕捉功能
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-04-24 00:00:00" itemprop="dateCreated datePublished" datetime="2018-04-24T00:00:00+08:00">2018-04-24</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/AVFoundation/" itemprop="url" rel="index">
+                    <span itemprop="name">AVFoundation</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">iOS 7.0 为 AVCaptureDevice 提供了一个 videoZoomFactor 属性用于对视频输出和捕捉提供缩放效果，这个属性的最小值为 1.0，最大值由下面的方法提供</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="1-视频缩放"><a href="#1-视频缩放" class="headerlink" title="1. 视频缩放"></a>1. 视频缩放</h2><p>iOS 7.0 为 AVCaptureDevice 提供了一个 videoZoomFactor 属性用于对视频输出和捕捉提供缩放效果，这个属性的最小值为 1.0，最大值由下面的方法提供</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">self</span>.cameraHelper.activeVideoDevice.activeFormat.videoMaxZoomFactor;</span><br></pre></td></tr></table></figure>
+
+<p>因而判断一个设备能否进行缩放也可以通过判断这一属性来获知</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">BOOL</span>)cameraSupportsZoom</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">self</span>.cameraHelper.activeVideoDevice.activeFormat.videoMaxZoomFactor &gt; <span class="number">1.0</span>f;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>设备执行缩放效果是通过居中裁剪由摄像头传感器捕捉到的图片实现的，也可以通过 videoZoomFactorUpscaleThreshold 来设置具体的放大中心。当 zoom factors 缩放因子比较小的时候，裁剪的图片刚好等于或者大于输出尺寸（考虑与抗边缘畸变有关），则无需放大就可以返回。但是当 zoom factors 比较大时，设备必须缩放裁剪图片以符合输出尺寸，从而导致图片质量上的丢失。具体的临界点由  videoZoomFactorUpscaleThreshold 值来确定。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 在 iphone6s 和 iphone8plus 上测试得到此值为 2.0左右</span></span><br><span class="line"><span class="keyword">self</span>.cameraHelper.activeVideoDevice.activeFormat.videoZoomFactorUpscaleThreshold;</span><br></pre></td></tr></table></figure>
+
+<p>可以通过一个变化值从 0.0 到 1.0 的 UISlider 来实现对缩放值的控制。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    [<span class="keyword">self</span>.slider addTarget:<span class="keyword">self</span> action:<span class="keyword">@selector</span>(sliderValueChange:) forControlEvents:<span class="built_in">UIControlEventValueChanged</span>];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)sliderValueChange:(<span class="keyword">id</span>)sender</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">UISlider</span> *slider = (<span class="built_in">UISlider</span> *)sender;</span><br><span class="line">    [<span class="keyword">self</span> setZoomValue:slider.value];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="built_in">CGFloat</span>)maxZoomFactor</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">return</span> MIN(<span class="keyword">self</span>.cameraHelper.activeVideoDevice.activeFormat.videoMaxZoomFactor, <span class="number">4.0</span>f);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)setZoomValue:(<span class="built_in">CGFloat</span>)zoomValue</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> (!<span class="keyword">self</span>.cameraHelper.activeVideoDevice.isRampingVideoZoom) &#123;</span><br><span class="line">        <span class="built_in">NSError</span> *error;</span><br><span class="line">        <span class="keyword">if</span> ([<span class="keyword">self</span>.cameraHelper.activeVideoDevice lockForConfiguration:&amp;error]) &#123;</span><br><span class="line">            <span class="built_in">CGFloat</span> zoomFactor = pow([<span class="keyword">self</span> maxZoomFactor], zoomValue);</span><br><span class="line">            <span class="keyword">self</span>.cameraHelper.activeVideoDevice.videoZoomFactor = zoomFactor;</span><br><span class="line">            [<span class="keyword">self</span>.cameraHelper.activeVideoDevice unlockForConfiguration];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>首先注意在进行配置属性前需要进行设备的锁定，否则会引发异常。其次，插值缩放是一个指数形式的增长，传入的 slider 值是线性的，需要进行一次 pow 运算得到需要缩放的值。另外，videoMaxZoomFactor 的值可能会非常大，在 iphone8p 上这一个值是 16，缩放到这么大的图像是没有太大意义的，因此需要人为设置一个最大缩放值，这里选择 4.0。</p>
+<p>当然这里进行的缩放是立即生效的，下面的方法可以以一个速度平滑缩放到一个缩放因子上</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)rampZoomToValue:(<span class="built_in">CGFloat</span>)zoomValue &#123;</span><br><span class="line">    <span class="built_in">CGFloat</span> zoomFactor = pow([<span class="keyword">self</span> maxZoomFactor], zoomValue);</span><br><span class="line">	<span class="built_in">NSError</span> *error;</span><br><span class="line">	<span class="keyword">if</span> ([<span class="keyword">self</span>.activeCamera lockForConfiguration:&amp;error]) &#123;</span><br><span class="line">		[<span class="keyword">self</span>.activeCamera rampToVideoZoomFactor:zoomFactor</span><br><span class="line">                                        withRate:THZoomRate];</span><br><span class="line">		[<span class="keyword">self</span>.activeCamera unlockForConfiguration];</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)cancelZoom &#123;</span><br><span class="line">	<span class="built_in">NSError</span> *error;</span><br><span class="line">	<span class="keyword">if</span> ([<span class="keyword">self</span>.activeCamera lockForConfiguration:&amp;error]) &#123;</span><br><span class="line">		[<span class="keyword">self</span>.activeCamera cancelVideoZoomRamp];</span><br><span class="line">		[<span class="keyword">self</span>.activeCamera unlockForConfiguration];</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>监听设备的 videoZoomFactor 可以获知当前的缩放值</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[RACObserve(<span class="keyword">self</span>, activeVideoDevice.videoZoomFactor) subscribeNext:^(<span class="keyword">id</span> x) &#123;</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"videoZoomFactor: %f"</span>, <span class="keyword">self</span>.activeVideoDevice.videoZoomFactor);</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
+
+<p>监听设备的 rampingVideoZoom 可以获知设备是否正在平滑缩放</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[RACObserve(<span class="keyword">self</span>, activeVideoDevice.rampingVideoZoom) subscribeNext:^(<span class="keyword">id</span> x) &#123;</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"rampingVideoZoom : %@"</span>, (<span class="keyword">self</span>.activeVideoDevice.rampingVideoZoom)?<span class="string">@"true"</span>:<span class="string">@"false"</span>);</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-人脸识别"><a href="#2-人脸识别" class="headerlink" title="2. 人脸识别"></a>2. 人脸识别</h2><p>人脸识别需要用到 AVCaptureMetadataOutput 作为输出，首先将其加入到捕捉会话中</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">self</span>.metaDataOutput = [[<span class="built_in">AVCaptureMetadataOutput</span> alloc] init];</span><br><span class="line"><span class="keyword">if</span> ([<span class="keyword">self</span>.captureSession canAddOutput:<span class="keyword">self</span>.metaDataOutput]) &#123;</span><br><span class="line">    [<span class="keyword">self</span>.captureSession addOutput:<span class="keyword">self</span>.metaDataOutput];</span><br><span class="line">    <span class="built_in">NSArray</span> *metaDataObjectType = @[<span class="built_in">AVMetadataObjectTypeFace</span>];</span><br><span class="line">    <span class="keyword">self</span>.metaDataOutput.metadataObjectTypes = metaDataObjectType;</span><br><span class="line">    [<span class="keyword">self</span>.metaDataOutput setMetadataObjectsDelegate:<span class="keyword">self</span> queue:dispatch_get_main_queue()];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到这里需要指定 AVCaptureMetadataOutput 的 metadataObjectTypes 属性，将其设置为 AVMetadataObjectTypeFace 的数组，它代表着人脸元数据对象。然后设置其遵循 AVCaptureMetadataOutputObjectsDelegate 协议的委托对象及回调线程，当检测到人脸时就会调用下面的方法</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)captureOutput:(<span class="built_in">AVCaptureOutput</span> *)output didOutputMetadataObjects:(<span class="built_in">NSArray</span>&lt;__kindof <span class="built_in">AVMetadataObject</span> *&gt; *)metadataObjects fromConnection:(<span class="built_in">AVCaptureConnection</span> *)connection</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.detectFaces) &#123;</span><br><span class="line">        <span class="keyword">self</span>.detectFaces(metadataObjects);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其中 metadataObjects 是一个包含了许多 AVMetadataObject 对象的数组，这里则可以认为都是 AVMetadataObject 的子类 AVMetadataFaceObject。对于 AVMetadataFaceObject 对象，有四个重要的属性</p>
+<ul>
+<li>faceID，用于标识检测到的每一个 face</li>
+<li>rollAngle，用于标识人脸斜倾角，即人的头部向肩膀方便的侧倾角度</li>
+<li>yawAngle，偏转角，即人脸绕 y 轴旋转的角度</li>
+<li>bounds，标识检测到的人脸区域</li>
+</ul>
+<p>这里我们将其回调给 ViewController，用于进行 UI 展示。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br></pre></td><td class="code"><pre><span class="line">        @weakify(<span class="keyword">self</span>)</span><br><span class="line">        <span class="keyword">self</span>.cameraHelper.detectFaces = ^(<span class="built_in">NSArray</span> *faces) &#123;</span><br><span class="line">            @strongify(<span class="keyword">self</span>)</span><br><span class="line">            <span class="built_in">NSMutableArray</span> *transformedFaces = [<span class="built_in">NSMutableArray</span> array];</span><br><span class="line">            <span class="keyword">for</span> (<span class="built_in">AVMetadataFaceObject</span> *face <span class="keyword">in</span> faces) &#123;</span><br><span class="line">                <span class="built_in">AVMetadataObject</span> *transformedFace = [<span class="keyword">self</span>.previewLayer transformedMetadataObjectForMetadataObject:face];</span><br><span class="line">                [transformedFaces addObject:transformedFace];</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="built_in">NSMutableArray</span> *lostFaces = [<span class="keyword">self</span>.faceLayers.allKeys mutableCopy];</span><br><span class="line">            <span class="keyword">for</span> (<span class="built_in">AVMetadataFaceObject</span> *face <span class="keyword">in</span> transformedFaces) &#123;</span><br><span class="line">                <span class="built_in">NSNumber</span> *faceId = @(face.faceID);</span><br><span class="line">                [lostFaces removeObject:faceId];</span><br><span class="line">                </span><br><span class="line">                <span class="built_in">CALayer</span> *layer = <span class="keyword">self</span>.faceLayers[faceId];</span><br><span class="line">                <span class="keyword">if</span> (!layer) &#123;</span><br><span class="line">                    layer = [<span class="built_in">CALayer</span> layer];</span><br><span class="line">                    layer.borderWidth = <span class="number">5.0</span>f;</span><br><span class="line">                    layer.borderColor = [<span class="built_in">UIColor</span> colorWithRed:<span class="number">0.188</span> green:<span class="number">0.517</span> blue:<span class="number">0.877</span> alpha:<span class="number">1.000</span>].CGColor;</span><br><span class="line">                    [<span class="keyword">self</span>.previewLayer addSublayer:layer];</span><br><span class="line">                    <span class="keyword">self</span>.faceLayers[faceId] = layer;</span><br><span class="line">                &#125;</span><br><span class="line">                layer.transform = <span class="built_in">CATransform3DIdentity</span>;</span><br><span class="line">                layer.frame = face.bounds;</span><br><span class="line">                </span><br><span class="line">                <span class="keyword">if</span> (face.hasRollAngle) &#123;</span><br><span class="line">                    layer.transform = <span class="built_in">CATransform3DConcat</span>(layer.transform, [<span class="keyword">self</span> transformForRollAngle:face.rollAngle]);</span><br><span class="line">                &#125;</span><br><span class="line">                </span><br><span class="line">                <span class="keyword">if</span> (face.hasYawAngle) &#123;</span><br><span class="line">                    <span class="built_in">NSLog</span>(<span class="string">@"%f"</span>, face.yawAngle);</span><br><span class="line">                    layer.transform = <span class="built_in">CATransform3DConcat</span>(layer.transform, [<span class="keyword">self</span> transformForYawAngle:face.yawAngle]);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            </span><br><span class="line">            <span class="keyword">for</span> (<span class="built_in">NSNumber</span> *faceID <span class="keyword">in</span> lostFaces) &#123;</span><br><span class="line">                <span class="built_in">CALayer</span> *layer = <span class="keyword">self</span>.faceLayers[faceID];</span><br><span class="line">                [layer removeFromSuperlayer];</span><br><span class="line">                [<span class="keyword">self</span>.faceLayers removeObjectForKey:faceID];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line">        </span><br><span class="line"><span class="comment">// Rotate around Z-axis</span></span><br><span class="line">- (<span class="built_in">CATransform3D</span>)transformForRollAngle:(<span class="built_in">CGFloat</span>)rollAngleInDegrees &#123;        <span class="comment">// 3</span></span><br><span class="line">    <span class="built_in">CGFloat</span> rollAngleInRadians = THDegreesToRadians(rollAngleInDegrees);</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">CATransform3DMakeRotation</span>(rollAngleInRadians, <span class="number">0.0</span>f, <span class="number">0.0</span>f, <span class="number">1.0</span>f);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Rotate around Y-axis</span></span><br><span class="line">- (<span class="built_in">CATransform3D</span>)transformForYawAngle:(<span class="built_in">CGFloat</span>)yawAngleInDegrees &#123;          <span class="comment">// 5</span></span><br><span class="line">    <span class="built_in">CGFloat</span> yawAngleInRadians = THDegreesToRadians(yawAngleInDegrees);</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">CATransform3D</span> yawTransform = <span class="built_in">CATransform3DMakeRotation</span>(yawAngleInRadians, <span class="number">0.0</span>f, <span class="number">-1.0</span>f, <span class="number">0.0</span>f);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">CATransform3DConcat</span>(yawTransform, [<span class="keyword">self</span> orientationTransform]);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="built_in">CATransform3D</span>)orientationTransform &#123;                                     <span class="comment">// 6</span></span><br><span class="line">    <span class="built_in">CGFloat</span> angle = <span class="number">0.0</span>;</span><br><span class="line">    <span class="keyword">switch</span> ([<span class="built_in">UIDevice</span> currentDevice].orientation) &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="built_in">UIDeviceOrientationPortraitUpsideDown</span>:</span><br><span class="line">            angle = M_PI;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> <span class="built_in">UIDeviceOrientationLandscapeRight</span>:</span><br><span class="line">            angle = -M_PI / <span class="number">2.0</span>f;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> <span class="built_in">UIDeviceOrientationLandscapeLeft</span>:</span><br><span class="line">            angle = M_PI / <span class="number">2.0</span>f;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">default</span>: <span class="comment">// as UIDeviceOrientationPortrait</span></span><br><span class="line">            angle = <span class="number">0.0</span>;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">CATransform3DMakeRotation</span>(angle, <span class="number">0.0</span>f, <span class="number">0.0</span>f, <span class="number">1.0</span>f);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="built_in">CGFloat</span> THDegreesToRadians(<span class="built_in">CGFloat</span> degrees) &#123;</span><br><span class="line">    <span class="keyword">return</span> degrees * M_PI / <span class="number">180</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们用一个字典来管理每一个展示一个 face 对象的 layer，它的 key 值即 faceID，回调时更新当前已存在的 faceLayer，移除不需要的 faceLayer。其次对每一个 face，根据其 rollAngle 和 yawAngle 要通过 transfor 来变换展示的矩阵。</p>
+<p>还要注意一点，transformedMetadataObjectForMetadataObject 方法可以将设备坐标系上的数据转换到视图坐标系上，设备坐标系的范围是 (0, 0) 到 （1，1）。</p>
+<h2 id="3-机器可读代码识别"><a href="#3-机器可读代码识别" class="headerlink" title="3. 机器可读代码识别"></a>3. 机器可读代码识别</h2><p>机器可读代码包括一维条码和二维码等，AVFoundation 支持多种一维码和三种二维码，其中最常见的是 QR 码，也即二维码。</p>
+<p>扫码仍然需要用到 AVMetadataObject 对象，首先加入到捕捉会话中。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">self</span>.metaDataOutput = [[<span class="built_in">AVCaptureMetadataOutput</span> alloc] init];</span><br><span class="line"><span class="keyword">if</span> ([<span class="keyword">self</span>.captureSession canAddOutput:<span class="keyword">self</span>.metaDataOutput]) &#123;</span><br><span class="line">    [<span class="keyword">self</span>.captureSession addOutput:<span class="keyword">self</span>.metaDataOutput];</span><br><span class="line">    [<span class="keyword">self</span>.metaDataOutput setMetadataObjectsDelegate:<span class="keyword">self</span> queue:dispatch_get_main_queue()];</span><br><span class="line">    <span class="built_in">NSArray</span> *types = @[<span class="built_in">AVMetadataObjectTypeQRCode</span>];</span><br><span class="line">    <span class="keyword">self</span>.metaDataOutput.metadataObjectTypes = types;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>然后实现委托方法</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)captureOutput:(<span class="built_in">AVCaptureOutput</span> *)output didOutputMetadataObjects:(<span class="built_in">NSArray</span>&lt;__kindof <span class="built_in">AVMetadataObject</span> *&gt; *)metadataObjects fromConnection:(<span class="built_in">AVCaptureConnection</span> *)connection</span><br><span class="line">&#123;</span><br><span class="line">    [metadataObjects enumerateObjectsUsingBlock:^(__kindof <span class="built_in">AVMetadataObject</span> * _Nonnull obj, <span class="built_in">NSUInteger</span> idx, <span class="built_in">BOOL</span> * _Nonnull stop) &#123;</span><br><span class="line">        <span class="keyword">if</span> ([obj isKindOfClass:[<span class="built_in">AVMetadataMachineReadableCodeObject</span> <span class="keyword">class</span>]]) &#123;</span><br><span class="line">            <span class="built_in">NSLog</span>(<span class="string">@"%@"</span>, ((<span class="built_in">AVMetadataMachineReadableCodeObject</span>*)obj).stringValue);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对于一个 AVMetadataMachineReadableCodeObject，有以下三个重要属性</p>
+<ul>
+<li>stringValue，用于表示二维码编码信息</li>
+<li>bounds，用于表示二维码的矩形边界</li>
+<li>corners，一个角点字典表示的数组，比 bounds 表示的二维码区域更精确</li>
+</ul>
+<p>所以可以通过以上属性，在 UI 界面上对二维码区域进行高亮展示</p>
+<p>首先需要注意，一个从 captureSession 获得的 AVMetadataMachineReadableCodeObject，其坐标是设备坐标系下的坐标，需要进行坐标转换</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">NSArray</span> *)transformedCodesFromCodes:(<span class="built_in">NSArray</span> *)codes &#123;</span><br><span class="line">    <span class="built_in">NSMutableArray</span> *transformedCodes = [<span class="built_in">NSMutableArray</span> array];</span><br><span class="line">    [codes enumerateObjectsUsingBlock:^(<span class="keyword">id</span>  _Nonnull obj, <span class="built_in">NSUInteger</span> idx, <span class="built_in">BOOL</span> * _Nonnull stop) &#123;</span><br><span class="line">        <span class="built_in">AVMetadataObject</span> *transformedCode = [<span class="keyword">self</span>.previewLayer transformedMetadataObjectForMetadataObject:obj];</span><br><span class="line">        [transformedCodes addObject:transformedCode];</span><br><span class="line">    &#125;];</span><br><span class="line">    <span class="keyword">return</span> [transformedCodes <span class="keyword">copy</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其次，对于每一个 AVMetadataMachineReadableCodeObject 对象，其 bounds 属性由于是 CGRect，所以可以直接绘制出一个 UIBezierPath 对象</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">UIBezierPath</span> *)bezierPathForBounds:(<span class="built_in">CGRect</span>)bounds &#123;</span><br><span class="line">    <span class="keyword">return</span> [<span class="built_in">UIBezierPath</span> bezierPathWithRect:bounds];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>而 corners 属性是一个字典，需要手动生成 CGPoint，然后进行连线操作，生成 UIBezierPath 对象</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">UIBezierPath</span> *)bezierPathForCorners:(<span class="built_in">NSArray</span> *)corners &#123;</span><br><span class="line">    <span class="built_in">UIBezierPath</span> *path = [<span class="built_in">UIBezierPath</span> bezierPath];</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; corners.count; i++) &#123;</span><br><span class="line">        <span class="built_in">CGPoint</span> point = [<span class="keyword">self</span> pointForCorner:corners[i]];</span><br><span class="line">        <span class="keyword">if</span> (i == <span class="number">0</span>) &#123;</span><br><span class="line">            [path moveToPoint:point];</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            [path addLineToPoint:point];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    [path closePath];</span><br><span class="line">    <span class="keyword">return</span> path;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="built_in">CGPoint</span>)pointForCorner:(<span class="built_in">NSDictionary</span> *)corner &#123;</span><br><span class="line">    <span class="built_in">CGPoint</span> point;</span><br><span class="line">    <span class="built_in">CGPointMakeWithDictionaryRepresentation</span>((<span class="built_in">CFDictionaryRef</span>)corner, &amp;point);</span><br><span class="line">    <span class="keyword">return</span> point;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>corners 字典的形式大致如下所示，可以调用 CGPointMakeWithDictionaryRepresentation 便捷函数将其转换为 CGPoint 形式。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">    X = <span class="string">"336.9957633633747"</span>;</span><br><span class="line"></span><br><span class="line">    Y = <span class="string">"265.7881843381643"</span>;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>一般来说一个 corners 里会包含 4 个 corner 字典。</p>
+<p>获取到每一个 code 对应的两个 UIBezierPath 对象后，就可以在视图上添加相应的 CALayer 来显示高亮区域了。</p>
+<h2 id="4-使用高帧率捕捉"><a href="#4-使用高帧率捕捉" class="headerlink" title="4. 使用高帧率捕捉"></a>4. 使用高帧率捕捉</h2><p>高帧率捕获视频是在 iOS 7 以后加入的，具有更逼真的效果和更好的清晰度，对于细节的加强和动作流畅度的提升非常明显，尤其是录制快速移动的内容时更为明显，也可以实现高质量的慢动作视频效果。</p>
+<p>实现高帧率捕捉的基本思路是，通过设备的 formats 属性获取所有支持的格式，也就是 AVCaptureDeviceFormat 对象；然后根据对象的 videoSupportedFrameRateRanges 属性，可以获知其所支持的最小帧率、最大帧率及时长信息；然后手动设置设备的格式和帧时长。</p>
+<p>首先写一个 AVCaptureDevice 的 category，获取支持格式的最大帧率的方法如下</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">AVCaptureDeviceFormat</span> *maxFormat = <span class="literal">nil</span>;</span><br><span class="line"><span class="built_in">AVFrameRateRange</span> *maxFrameRateRange = <span class="literal">nil</span>;</span><br><span class="line"><span class="keyword">for</span> (<span class="built_in">AVCaptureDeviceFormat</span> *format <span class="keyword">in</span> <span class="keyword">self</span>.formats) &#123;</span><br><span class="line">    FourCharCode codecType = <span class="built_in">CMVideoFormatDescriptionGetCodecType</span>(format.formatDescription);</span><br><span class="line">    <span class="keyword">if</span> (codecType == kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange) &#123;</span><br><span class="line">        <span class="built_in">NSArray</span> *frameRateRanges = format.videoSupportedFrameRateRanges;</span><br><span class="line">        <span class="keyword">for</span> (<span class="built_in">AVFrameRateRange</span> *range <span class="keyword">in</span> frameRateRanges) &#123;</span><br><span class="line">            <span class="keyword">if</span> (range.maxFrameRate &gt; maxFrameRateRange.maxFrameRate) &#123;</span><br><span class="line">                maxFormat = format;</span><br><span class="line">                maxFrameRateRange = range;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>codecType 是一个无符号32位的数据类型，但是是由四个字符对应的四个字节组成，一般可能值为 “420v” 或 “420f”，这里选取 420v 格式来配置。</p>
+<p>可以通过判断最大帧率是否大于 30，来判断设备是否支持高帧率</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">BOOL</span>)isHighFrameRate &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">self</span>.frameRateRange.maxFrameRate &gt; <span class="number">30.0</span>f;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>然后就可以进行配置了</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> ([<span class="keyword">self</span> hasMediaType:<span class="built_in">AVMediaTypeVideo</span>] &amp;&amp; [<span class="keyword">self</span> lockForConfiguration:error] &amp;&amp; [<span class="keyword">self</span>.activeCamera supportsHighFrameRateCapture]) &#123;</span><br><span class="line">    <span class="built_in">CMTime</span> minFrameDuration = <span class="keyword">self</span>.frameRateRange.minFrameDuration;</span><br><span class="line">    <span class="keyword">self</span>.activeFormat = <span class="keyword">self</span>.format;</span><br><span class="line">    <span class="keyword">self</span>.activeVideoMinFrameDuration = minFrameDuration;</span><br><span class="line">    <span class="keyword">self</span>.activeVideoMaxFrameDuration = minFrameDuration;</span><br><span class="line">    [<span class="keyword">self</span> unlockForConfiguration];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里首先锁定了设备，然后将最小帧时长和最大帧时长都设置成 minFrameDuration，帧时长与帧率是倒数关系，所以最大帧率对应最小帧时长。</p>
+<p>播放时可以针对 AVPlayer 设置不同的 rate 实现变速播放，在 iphone8plus 上实测，如果 rate 在 0 到 0.5 之间， 则实际播放速率仍为 0.5。</p>
+<p>另外要注意设置 AVPlayerItem 的 audioTimePitchAlgorithm 属性，这个属性允许你指定当视频正在各种帧率下播放的时候如何播放音频</p>
+<ul>
+<li>AVAudioTimePitchAlgorithmLowQualityZeroLatency 质量低,适合快进,快退或低质量语音</li>
+<li>AVAudioTimePitchAlgoruthmTimeDomain 质量适中，计算成本较低，适合语音</li>
+<li>AVAudioTimePitchAlgorithmSpectral 最高质量，最昂贵的计算，保留了原来的项目间距</li>
+<li>AVAudioTimePitchAlgorithmVarispeed 高品质的播放没有音高校正</li>
+</ul>
+<p>通常选择 AVAudioTimePitchAlgorithmSpectral 或 AVAudioTimePitchAlgoruthmTimeDomain 即可。</p>
+<h2 id="5-视频处理"><a href="#5-视频处理" class="headerlink" title="5. 视频处理"></a>5. 视频处理</h2><p>AVCaptureMovieFileOutput 可以简单地捕捉视频，但是不能进行视频数据交互，因此需要使用 AVCaptureVideoDataOutput 类。AVCaptureVideoDataOutput 是一个 AVCaptureOutput 的子类，可以直接访问摄像头传感器捕捉到的视频帧。与之对应的是处理音频输入的 AVCaptureAudioDataOutput 类。</p>
+<p>AVCaptureVideoDataOutput 有一个遵循 AVCaptureVideoDataOutputSampleBufferDelegate 协议的委托对象，它有下面两个主要方法</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)captureOutput:(<span class="built_in">AVCaptureOutput</span> *)output didOutputSampleBuffer:(<span class="built_in">CMSampleBufferRef</span>)sampleBuffer fromConnection:(<span class="built_in">AVCaptureConnection</span> *)connection; <span class="comment">// 有新的视频帧写入时调用，数据会基于 output 的 videoSetting 进行解码或重新编码</span></span><br><span class="line">- (<span class="keyword">void</span>)captureOutput:(<span class="built_in">AVCaptureOutput</span> *)output didDropSampleBuffer:(<span class="built_in">CMSampleBufferRef</span>)sampleBuffer fromConnection:(<span class="built_in">AVCaptureConnection</span> *)connection; <span class="comment">// 有迟到的视频帧被丢弃时调用，通常是因为在上面一个方法里进行了比较耗时的操作</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="5-1-CMSampleBufferRef"><a href="#5-1-CMSampleBufferRef" class="headerlink" title="5.1 CMSampleBufferRef"></a>5.1 CMSampleBufferRef</h3><p>CMSampleBufferRef 是一个由 Core Media 框架提供的 Core Foundation 风格的对象，用于在媒体管道中传输数字样本。</p>
+<h4 id="5-1-1-样本数据"><a href="#5-1-1-样本数据" class="headerlink" title="5.1.1 样本数据"></a>5.1.1 样本数据</h4><p>可以对 CMSampleBufferRef 的每一个 Core Video 视频帧进行处理</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> BYTES_PER_PIXEL = <span class="number">4</span>;</span><br><span class="line">CVPixelBufferRef pixelBuffer = <span class="built_in">CMSampleBufferGetImageBuffer</span>(sampleBuffer); <span class="comment">//CVPixelBufferRef 在主内存中保存像素数据</span></span><br><span class="line">CVPixelBufferLockBaseAddress(pixelBuffer, <span class="number">0</span>); <span class="comment">// 获取相应内存块的锁</span></span><br><span class="line">size_t bufferWidth = CVPixelBufferGetWidth(pixelBuffer);</span><br><span class="line">size_t bufferHeight = CVPixelBufferGetHeight(pixelBuffer);<span class="comment">// 获取像素宽高</span></span><br><span class="line"><span class="keyword">unsigned</span> <span class="keyword">char</span> *pixel = (<span class="keyword">unsigned</span> <span class="keyword">char</span> *)CVPixelBufferGetBaseAddress(pixelBuffer); <span class="comment">// 获取像素 buffer 的起始位置</span></span><br><span class="line"><span class="keyword">unsigned</span> <span class="keyword">char</span> grayPixel;</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> row = <span class="number">0</span>; row &lt; bufferHeight; row++) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> column = <span class="number">0</span>; column &lt; bufferWidth; column ++) &#123; <span class="comment">// 遍历每一个像素点</span></span><br><span class="line">        grayPixel = (pixel[<span class="number">0</span>] + pixel[<span class="number">1</span>] + pixel[<span class="number">2</span>])/<span class="number">3.0</span>;</span><br><span class="line">        pixel[<span class="number">0</span>] = pixel[<span class="number">1</span>] = pixel[<span class="number">2</span>] = grayPixel;</span><br><span class="line">        pixel += BYTES_PER_PIXEL;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">CIImage</span> *ciImage = [<span class="built_in">CIImage</span> imageWithCVPixelBuffer:pixelBuffer]; <span class="comment">// 通过 buffer 生成对应的 CIImage</span></span><br><span class="line">CVPixelBufferUnlockBaseAddress(pixelBuffer, <span class="number">0</span>); <span class="comment">// 解除锁</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="5-1-2-格式描述"><a href="#5-1-2-格式描述" class="headerlink" title="5.1.2 格式描述"></a>5.1.2 格式描述</h4><p>CMSampleBufferRef 还提供了每一帧数据的格式信息，CMFormatDescription.h 头文件定义了大量函数来获取各种信息。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">CMFormatDescriptionRef formatDescription &#x3D; CMSampleBufferGetFormatDescription(sampleBuffer);</span><br><span class="line">CMMediaType mediaType &#x3D; CMFormatDescriptionGetMediaType(formatDescription);</span><br></pre></td></tr></table></figure>
+
+<h4 id="5-1-3-时间信息"><a href="#5-1-3-时间信息" class="headerlink" title="5.1.3 时间信息"></a>5.1.3 时间信息</h4><figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">CMTime</span> presentation = <span class="built_in">CMSampleBufferGetPresentationTimeStamp</span>(sampleBuffer); <span class="comment">// 获取帧样本的原始时间戳</span></span><br><span class="line"><span class="built_in">CMTime</span> decode = <span class="built_in">CMSampleBufferGetDecodeTimeStamp</span>(sampleBuffer); <span class="comment">// 获取帧样本的解码时间戳</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="5-1-4-附加元数据"><a href="#5-1-4-附加元数据" class="headerlink" title="5.1.4 附加元数据"></a>5.1.4 附加元数据</h4><figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">CFDictionaryRef</span> exif = (<span class="built_in">CFDictionaryRef</span>)<span class="built_in">CMGetAttachment</span>(sampleBuffer, kCGImagePropertyExifDictionary, <span class="literal">NULL</span>);</span><br></pre></td></tr></table></figure>
+
+<p>CMAttachment.h 定义了 CMAttachment 形式的元数据协议，可以获取每一帧的底层元数据，如上述获取到图片 Exif 格式的元数据如下</p>
+<figure class="highlight nix"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">    <span class="attr">ApertureValue</span> = <span class="string">"1.6959938131099"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="attr">BrightnessValue</span> = <span class="string">"-8.636618904801434"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="attr">ColorSpace</span> = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">    <span class="attr">DateTimeDigitized</span> = <span class="string">"2018:04:24 14:17:33"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="attr">DateTimeOriginal</span> = <span class="string">"2018:04:24 14:17:33"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="attr">ExposureBiasValue</span> = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="attr">ExposureTime</span> = <span class="string">"0.05882352941176471"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="attr">FNumber</span> = <span class="string">"1.8"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="attr">Flash</span> = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="attr">FocalLenIn35mmFilm</span> = <span class="number">28</span>;</span><br><span class="line"></span><br><span class="line">    <span class="attr">FocalLength</span> = <span class="string">"3.99"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="attr">ISOSpeedRatings</span> =     (</span><br><span class="line"></span><br><span class="line">        <span class="number">2000</span></span><br><span class="line"></span><br><span class="line">    );</span><br><span class="line"></span><br><span class="line">    <span class="attr">LensMake</span> = Apple;</span><br><span class="line"></span><br><span class="line">    <span class="attr">LensModel</span> = <span class="string">"iPhone 8 Plus back camera 3.99mm f/1.8"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="attr">LensSpecification</span> =     (</span><br><span class="line"></span><br><span class="line">        <span class="string">"3.99"</span>,</span><br><span class="line"></span><br><span class="line">        <span class="string">"3.99"</span>,</span><br><span class="line"></span><br><span class="line">        <span class="string">"1.8"</span>,</span><br><span class="line"></span><br><span class="line">        <span class="string">"1.8"</span></span><br><span class="line"></span><br><span class="line">    );</span><br><span class="line"></span><br><span class="line">    <span class="attr">MeteringMode</span> = <span class="number">5</span>;</span><br><span class="line"></span><br><span class="line">    <span class="attr">PixelXDimension</span> = <span class="number">1440</span>;</span><br><span class="line"></span><br><span class="line">    <span class="attr">PixelYDimension</span> = <span class="number">1080</span>;</span><br><span class="line"></span><br><span class="line">    <span class="attr">SceneType</span> = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">    <span class="attr">SensingMethod</span> = <span class="number">2</span>;</span><br><span class="line"></span><br><span class="line">    <span class="attr">ShutterSpeedValue</span> = <span class="string">"4.0608667208218"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="attr">SubsecTimeDigitized</span> = <span class="number">067</span>;</span><br><span class="line"></span><br><span class="line">    <span class="attr">SubsecTimeOriginal</span> = <span class="number">067</span>;</span><br><span class="line"></span><br><span class="line">    <span class="attr">WhiteBalance</span> = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-2-AVCaptureVideoDataOutput"><a href="#5-2-AVCaptureVideoDataOutput" class="headerlink" title="5.2 AVCaptureVideoDataOutput"></a>5.2 AVCaptureVideoDataOutput</h3><p>AVCaptureVideoDataOutput 的配置与 AVCaptureMovieFileOutput 大致相同，但要指明它的委托对象和回调队列。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">self</span>.videoDataOutput = [[<span class="built_in">AVCaptureVideoDataOutput</span> alloc] init];</span><br><span class="line"><span class="keyword">self</span>.videoDataOutput.videoSettings = @&#123;(<span class="keyword">id</span>)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_32BGRA)&#125;; <span class="comment">// 摄像头的初始格式为双平面 420v，这是一个 YUV 格式，而 OpenGL ES 常用 BGRA 格式</span></span><br><span class="line"><span class="keyword">if</span> ([<span class="keyword">self</span>.captureSession canAddOutput:<span class="keyword">self</span>.videoDataOutput]) &#123;</span><br><span class="line">    [<span class="keyword">self</span>.captureSession addOutput:<span class="keyword">self</span>.videoDataOutput];</span><br><span class="line">    [<span class="keyword">self</span>.videoDataOutput setSampleBufferDelegate:<span class="keyword">self</span> queue:dispatch_get_main_queue()];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>为了确保视频帧按顺序传递，所以这里的队列要求必须是串行队列。</p>
+
+    </div>
+
+    
+    
+    
+      
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/04/18/AVFoundation/AVFoundation%E6%8D%95%E6%8D%89%E5%AA%92%E4%BD%93/" rel="prev" title="AVFoundation捕捉媒体">
+      <i class="fa fa-chevron-left"></i> AVFoundation捕捉媒体
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/04/24/AVFoundation/AVFoundation-%E5%85%A5%E9%97%A8/" rel="next" title="AVFoundation-入门">
+      AVFoundation-入门 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-视频缩放"><span class="nav-text">1. 视频缩放</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-人脸识别"><span class="nav-text">2. 人脸识别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-机器可读代码识别"><span class="nav-text">3. 机器可读代码识别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-使用高帧率捕捉"><span class="nav-text">4. 使用高帧率捕捉</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-视频处理"><span class="nav-text">5. 视频处理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-CMSampleBufferRef"><span class="nav-text">5.1 CMSampleBufferRef</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#5-1-1-样本数据"><span class="nav-text">5.1.1 样本数据</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-1-2-格式描述"><span class="nav-text">5.1.2 格式描述</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-1-3-时间信息"><span class="nav-text">5.1.3 时间信息</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-1-4-附加元数据"><span class="nav-text">5.1.4 附加元数据</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-AVCaptureVideoDataOutput"><span class="nav-text">5.2 AVCaptureVideoDataOutput</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Yasic Yu"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Yasic Yu</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">46</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Yasic" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Yasic" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:yuxuan2580@gmail.com" title="E-Mail → mailto:yuxuan2580@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yasic Yu</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.1
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

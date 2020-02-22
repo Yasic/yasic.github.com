@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Muse","version":"7.7.1","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":3,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="尽可能通过 IB 来创建你的约束。IB 能提供很多工具来可视化、编辑、管理和调试你的约束。IB 也可以通过分析你的约束，在设计期就发现很多常见的错误，使你能够在 app 运行之前找到并修复你的问题。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Autolayout指南·AutoLayout 高级指南·编程创建约束">
+<meta property="og:url" content="http://yoursite.com/2018/01/15/AutoLayout/Autolayout%E6%8C%87%E5%8D%97%C2%B7AutoLayout%20%E9%AB%98%E7%BA%A7%E6%8C%87%E5%8D%97%C2%B7%E7%BC%96%E7%A8%8B%E5%88%9B%E5%BB%BA%E7%BA%A6%E6%9D%9F/index.html">
+<meta property="og:site_name" content="Yasic Yu">
+<meta property="og:description" content="尽可能通过 IB 来创建你的约束。IB 能提供很多工具来可视化、编辑、管理和调试你的约束。IB 也可以通过分析你的约束，在设计期就发现很多常见的错误，使你能够在 app 运行之前找到并修复你的问题。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/view_formula_2x.png">
+<meta property="article:published_time" content="2018-01-14T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-02-22T08:11:34.024Z">
+<meta property="article:author" content="Yasic Yu">
+<meta property="article:tag" content="iOS">
+<meta property="article:tag" content=" ObjectiveC">
+<meta property="article:tag" content=" Swift">
+<meta property="article:tag" content=" XCode">
+<meta property="article:tag" content=" Computer">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/view_formula_2x.png">
+
+<link rel="canonical" href="http://yoursite.com/2018/01/15/AutoLayout/Autolayout%E6%8C%87%E5%8D%97%C2%B7AutoLayout%20%E9%AB%98%E7%BA%A7%E6%8C%87%E5%8D%97%C2%B7%E7%BC%96%E7%A8%8B%E5%88%9B%E5%BB%BA%E7%BA%A6%E6%9D%9F/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>Autolayout指南·AutoLayout 高级指南·编程创建约束 | Yasic Yu</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Yasic Yu</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">In Code We Trust</p>
+  </div>
+
+  <div class="site-nav-right"></div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类<span class="badge">4</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">46</span></a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/yasic" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/01/15/AutoLayout/Autolayout%E6%8C%87%E5%8D%97%C2%B7AutoLayout%20%E9%AB%98%E7%BA%A7%E6%8C%87%E5%8D%97%C2%B7%E7%BC%96%E7%A8%8B%E5%88%9B%E5%BB%BA%E7%BA%A6%E6%9D%9F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Yasic Yu">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yasic Yu">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Autolayout指南·AutoLayout 高级指南·编程创建约束
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-01-15 00:00:00" itemprop="dateCreated datePublished" datetime="2018-01-15T00:00:00+08:00">2018-01-15</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/AutoLayout/" itemprop="url" rel="index">
+                    <span itemprop="name">AutoLayout</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">尽可能通过 IB 来创建你的约束。IB 能提供很多工具来可视化、编辑、管理和调试你的约束。IB 也可以通过分析你的约束，在设计期就发现很多常见的错误，使你能够在 app 运行之前找到并修复你的问题。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="012-Autolayout指南·AutoLayout-高级指南"><a href="#012-Autolayout指南·AutoLayout-高级指南" class="headerlink" title="012-Autolayout指南·AutoLayout 高级指南"></a>012-Autolayout指南·AutoLayout 高级指南</h1><h2 id="编程创建约束"><a href="#编程创建约束" class="headerlink" title="编程创建约束"></a>编程创建约束</h2><p>尽可能通过 IB 来创建你的约束。IB 能提供很多工具来可视化、编辑、管理和调试你的约束。IB 也可以通过分析你的约束，在设计期就发现很多常见的错误，使你能够在 app 运行之前找到并修复你的问题。</p>
+<p>IB 能够管理不断增长的任务。你可以在 IB 中直接创建出几乎任何类型的约束（查看 <a href="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/WorkingwithConstraintsinInterfaceBuidler.html#//apple_ref/doc/uid/TP40010853-CH10-SW1" target="_blank" rel="noopener">在 IB 中使用 约束</a>）。你也可以指定基于特定 size-class 的约束（查看 <a href="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/TypesofErrors.html#//apple_ref/doc/uid/TP40010853-CH22-SW1" target="_blank" rel="noopener">调试 AutoLayout</a>），你甚至可以利用像 stackview 这样的新工具在运行时动态添加或移除 view（查看 <a href="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/LayoutUsingStackViews.html#//apple_ref/doc/uid/TP40010853-CH11-SW19" target="_blank" rel="noopener">Dynamic Stack View</a>）。然后，一些动态改变可能只能用代码来管理。</p>
+<p>你有三种选择来通过编程创建约束：你可以使用 layout anchor、 NSLayoutConstraint 类，以及 VFL 语言。</p>
+<h3 id="Layout-Anchor"><a href="#Layout-Anchor" class="headerlink" title="Layout Anchor"></a>Layout Anchor</h3><p>NSLayoutAnchor 类为创建约束提供了一个流畅的界面。要使用 API，你只需要访问你需要约束的元素的 anchor 属性。例如，ViewController 的顶部和底部 layoutGuide 有 topAnchor、bottomAnchor 和 heightAnchor 属性。另一方面 view 则将锚点暴露在其边缘，中心，大小和基线上。</p>
+<blockquote>
+<p>注意：</p>
+<p>在 iOS 中，view 同样有 layoutMarginsGuide 和 readableContentGuide 属性，这些属性暴露了一个 UILayoutGuide 对象，这个对象分别表示了 view 的边界和可读的内容边界。这些 guide 反过来暴露了 Anchor 的边缘，中心和大小。</p>
+<p>在用编程创建边界和可读内容边界约束时可以使用这些 guide。</p>
+</blockquote>
+<p>LayoutAnchor 能够使你用一种便于阅读和紧凑的格式来创建约束。正如下面展示的，它们暴露了一系列方法来创建不同类型的约束</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Get the superview's layout</span></span><br><span class="line">let margins = view.layoutMarginsGuide</span><br><span class="line"> </span><br><span class="line"><span class="comment">// Pin the leading edge of myView to the margin's leading edge</span></span><br><span class="line">myView.leadingAnchor.constraint(equalTo: margins.leadingAnchor).isActive = <span class="literal">true</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">// Pin the trailing edge of myView to the margin's trailing edge</span></span><br><span class="line">myView.trailingAnchor.constraint(equalTo: margins.trailingAnchor).isActive = <span class="literal">true</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">// Give myView a 1:2 aspect ratio</span></span><br><span class="line">myView.heightAnchor.constraint(equalTo: myView.widthAnchor, multiplier: <span class="number">2.0</span>).isActive = <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+
+<p>如同 <a href="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/AnatomyofaConstraint.html#//apple_ref/doc/uid/TP40010853-CH9-SW1" target="_blank" rel="noopener">详解约束</a> 所描述的，一个约束就是一个线性等式</p>
+<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/view_formula_2x.png" width=500>
+
+<p>LayoutAnchor 有许多不同的方法来创建约束。每一个方法都包含等式中一些影响到布局的元素的参数。所以在下面这行代码里</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">myView.leadingAnchor.constraint(equalTo: margins.leadingAnchor).isActive = <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+
+<p>这些符号对应于等式里的这些部分</p>
+<table>
+<thead>
+<tr>
+<th>等式</th>
+<th>符号</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Item 1</td>
+<td>myView</td>
+</tr>
+<tr>
+<td>Attribute 1</td>
+<td>LeadingAnch</td>
+</tr>
+<tr>
+<td>Relationship</td>
+<td>constraintEqualToAnchor</td>
+</tr>
+<tr>
+<td>Multiplier</td>
+<td>None (defaults to 1.0)</td>
+</tr>
+<tr>
+<td>Item 2</td>
+<td>margins</td>
+</tr>
+<tr>
+<td>Attribute 2</td>
+<td>leadingAnchor</td>
+</tr>
+<tr>
+<td>Constant</td>
+<td>None (defaults to 0.0)</td>
+</tr>
+</tbody></table>
+<p>LayoutAnchor 也提供了额外的类型安全属性。NSLayoutAnchor 类有很多子类，这些子类为创建约束加入了类型信息和子类方法。这帮助我们防止发生非法约束的创建。例如，你只能将水平 Anchor （LeadingAnchor 或 TrailingAnchor）与其他水平 Anchor 相互约束。类似的，你只能为尺寸约束提供乘数因子。</p>
+<blockquote>
+<p>注意：</p>
+<p>这些规则并不是 NSLayoutConstraint API 所强制的，如果你创建了一个非法的约束，那么约束就会在运行时抛出异常。因此 LayoutAnchor 能够将运行时错误转换为编译期错误。</p>
+</blockquote>
+<p>了解更多信息请查看 <a href="https://developer.apple.com/documentation/appkit/nslayoutanchor" target="_blank" rel="noopener">NSLayoutAnchor 类参考</a>。</p>
+<h3 id="NSLayoutConstraint-类"><a href="#NSLayoutConstraint-类" class="headerlink" title="NSLayoutConstraint 类"></a>NSLayoutConstraint 类</h3><p>你也可以直接用 NSLayoutConstraint 类的 constraintWithItem:attribute:relatedBy:toItem:attribute:multiplier:constant: 方法来创建约束。这个方法显式地将约束关系式转换成了代码。每一个参数都对应于等式的一个部分（查看 <a href="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/AnatomyofaConstraint.html#//apple_ref/doc/uid/TP40010853-CH9-SW2" target="_blank" rel="noopener">约束关系式</a>）。</p>
+<p>不像 LayoutAnchor API 的方法，你必须为每一个参数确定一个值，即使这个参数不会影响到布局。最终的结果就是一大堆样板代码，而且一般很难阅读。例如，下面这段代码就和上一节的那句代码有一样的效果。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSLayoutConstraint</span>(item: myView, attribute: .leading, relatedBy: .equal, toItem: view, attribute: .leadingMargin, multiplier: <span class="number">1.0</span>, constant: <span class="number">0.0</span>).isActive = <span class="literal">true</span></span><br><span class="line"> </span><br><span class="line"><span class="built_in">NSLayoutConstraint</span>(item: myView, attribute: .trailing, relatedBy: .equal, toItem: view, attribute: .trailingMargin, multiplier: <span class="number">1.0</span>, constant: <span class="number">0.0</span>).isActive = <span class="literal">true</span></span><br><span class="line"> </span><br><span class="line"><span class="built_in">NSLayoutConstraint</span>(item: myView, attribute: .height, relatedBy: .equal, toItem: myView, attribute:.width, multiplier: <span class="number">2.0</span>, constant:<span class="number">0.0</span>).isActive = <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>注意：</p>
+<p>在 iOS 中，NSLayoutAttribute 包含了表示一个 view 的边距的枚举值。这意味着你不需要通过 layoutMarginsGuide 属性就可以为边距创建约束。但是你仍然需要使用 readableContentGuide 来创建可阅读内容 guide 的约束。</p>
+</blockquote>
+<p>不像 LayoutAnchor API，NSLayoutConstraint 方法不能高亮一个特定约束的重要特性。因此，在浏览代码时很容易就会遗留一些重要的细节。此外，编译器不会对约束执行任何静态检查。你可以自由地创建非法约束，这些约束会在运行时抛出异常。所以除非你需要支持 iOS 8 或者 OS X v10.10 之前的版本，否则你应当考虑将代码迁移到更新的 LayoutAnchor API 上。</p>
+<p>了解更多信息请查阅 <a href="https://developer.apple.com/documentation/appkit/nslayoutconstraint" target="_blank" rel="noopener">NSLayoutConstraint 类参考</a></p>
+<h3 id="视觉格式语言-VFL"><a href="#视觉格式语言-VFL" class="headerlink" title="视觉格式语言 VFL"></a>视觉格式语言 VFL</h3><p>VFL 使你可以使用类似 ASCII 中的字符串来定义约束。这提供了一种对于约束的可视化描述性表达。VFL 有以下优点和不足：</p>
+<ul>
+<li>AutoLayout 向控制台打印约束时用的是 VFL，所以使用 VFL 创建的代码会和调试信息非常类似</li>
+<li>VFL 能允许你利用一种非常紧凑的格式，一次创建非常多的约束</li>
+<li>VFL 能保证你创建的一定是合法约束</li>
+<li>VFL 强调完整性的良好可视化,因此，使用 VFL 不能创建一些约束（例如，宽高比）</li>
+<li>编译器没有任何办法验证这些字符串。你只能在运行时测试和发现你的错误</li>
+</ul>
+<p>下面就是一个用 VFL 创建的约束，它的效果与上面两节实现的效果一样</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">let views = [<span class="string">"myView"</span> : myView]</span><br><span class="line">let formatString = <span class="string">"|-[myView]-|"</span></span><br><span class="line"> </span><br><span class="line">let constraints = <span class="built_in">NSLayoutConstraint</span>.constraints(withVisualFormat: formatString, options: .alignAllTop, metrics: <span class="literal">nil</span>, views: views)</span><br><span class="line"> </span><br><span class="line"><span class="built_in">NSLayoutConstraint</span>.activate(constraints)</span><br></pre></td></tr></table></figure>
+
+<p>示例代码创建和激活了头部和尾部的约束。VFL 语言在使用默认空白时总是为父视图的边距创建 0pt 的约束，所以这些约束与前面两节的示例效果相同。但是 VFL 不能创建长宽比的约束。</p>
+<p>如果你在一行里用很多元素创建了一个更加复杂的 view，VFL 会指定竖直和水平方向上的空白间距。正如示例所写的那样，”Align All Top” 选项不会影响布局，因为该示例只有一个视图（不包括父视图）。</p>
+<p>为了利用 VFL 创建约束，你应当</p>
+<ul>
+<li>创建 view 字典。这个字典必须以字符串作为键，以视图对象（或其他可以在“自动布局”中约束的元素，例如 LayoutGuide）作为值，使用键来识别字符串对应的视图。</li>
+</ul>
+<blockquote>
+<p>注意：</p>
+<p>当使用 objective-c 时，可以使用 NSDictionaryOfVariableBindings 宏命令来创建 view 字典。在 Swift 里则需要你手动创建字典。</p>
+</blockquote>
+<ul>
+<li>（可选）创建度量字典。这个字典必须以字符串作为键，NSNumber 对象作为值。使用键来表示字符串对应的约束值</li>
+<li>通过放置一行或一列元素来创建格式化字符串</li>
+<li>调用  NSLayoutConstraint 类的 constraintsWithVisualFormat:options:metrics:views: 方法，这个方法能返回一个数组，其中包含所有约束</li>
+<li>通过调用 NSLayoutConstraint 类的 activateConstraints: 方法来激活约束</li>
+</ul>
+<p>了解更多信息请查阅附录的 <a href="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/VisualFormatLanguage.html#//apple_ref/doc/uid/TP40010853-CH27-SW1" target="_blank" rel="noopener">视觉格式语言</a></p>
+
+    </div>
+
+    
+    
+    
+      
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/01/14/AutoLayout/Autolayout%E6%8C%87%E5%8D%97%C2%B7%E8%B0%83%E8%AF%95%20AutoLayout%C2%B7%E9%80%BB%E8%BE%91%E9%94%99%E8%AF%AF/" rel="prev" title="Autolayout指南·调试 AutoLayout·逻辑错误">
+      <i class="fa fa-chevron-left"></i> Autolayout指南·调试 AutoLayout·逻辑错误
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/01/15/AutoLayout/Autolayout%E6%8C%87%E5%8D%97%C2%B7%E8%B0%83%E8%AF%95%20AutoLayout%C2%B7%E8%B0%83%E8%AF%95%E6%8A%80%E5%B7%A7/" rel="next" title="Autolayout指南·调试 AutoLayout·调试技巧">
+      Autolayout指南·调试 AutoLayout·调试技巧 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#012-Autolayout指南·AutoLayout-高级指南"><span class="nav-text">012-Autolayout指南·AutoLayout 高级指南</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#编程创建约束"><span class="nav-text">编程创建约束</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Layout-Anchor"><span class="nav-text">Layout Anchor</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NSLayoutConstraint-类"><span class="nav-text">NSLayoutConstraint 类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#视觉格式语言-VFL"><span class="nav-text">视觉格式语言 VFL</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Yasic Yu"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Yasic Yu</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">46</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Yasic" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Yasic" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:yuxuan2580@gmail.com" title="E-Mail → mailto:yuxuan2580@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yasic Yu</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.1
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

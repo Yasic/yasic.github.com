@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Muse","version":"7.7.1","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":3,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="iOS 利用音频会话（audio session）实现可管理的音频环境，音频会话提供简单实用的方法使 OS 得知应用程序应该如何与 iOS 音频环境进行交互。AVFoundation 定义了 7 种分类来描述音频行为">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AVFoundation-播放和录制音频">
+<meta property="og:url" content="http://yoursite.com/2018/04/12/AVFoundation/AVFoundation-%E6%92%AD%E6%94%BE%E5%92%8C%E5%BD%95%E5%88%B6%E9%9F%B3%E9%A2%91/index.html">
+<meta property="og:site_name" content="Yasic Yu">
+<meta property="og:description" content="iOS 利用音频会话（audio session）实现可管理的音频环境，音频会话提供简单实用的方法使 OS 得知应用程序应该如何与 iOS 音频环境进行交互。AVFoundation 定义了 7 种分类来描述音频行为">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-04-11T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-02-22T08:11:34.067Z">
+<meta property="article:author" content="Yasic Yu">
+<meta property="article:tag" content="iOS">
+<meta property="article:tag" content=" ObjectiveC">
+<meta property="article:tag" content=" Swift">
+<meta property="article:tag" content=" XCode">
+<meta property="article:tag" content=" Computer">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://yoursite.com/2018/04/12/AVFoundation/AVFoundation-%E6%92%AD%E6%94%BE%E5%92%8C%E5%BD%95%E5%88%B6%E9%9F%B3%E9%A2%91/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>AVFoundation-播放和录制音频 | Yasic Yu</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Yasic Yu</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">In Code We Trust</p>
+  </div>
+
+  <div class="site-nav-right"></div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类<span class="badge">4</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">46</span></a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/yasic" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/04/12/AVFoundation/AVFoundation-%E6%92%AD%E6%94%BE%E5%92%8C%E5%BD%95%E5%88%B6%E9%9F%B3%E9%A2%91/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Yasic Yu">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yasic Yu">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AVFoundation-播放和录制音频
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-04-12 00:00:00" itemprop="dateCreated datePublished" datetime="2018-04-12T00:00:00+08:00">2018-04-12</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/AVFoundation/" itemprop="url" rel="index">
+                    <span itemprop="name">AVFoundation</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">iOS 利用音频会话（audio session）实现可管理的音频环境，音频会话提供简单实用的方法使 OS 得知应用程序应该如何与 iOS 音频环境进行交互。AVFoundation 定义了 7 种分类来描述音频行为</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="1-音频会话"><a href="#1-音频会话" class="headerlink" title="1 音频会话"></a>1 音频会话</h2><h3 id="1-1-分类-category"><a href="#1-1-分类-category" class="headerlink" title="1.1 分类 category"></a>1.1 分类 category</h3><p>iOS 利用音频会话（audio session）实现可管理的音频环境，音频会话提供简单实用的方法使 OS 得知应用程序应该如何与 iOS 音频环境进行交互。AVFoundation 定义了 7 种分类来描述音频行为</p>
+<table>
+<thead>
+<tr>
+<th>分类</th>
+<th>作用</th>
+<th>是否允许混音</th>
+<th>音频输入输出模式</th>
+<th>是否支持后台</th>
+<th>是否遵循静音切换</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Ambient</td>
+<td>游戏、效率应用程序</td>
+<td>支持</td>
+<td>O</td>
+<td>不支持</td>
+<td>不支持</td>
+</tr>
+<tr>
+<td>Solo Ambient（default）</td>
+<td>游戏、效率应用程序</td>
+<td>不支持</td>
+<td>O</td>
+<td>不支持</td>
+<td>遵循</td>
+</tr>
+<tr>
+<td>Playback</td>
+<td>音频和视频播放器</td>
+<td>可选</td>
+<td>O</td>
+<td>支持</td>
+<td>不遵循</td>
+</tr>
+<tr>
+<td>Record</td>
+<td>录音机、音频捕捉</td>
+<td>不支持</td>
+<td>I</td>
+<td>支持</td>
+<td>不遵循</td>
+</tr>
+<tr>
+<td>Play and Record</td>
+<td>VoIP、语音聊天</td>
+<td>可选</td>
+<td>I/O</td>
+<td>支持</td>
+<td>不遵循</td>
+</tr>
+<tr>
+<td>Audio Processing</td>
+<td>离线会话和处理</td>
+<td>F</td>
+<td>不能播放和录制</td>
+<td></td>
+<td>不遵循</td>
+</tr>
+<tr>
+<td>Multi-Route</td>
+<td>使用外部硬件的高级 A/V 应用程序</td>
+<td>F</td>
+<td>I/O</td>
+<td></td>
+<td>不遵循</td>
+</tr>
+</tbody></table>
+<p>同时可以用 options 和 modes 进一步自定义开发。</p>
+<h4 id="1-1-1-options"><a href="#1-1-1-options" class="headerlink" title="1.1.1 options"></a>1.1.1 options</h4><p>options 有以下选项</p>
+<ul>
+<li>AVAudioSessionCategoryOptionMixWithOthers</li>
+</ul>
+<p>支持 AVAudioSessionCategoryPlayAndRecord, AVAudioSessionCategoryPlayback, 和 AVAudioSessionCategoryMultiRoute，AVAudioSessionCategoryAmbient 自动设置了此选项，AVAudioSessionCategoryOptionDuckOthers 和AVAudioSessionCategoryOptionInterruptSpokenAudioAndMixWithOthers 也自动设置了此选项。如果使用这个选项激活会话，应用程序的音频不会中断从其他应用程序（如音乐应用程序）的音频，否则激活会话会打断其他音频会话。</p>
+<ul>
+<li>AVAudioSessionCategoryOptionDuckOthers</li>
+</ul>
+<p>支持 AVAudioSessionCategoryAmbient，AVAudioSessionCategoryPlayAndRecord, AVAudioSessionCategoryPlayback, 和 AVAudioSessionCategoryMultiRoute。设置此选项能够在播放音频时低音量听到后台播放的其他音频。整个选项周期与会话激活周期一致。</p>
+<ul>
+<li>AVAudioSessionCategoryOptionAllowBluetooth</li>
+</ul>
+<p>支持 AVAudioSessionCategoryRecord，AVAudioSessionCategoryPlayAndRecord；允许蓝牙免提设备启用。当应用使用 setPreferredInput:error: 方法选择了蓝牙无线设备作为输入时，也会自动选择相应的蓝牙设备作为输出，使用 MPVolumeView 对象将蓝牙设备作为输出时，输入也会相应改变。</p>
+<ul>
+<li>AVAudioSessionCategoryOptionDefaultToSpeaker</li>
+</ul>
+<p>支持 AVAudioSessionCategoryPlayAndRecord；在没有其他的音频路径（如耳机）可以使用的情况下设置这个选项，会议音频将通过设备的内置扬声器播放。当不设置此选项，并且没有其他的音频输出可用或选择时，音频将通过接收器播放。只有 iPhone 设备都配备有一个接收器; iPad 和 iPod touch 设备，此选项没有任何效果</p>
+<p>当你的 iPhone 接有多个外接音频设备时（耳塞，蓝牙耳机等），AudioSession 将遵循 last-in wins 的原则来选择外接设备，即声音将被导向最后接入的设备。</p>
+<p>当没有接入任何音频设备时，一般情况下声音会默认从扬声器出来，但有一个例外的情况：在 PlayAndRecord 这个 category 下，听筒会成为默认的输出设备。如果你想要改变这个行为，可以提供 MPVolumeView 来让用户切换到扬声器，也可通过 overrideOutputAudioPort 方法来 programmingly 切换到扬声器，也可以修改 category option 为AVAudioSessionCategoryOptionDefaultToSpeaker。</p>
+<ul>
+<li>AVAudioSessionCategoryOptionInterruptSpokenAudioAndMixWithOthers</li>
+</ul>
+<p>支持 AVAudioSessionCategoryPlayAndRecord, AVAudioSessionCategoryPlayback, and AVAudioSessionCategoryMultiRoute，设置此选项能使应用程序的音频会话与其他会话混合，但是会中断使用了 AVAudioSessionModeSpokenAudio 模式的会话。其他应用的音频会在此会话启动后暂停，并在此会话关闭后重新恢复。</p>
+<p>在用到 AVAudioSessionCategoryOptionInterruptSpokenAudioAndMixWithOthers 选项时，中断了其他应用的音频后，自己的应用音频结束播放时，若想恢复其他应用的音频，需要在关闭音频会话的时候设置AVAudioSessionSetActiveOptionNotifyOthersOnDeactivation 选项</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[session setActive:<span class="literal">NO</span></span><br><span class="line">       withOptions:<span class="built_in">AVAudioSessionSetActiveOptionNotifyOthersOnDeactivation</span></span><br><span class="line">             error:&lt;#Your error object, or <span class="literal">nil</span> <span class="keyword">for</span> testing#&gt;];</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>AVAudioSessionCategoryOptionAllowAirPlay</li>
+</ul>
+<p>支持 AVAudioSessionCategoryPlayAndRecord，允许会话在 AirPlay 设备上执行。</p>
+<h4 id="1-1-2-mode"><a href="#1-1-2-mode" class="headerlink" title="1.1.2 mode"></a>1.1.2 mode</h4><p>mode 用于定制化 audio sessions，如果将分类的 mode 设置不合理会执行默认的模式行为，如将 AVAudioSessionCategoryMultiRoute 类别设置 AVAudioSessionModeGameChat 模式。</p>
+<ul>
+<li><p>AVAudioSessionModeDefault 默认音频会话模式</p>
+</li>
+<li><p>AVAudioSessionModeVoiceChat 如果应用需要执行例如 VoIP 类型的双向语音通信则选择此模式</p>
+</li>
+<li><p>AVAudioSessionModeVideoChat 如果应用正在进行在线视频会议，请指定此模式</p>
+</li>
+<li><p>AVAudioSessionModeGameChat 该模式由Game Kit 提供给使用 Game Kit 的语音聊天服务的应用程序设置</p>
+</li>
+<li><p>AVAudioSessionModeVideoRecording 如果应用正在录制电影，则选此模式</p>
+</li>
+<li><p>AVAudioSessionModeMeasurement 如果您的应用正在执行音频输入或输出的测量，请指定此模式</p>
+</li>
+<li><p>AVAudioSessionModeMoviePlayback 如果您的应用正在播放电影内容，请指定此模式</p>
+</li>
+<li><p>AVAudioSessionModeSpokenAudio 当需要持续播放语音，同时希望在其他程序播放短语音时暂停播放此应用语音，选取此模式</p>
+</li>
+</ul>
+<h3 id="1-2-配置音频会话"><a href="#1-2-配置音频会话" class="headerlink" title="1.2 配置音频会话"></a>1.2 配置音频会话</h3><p>首先获得指向 AVAudioSession 的单例指针，设置合适的分类，最后激活会话。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">AVAudioSession</span> *session = [<span class="built_in">AVAudioSession</span> sharedInstance];</span><br><span class="line"></span><br><span class="line"><span class="built_in">NSError</span> *error;</span><br><span class="line"><span class="keyword">if</span> (![session setCategory:<span class="built_in">AVAudioSessionCategoryPlayAndRecord</span> error:&amp;error]) &#123;</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"Category Error: %@"</span>, [error localizedDescription]);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (![session setActive:<span class="literal">YES</span> error:&amp;error]) &#123;</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"Activation Error: %@"</span>, [error localizedDescription]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-播放音频"><a href="#2-播放音频" class="headerlink" title="2. 播放音频"></a>2. 播放音频</h2><p>AVAudioPlayer 构建于 Core Audio 的 C-based Audio Queue Services 最顶层，局限性在于无法从网络流播放音频，不能访问原始音频样本，不能满足非常低的时延。</p>
+<h3 id="2-1-创建-AVAudioPlayer"><a href="#2-1-创建-AVAudioPlayer" class="headerlink" title="2.1 创建 AVAudioPlayer"></a>2.1 创建 AVAudioPlayer</h3><p>可以通过 NSData 或本地音频文件的 NSURL 两种方式创建 AVAudioPlayer。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSURL</span> *fileUrl = [[<span class="built_in">NSBundle</span> mainBundle] URLForResource:<span class="string">@"rock"</span> withExtension:<span class="string">@"mp3"</span>];</span><br><span class="line"><span class="keyword">self</span>.player = [[<span class="built_in">AVAudioPlayer</span> alloc] initWithContentsOfURL:fileUrl error:<span class="literal">nil</span>];</span><br><span class="line"><span class="keyword">if</span> (<span class="keyword">self</span>.player) &#123;</span><br><span class="line">    [<span class="keyword">self</span>.player prepareToPlay];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>创建出 AVAudioPlayer 后建议调用 prepareToPlay 方法，这个方法会取得需要的音频硬件并预加载 Audio Queue 的缓冲区，当然如果不主动调用，执行 play 方法时也会默认调用，但是会造成轻微播放的延时。</p>
+<h3 id="2-2-对播放进行控制"><a href="#2-2-对播放进行控制" class="headerlink" title="2.2 对播放进行控制"></a>2.2 对播放进行控制</h3><p>AVAudioPlayer 的 play 可以播放音频，stop 和 pause 都可以暂停播放，但是 stop 会撤销调用 prepareToPlay 所做的设置。</p>
+<ul>
+<li>修改播放器的音量：播放器音量独立于系统音量，音量或播放增益定义为 0.0（静音）到 1.0（最大音量）之间的浮点值</li>
+<li>修改播放器的 pan 值：允许使用立体声播放声音，pan 值从 -1.0（极左）到 1.0（极右），默认值 0.0（居中）</li>
+<li>调整播放率：0.5（半速）到 2.0（2 倍速）</li>
+<li>设置 numberOfLoops 实现无缝循环：-1 表示无限循环（音频循环可以是未压缩的线性 PCM 音频，也可以是 AAC 之类的压缩格式音频，MP3 格式不推荐循环）</li>
+<li>音频计量：当播放发生时从播放器读取音量力度的平均值和峰值</li>
+</ul>
+<h3 id="2-3-实践"><a href="#2-3-实践" class="headerlink" title="2.3 实践"></a>2.3 实践</h3><h4 id="2-3-1-播放音频"><a href="#2-3-1-播放音频" class="headerlink" title="2.3.1 播放音频"></a>2.3.1 播放音频</h4><figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSTimeInterval</span> delayTime = [<span class="keyword">self</span>.players[<span class="number">0</span>] deviceCurrentTime] + <span class="number">0.01</span>;</span><br><span class="line"><span class="keyword">for</span> (<span class="built_in">AVAudioPlayer</span> *player <span class="keyword">in</span> <span class="keyword">self</span>.players) &#123;</span><br><span class="line">    [player playAtTime:delayTime];</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">self</span>.playing = <span class="literal">YES</span>;</span><br></pre></td></tr></table></figure>
+
+<p>对于多个需要播放的音频，如果希望同步播放效果，则需要捕捉当前设备时间并添加一个小延时，从而具有一个从开始播放时间计算的参照时间。deviveCurrentTime 是一个独立于系统事件的音频设备的时间值，当有多于 audioPlayer 处于 play 或者 pause 状态时 deviveCurrentTime 会单调增加，没有时置位为 0。playAtTime 的参数 time 要求必须是基于 deviveCurrentTime 且大于等于 deviveCurrentTime 的时间。</p>
+<h4 id="2-3-2-暂停播放"><a href="#2-3-2-暂停播放" class="headerlink" title="2.3.2 暂停播放"></a>2.3.2 暂停播放</h4><figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="built_in">AVAudioPlayer</span> *player <span class="keyword">in</span> <span class="keyword">self</span>.players) &#123;</span><br><span class="line">    [player stop];</span><br><span class="line">    player.currentTime = <span class="number">0.0</span>f;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>暂停时需要将 audioPlayer 的 currentTime 值设置为 0.0，当音频正在播放时，这个值用于标识当前播放位置的偏移，不播放音频时标识重新播放音频的起始偏移。</p>
+<h4 id="2-3-4-修改音量、pan值、播放速率和循环"><a href="#2-3-4-修改音量、pan值、播放速率和循环" class="headerlink" title="2.3.4 修改音量、pan值、播放速率和循环"></a>2.3.4 修改音量、pan值、播放速率和循环</h4><figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">player.enableRate = <span class="literal">YES</span>;</span><br><span class="line">player.rate = rate;</span><br><span class="line">player.volume = volume;</span><br><span class="line">player.pan = pan;</span><br><span class="line">player.numberOfLoops = <span class="number">-1</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-4-配置音频会话"><a href="#2-4-配置音频会话" class="headerlink" title="2.4 配置音频会话"></a>2.4 配置音频会话</h3><p>如果希望应用程序播放音频时屏蔽静音切换动作，需要设置会话分类为 AVAudioSessionCategoryPlayback，但是如果希望按下锁屏后还可以播放，就需要在 plist 里加入一个 Required background modes 类型的数组，在其中添加 App plays audio or streams audio/video using AirPlay。</p>
+<h3 id="2-5-处理中断事件"><a href="#2-5-处理中断事件" class="headerlink" title="2.5 处理中断事件"></a>2.5 处理中断事件</h3><p>中断事件是指电话呼入、闹钟响起、弹出 FaceTime 等，中断事件发生时系统会调用 AVAudioPlayer 的 AVAudioPlayerDelegate 类型的 delegate 的下列方法</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)audioPlayerBeginInterruption:(<span class="built_in">AVAudioPlayer</span> *)player <span class="built_in">NS_DEPRECATED_IOS</span>(<span class="number">2</span>_2, <span class="number">8</span>_0);</span><br><span class="line">- (<span class="keyword">void</span>)audioPlayerEndInterruption:(<span class="built_in">AVAudioPlayer</span> *)player withOptions:(<span class="built_in">NSUInteger</span>)flags <span class="built_in">NS_DEPRECATED_IOS</span>(<span class="number">6</span>_0, <span class="number">8</span>_0);</span><br></pre></td></tr></table></figure>
+
+<p>中断结束调用的方法会带入一个 options 参数，如果是 AVAudioSessionInterruptionOptionShouldResume 则表明可以恢复播放音频了。</p>
+<h3 id="2-6-处理线路改变"><a href="#2-6-处理线路改变" class="headerlink" title="2.6 处理线路改变"></a>2.6 处理线路改变</h3><p>在 iOS 设备上添加或移除音频输入、输出线路时会引发线路改变，最佳实践是，插入耳机时播放动作不改动，拔出耳机时应当暂停播放。</p>
+<p>首先需要监听通知</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSNotificationCenter</span> *nsnc = [<span class="built_in">NSNotificationCenter</span> defaultCenter];</span><br><span class="line">[nsnc addObserver:<span class="keyword">self</span></span><br><span class="line">         selector:<span class="keyword">@selector</span>(handleRouteChange:)</span><br><span class="line">             name:<span class="built_in">AVAudioSessionRouteChangeNotification</span></span><br><span class="line">           object:[<span class="built_in">AVAudioSession</span> sharedInstance]];</span><br></pre></td></tr></table></figure>
+
+<p>然后判断是旧设备不可达事件，进一步取出旧设备的描述，判断旧设备是否是耳机，再做暂停播放处理。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)handleRouteChange:(<span class="built_in">NSNotification</span> *)notification &#123;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">NSDictionary</span> *info = notification.userInfo;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">AVAudioSessionRouteChangeReason</span> reason =</span><br><span class="line">        [info[<span class="built_in">AVAudioSessionRouteChangeReasonKey</span>] unsignedIntValue];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (reason == <span class="built_in">AVAudioSessionRouteChangeReasonOldDeviceUnavailable</span>) &#123;</span><br><span class="line"></span><br><span class="line">        <span class="built_in">AVAudioSessionRouteDescription</span> *previousRoute =</span><br><span class="line">            info[<span class="built_in">AVAudioSessionRouteChangePreviousRouteKey</span>];</span><br><span class="line"></span><br><span class="line">        <span class="built_in">AVAudioSessionPortDescription</span> *previousOutput = previousRoute.outputs[<span class="number">0</span>];</span><br><span class="line">        <span class="built_in">NSString</span> *portType = previousOutput.portType;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> ([portType isEqualToString:<span class="built_in">AVAudioSessionPortHeadphones</span>]) &#123;</span><br><span class="line">            [<span class="keyword">self</span> stop];</span><br><span class="line">            [<span class="keyword">self</span>.delegate playbackStopped];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里 AVAudioSessionPortHeadphones 只包含了有线耳机，无线蓝牙耳机需要判断 AVAudioSessionPortBluetoothA2DP 值。</p>
+<h2 id="3-录制音频"><a href="#3-录制音频" class="headerlink" title="3. 录制音频"></a>3. 录制音频</h2><p>AVAudioRecorder 用于负责录制音频。</p>
+<h3 id="3-1-创建-AVAudioRecorder"><a href="#3-1-创建-AVAudioRecorder" class="headerlink" title="3.1 创建 AVAudioRecorder"></a>3.1 创建 AVAudioRecorder</h3><p>创建 AVAudioRecorder 需要以下信息</p>
+<ul>
+<li>用于写入音频的本地文件 URL</li>
+<li>用于配置录音会话键值信息的字典</li>
+<li>用于捕捉错误的 NSError</li>
+</ul>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSString</span> *tmpDir = <span class="built_in">NSTemporaryDirectory</span>();</span><br><span class="line"><span class="built_in">NSString</span> *filePath = [tmpDir stringByAppendingPathComponent:<span class="string">@"memo.caf"</span>];</span><br><span class="line"><span class="built_in">NSURL</span> *fileURL = [<span class="built_in">NSURL</span> fileURLWithPath:filePath];</span><br><span class="line"></span><br><span class="line"><span class="built_in">NSDictionary</span> *settings = @&#123;</span><br><span class="line">                           <span class="built_in">AVFormatIDKey</span> : @(kAudioFormatAppleIMA4),</span><br><span class="line">                           <span class="built_in">AVSampleRateKey</span> : @<span class="number">44100.0</span>f,</span><br><span class="line">                           <span class="built_in">AVNumberOfChannelsKey</span> : @<span class="number">1</span>,</span><br><span class="line">                           <span class="built_in">AVEncoderBitDepthHintKey</span> : @<span class="number">16</span>,</span><br><span class="line">                           <span class="built_in">AVEncoderAudioQualityKey</span> : @(<span class="built_in">AVAudioQualityMedium</span>)</span><br><span class="line">                           &#125;;</span><br><span class="line"></span><br><span class="line"><span class="built_in">NSError</span> *error;</span><br><span class="line"><span class="keyword">self</span>.recorder = [[<span class="built_in">AVAudioRecorder</span> alloc] initWithURL:fileURL settings:settings error:&amp;error];</span><br><span class="line"><span class="keyword">if</span> (<span class="keyword">self</span>.recorder) &#123;</span><br><span class="line">    <span class="keyword">self</span>.recorder.delegate = <span class="keyword">self</span>;</span><br><span class="line">    <span class="keyword">self</span>.recorder.meteringEnabled = <span class="literal">YES</span>;</span><br><span class="line">    [<span class="keyword">self</span>.recorder prepareToRecord];</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"Error: %@"</span>, [error localizedDescription]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>prepareToRecord 方法执行底层 Audio Queue 初始化必要过程，并在指定位置创建文件。</p>
+<h3 id="3-2-通用设置参数"><a href="#3-2-通用设置参数" class="headerlink" title="3.2 通用设置参数"></a>3.2 通用设置参数</h3><ul>
+<li>音频格式</li>
+</ul>
+<p>AVFormatIDKey 键对应写入内容的音频格式，它有以下可选值</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">kAudioFormatLinearPCM</span><br><span class="line">kAudioFormatMPEG4AAC</span><br><span class="line">kAudioFormatAppleLossless</span><br><span class="line">kAudioFormatAppleIMA4</span><br><span class="line">kAudioFormatiLBC</span><br><span class="line">kAudioFormatULaw</span><br></pre></td></tr></table></figure>
+
+<p>kAudioFormatLinearPCM 会将未压缩的音频流写入文件，文件体积大。kAudioFormatMPEG4AAC 和 kAudioFormatAppleIMA4 的压缩格式会显著缩小文件，并保证高质量音频内容。但是要注意，制定的音频格式与文件类型应该兼容，例如 wav 格式对应 kAudioFormatLinearPCM 值。</p>
+<ul>
+<li>采样率</li>
+</ul>
+<p>AVSampleRateKey 指示采样率，即对输入的模拟音频信号每一秒内的采样数。常用值 8000，16000，22050，44100。</p>
+<ul>
+<li>通道数</li>
+</ul>
+<p>AVNumberOfChannelsKey 指示定义记录音频内容的通道数，除非使用外部硬件录制，否则通常选择单声道。</p>
+<ul>
+<li>编码位元深度</li>
+</ul>
+<p>AVEncoderBitDepthHintKey 指示编码位元深度，从 8 到 32。</p>
+<ul>
+<li>音频质量</li>
+</ul>
+<p>AVEncoderAudioQualityKey 指示音频质量，可选值有 AVAudioQualityMin, AVAudioQualityLow, AVAudioQualityMedium, AVAudioQualityHigh, AVAudioQualityMax。</p>
+<h3 id="3-3-实践"><a href="#3-3-实践" class="headerlink" title="3.3 实践"></a>3.3 实践</h3><h4 id="3-3-1-配置音频会话"><a href="#3-3-1-配置音频会话" class="headerlink" title="3.3.1 配置音频会话"></a>3.3.1 配置音频会话</h4><p>录音和播放应用应当使用 AVAudioSessionCategoryPlayAndRecord 分类来配置会话。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">AVAudioSession</span> *session = [<span class="built_in">AVAudioSession</span> sharedInstance];</span><br><span class="line"></span><br><span class="line"><span class="built_in">NSError</span> *error;</span><br><span class="line"><span class="keyword">if</span> (![session setCategory:<span class="built_in">AVAudioSessionCategoryPlayAndRecord</span> error:&amp;error]) &#123;</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"Category Error: %@"</span>, [error localizedDescription]);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (![session setActive:<span class="literal">YES</span> error:&amp;error]) &#123;</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"Activation Error: %@"</span>, [error localizedDescription]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>注意录音前需要申请麦克风权限。</p>
+<h4 id="3-3-2-录音控制"><a href="#3-3-2-录音控制" class="headerlink" title="3.3.2 录音控制"></a>3.3.2 录音控制</h4><p>对录音过程的控制如下</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[<span class="keyword">self</span>.recorder record];</span><br><span class="line">[<span class="keyword">self</span>.recorder pause];</span><br><span class="line">[<span class="keyword">self</span>.recorder stop];</span><br></pre></td></tr></table></figure>
+
+<p>其中选择了 stop 录音即停止，此时 AVAudioRecorder 会调用其遵循 AVAudioRecorderDelegate 协议的代理的 <code>- (void)audioRecorderDidFinishRecording:(AVAudioRecorder *)recorder successfully:(BOOL)flag</code> 方法。</p>
+<h4 id="3-3-3-录音保存"><a href="#3-3-3-录音保存" class="headerlink" title="3.3.3 录音保存"></a>3.3.3 录音保存</h4><p>在初始化 AVAudioRecorder 时指定了临时文件目录作为存储音频的位置，音频录制结束时需要保存到 Document 目录下</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSTimeInterval</span> timestamp = [<span class="built_in">NSDate</span> timeIntervalSinceReferenceDate];</span><br><span class="line"><span class="built_in">NSString</span> *filename = [<span class="built_in">NSString</span> stringWithFormat:<span class="string">@"%@-%f.m4a"</span>, name, timestamp];</span><br><span class="line"></span><br><span class="line"><span class="built_in">NSString</span> *docsDir = [<span class="keyword">self</span> documentsDirectory];</span><br><span class="line"><span class="built_in">NSString</span> *destPath = [docsDir stringByAppendingPathComponent:filename];</span><br><span class="line"></span><br><span class="line"><span class="built_in">NSURL</span> *srcURL = <span class="keyword">self</span>.recorder.url;</span><br><span class="line"><span class="built_in">NSURL</span> *destURL = [<span class="built_in">NSURL</span> fileURLWithPath:destPath];</span><br><span class="line"></span><br><span class="line"><span class="built_in">NSError</span> *error;</span><br><span class="line"><span class="built_in">BOOL</span> success = [[<span class="built_in">NSFileManager</span> defaultManager] copyItemAtURL:srcURL toURL:destURL error:&amp;error];</span><br><span class="line"><span class="keyword">if</span> (success) &#123;</span><br><span class="line">    handler(<span class="literal">YES</span>, [THMemo memoWithTitle:name url:destURL]);</span><br><span class="line">    [<span class="keyword">self</span>.recorder prepareToRecord];</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    handler(<span class="literal">NO</span>, error);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里调用了 NSFileManager 的 copyItemAtURL 方法将文件内容拷贝到 Document 目录下。</p>
+<h4 id="3-3-4-展示时间"><a href="#3-3-4-展示时间" class="headerlink" title="3.3.4 展示时间"></a>3.3.4 展示时间</h4><p>记录音频时需要展示时间提示用户当前录制时间，AVAudioRecorder 的 currentTime 属性可以获知当前时间，将其格式化后即可进行展示</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">NSString</span> *)formattedCurrentTime &#123;</span><br><span class="line">    <span class="built_in">NSUInteger</span> time = (<span class="built_in">NSUInteger</span>)<span class="keyword">self</span>.recorder.currentTime;</span><br><span class="line">    <span class="built_in">NSInteger</span> hours = (time / <span class="number">3600</span>);</span><br><span class="line">    <span class="built_in">NSInteger</span> minutes = (time / <span class="number">60</span>) % <span class="number">60</span>;</span><br><span class="line">    <span class="built_in">NSInteger</span> seconds = time % <span class="number">60</span>;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">NSString</span> *format = <span class="string">@"%02i:%02i:%02i"</span>;</span><br><span class="line">    <span class="keyword">return</span> [<span class="built_in">NSString</span> stringWithFormat:format, hours, minutes, seconds];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>但是需要实时展示时间的话，不能通过 KVO 来解决，只能加入到 NSTimer 中，每 0.5s 执行一次。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[<span class="keyword">self</span>.timer invalidate];</span><br><span class="line"><span class="keyword">self</span>.timer = [<span class="built_in">NSTimer</span> timerWithTimeInterval:<span class="number">0.5</span></span><br><span class="line">                                     target:<span class="keyword">self</span></span><br><span class="line">                                   selector:<span class="keyword">@selector</span>(updateTimeDisplay)</span><br><span class="line">                                   userInfo:<span class="literal">nil</span></span><br><span class="line">                                    repeats:<span class="literal">YES</span>];</span><br><span class="line">[[<span class="built_in">NSRunLoop</span> mainRunLoop] addTimer:<span class="keyword">self</span>.timer forMode:<span class="built_in">NSRunLoopCommonModes</span>];</span><br></pre></td></tr></table></figure>
+
+<h4 id="3-3-5-可视化音频信号"><a href="#3-3-5-可视化音频信号" class="headerlink" title="3.3.5 可视化音频信号"></a>3.3.5 可视化音频信号</h4><p>AVAudioRecorder 和 AVAudioPlayer 都有两个方法获取当前音频的平均分贝和峰值分贝数据。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">float</span>)averagePowerForChannel:(<span class="built_in">NSUInteger</span>)channelNumber; <span class="comment">/* returns average power in decibels for a given channel */</span></span><br><span class="line">- (<span class="keyword">float</span>)peakPowerForChannel:(<span class="built_in">NSUInteger</span>)channelNumber; <span class="comment">/* returns peak power in decibels for a given channel */</span></span><br></pre></td></tr></table></figure>
+
+<p>返回值从 -160dB（静音） 到 0dB（最大分贝）。</p>
+<p>获取值之前要在初始化播放器或记录器时设置 meteringEnabled 为 YES。</p>
+<p>首先需要将 -160 到 0 的分贝值转为 0 到 1 范围内，需要用到下面这个类</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">THMeterTable</span> </span>&#123;</span><br><span class="line">    <span class="keyword">float</span> _scaleFactor;</span><br><span class="line">    <span class="built_in">NSMutableArray</span> *_meterTable;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">id</span>)init &#123;</span><br><span class="line">    <span class="keyword">self</span> = [<span class="keyword">super</span> init];</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>) &#123;</span><br><span class="line">        <span class="keyword">float</span> dbResolution = MIN_DB / (TABLE_SIZE - <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">        _meterTable = [<span class="built_in">NSMutableArray</span> arrayWithCapacity:TABLE_SIZE];</span><br><span class="line">        _scaleFactor = <span class="number">1.0</span>f / dbResolution;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">float</span> minAmp = dbToAmp(MIN_DB);</span><br><span class="line">        <span class="keyword">float</span> ampRange = <span class="number">1.0</span> - minAmp;</span><br><span class="line">        <span class="keyword">float</span> invAmpRange = <span class="number">1.0</span> / ampRange;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; TABLE_SIZE; i++) &#123;</span><br><span class="line">            <span class="keyword">float</span> decibels = i * dbResolution;</span><br><span class="line">            <span class="keyword">float</span> amp = dbToAmp(decibels);</span><br><span class="line">            <span class="keyword">float</span> adjAmp = (amp - minAmp) * invAmpRange;</span><br><span class="line">            _meterTable[i] = @(adjAmp);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">float</span> dbToAmp(<span class="keyword">float</span> dB) &#123;</span><br><span class="line">    <span class="keyword">return</span> powf(<span class="number">10.0</span>f, <span class="number">0.05</span>f * dB);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">float</span>)valueForPower:(<span class="keyword">float</span>)power &#123;</span><br><span class="line">    <span class="keyword">if</span> (power &lt; MIN_DB) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0.0</span>f;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (power &gt;= <span class="number">0.0</span>f) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1.0</span>f;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">int</span> index = (<span class="keyword">int</span>) (power * _scaleFactor);</span><br><span class="line">        <span class="keyword">return</span> [_meterTable[index] floatValue];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+
+<p>接下来可以实时获取到分贝平均值和峰值</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">- (THLevelPair *)levels &#123;</span><br><span class="line">    [<span class="keyword">self</span>.recorder updateMeters];</span><br><span class="line">    <span class="keyword">float</span> avgPower = [<span class="keyword">self</span>.recorder averagePowerForChannel:<span class="number">0</span>];</span><br><span class="line">    <span class="keyword">float</span> peakPower = [<span class="keyword">self</span>.recorder peakPowerForChannel:<span class="number">0</span>];</span><br><span class="line">    <span class="keyword">float</span> linearLevel = [<span class="keyword">self</span>.meterTable valueForPower:avgPower];</span><br><span class="line">    <span class="keyword">float</span> linearPeak = [<span class="keyword">self</span>.meterTable valueForPower:peakPower];</span><br><span class="line">    <span class="keyword">return</span> [THLevelPair levelsWithLevel:linearLevel peakLevel:linearPeak];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到获取峰值和均值前必须调用 updateMeters 方法。</p>
+
+    </div>
+
+    
+    
+    
+      
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/03/19/iOS%E5%BC%80%E5%8F%91/%E4%BA%8C%E7%BB%B4%E7%A0%81%E7%94%9F%E6%88%90%E4%B8%8E%E6%A3%80%E6%B5%8B/" rel="prev" title="二维码生成与检测">
+      <i class="fa fa-chevron-left"></i> 二维码生成与检测
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/04/17/AVFoundation/AVFoundation%E8%A7%86%E9%A2%91%E6%92%AD%E6%94%BE/" rel="next" title="AVFoundation视频播放">
+      AVFoundation视频播放 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-音频会话"><span class="nav-text">1 音频会话</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-分类-category"><span class="nav-text">1.1 分类 category</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-1-options"><span class="nav-text">1.1.1 options</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-2-mode"><span class="nav-text">1.1.2 mode</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-配置音频会话"><span class="nav-text">1.2 配置音频会话</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-播放音频"><span class="nav-text">2. 播放音频</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-创建-AVAudioPlayer"><span class="nav-text">2.1 创建 AVAudioPlayer</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-对播放进行控制"><span class="nav-text">2.2 对播放进行控制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-实践"><span class="nav-text">2.3 实践</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-1-播放音频"><span class="nav-text">2.3.1 播放音频</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-2-暂停播放"><span class="nav-text">2.3.2 暂停播放</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-4-修改音量、pan值、播放速率和循环"><span class="nav-text">2.3.4 修改音量、pan值、播放速率和循环</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-配置音频会话"><span class="nav-text">2.4 配置音频会话</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-处理中断事件"><span class="nav-text">2.5 处理中断事件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-6-处理线路改变"><span class="nav-text">2.6 处理线路改变</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-录制音频"><span class="nav-text">3. 录制音频</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-创建-AVAudioRecorder"><span class="nav-text">3.1 创建 AVAudioRecorder</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-通用设置参数"><span class="nav-text">3.2 通用设置参数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-实践"><span class="nav-text">3.3 实践</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-3-1-配置音频会话"><span class="nav-text">3.3.1 配置音频会话</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-3-2-录音控制"><span class="nav-text">3.3.2 录音控制</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-3-3-录音保存"><span class="nav-text">3.3.3 录音保存</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-3-4-展示时间"><span class="nav-text">3.3.4 展示时间</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-3-5-可视化音频信号"><span class="nav-text">3.3.5 可视化音频信号</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Yasic Yu"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Yasic Yu</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">46</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Yasic" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Yasic" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:yuxuan2580@gmail.com" title="E-Mail → mailto:yuxuan2580@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yasic Yu</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.1
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

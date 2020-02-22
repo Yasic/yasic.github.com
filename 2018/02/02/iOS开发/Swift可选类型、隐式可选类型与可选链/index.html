@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Muse","version":"7.7.1","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":3,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="在 OC 中 nil 表示一个指向不存在的对象的指针，而 Swift 中 nil 不是指针，而是一个确定的值，它表示一切值缺失的情况，所谓值缺失就是一个和 Swift 的可选类型相关的概念。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Swift可选类型、隐式可选类型与可选链">
+<meta property="og:url" content="http://yoursite.com/2018/02/02/iOS%E5%BC%80%E5%8F%91/Swift%E5%8F%AF%E9%80%89%E7%B1%BB%E5%9E%8B%E3%80%81%E9%9A%90%E5%BC%8F%E5%8F%AF%E9%80%89%E7%B1%BB%E5%9E%8B%E4%B8%8E%E5%8F%AF%E9%80%89%E9%93%BE/index.html">
+<meta property="og:site_name" content="Yasic Yu">
+<meta property="og:description" content="在 OC 中 nil 表示一个指向不存在的对象的指针，而 Swift 中 nil 不是指针，而是一个确定的值，它表示一切值缺失的情况，所谓值缺失就是一个和 Swift 的可选类型相关的概念。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-02-01T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-02-22T08:11:34.092Z">
+<meta property="article:author" content="Yasic Yu">
+<meta property="article:tag" content="iOS">
+<meta property="article:tag" content=" ObjectiveC">
+<meta property="article:tag" content=" Swift">
+<meta property="article:tag" content=" XCode">
+<meta property="article:tag" content=" Computer">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://yoursite.com/2018/02/02/iOS%E5%BC%80%E5%8F%91/Swift%E5%8F%AF%E9%80%89%E7%B1%BB%E5%9E%8B%E3%80%81%E9%9A%90%E5%BC%8F%E5%8F%AF%E9%80%89%E7%B1%BB%E5%9E%8B%E4%B8%8E%E5%8F%AF%E9%80%89%E9%93%BE/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>Swift可选类型、隐式可选类型与可选链 | Yasic Yu</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Yasic Yu</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">In Code We Trust</p>
+  </div>
+
+  <div class="site-nav-right"></div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类<span class="badge">4</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">46</span></a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/yasic" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/02/02/iOS%E5%BC%80%E5%8F%91/Swift%E5%8F%AF%E9%80%89%E7%B1%BB%E5%9E%8B%E3%80%81%E9%9A%90%E5%BC%8F%E5%8F%AF%E9%80%89%E7%B1%BB%E5%9E%8B%E4%B8%8E%E5%8F%AF%E9%80%89%E9%93%BE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Yasic Yu">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yasic Yu">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Swift可选类型、隐式可选类型与可选链
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-02-02 00:00:00" itemprop="dateCreated datePublished" datetime="2018-02-02T00:00:00+08:00">2018-02-02</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS%E5%BC%80%E5%8F%91/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS开发</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">在 OC 中 nil 表示一个指向不存在的对象的指针，而 Swift 中 nil 不是指针，而是一个确定的值，它表示一切值缺失的情况，所谓值缺失就是一个和 Swift 的可选类型相关的概念。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Swift-可选类型、隐式可选类型与可选链"><a href="#Swift-可选类型、隐式可选类型与可选链" class="headerlink" title="Swift 可选类型、隐式可选类型与可选链"></a>Swift 可选类型、隐式可选类型与可选链</h1><p>在 OC 中 nil 表示一个指向不存在的对象的指针，而 Swift 中 nil 不是指针，而是一个确定的值，它表示一切值缺失的情况，所谓值缺失就是一个和 Swift 的可选类型相关的概念。</p>
+<h2 id="可选类型-optional"><a href="#可选类型-optional" class="headerlink" title="可选类型 optional"></a>可选类型 optional</h2><p>可选类型的变量可以有值，也可以无值，无值的变量取值得到的就是 nil，相对应的，非可选类型的变量必须有值，也不能赋值为 nil，如果没有值就会报编译期错误。Swift 声明一个变量时默认情况下就是非可选的，即必须给这个变量赋值一个非空值。之所以引入可选类型和非可选类型是为了增强便一阶段的安全检查，对于因 nil 引发的崩溃可以在编译期就检查出来，避免崩溃发现时间延时到运行时。</p>
+<p>声明一个可选类型变量和不可选类型变量如下</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> optionalVariable:<span class="type">String?</span> = <span class="literal">nil</span></span><br><span class="line"><span class="keyword">var</span> nonOptionalVariable:<span class="type">String</span> = <span class="string">"Yasic"</span></span><br></pre></td></tr></table></figure>
+
+<p>当然可选类型变量默认不赋值的时候就是 nil，并且对于一个类中的非可选类型变量，也可以将赋值操作延时到初始化 init 方法 中。</p>
+<p>那么对于非可选类型参数就可以安全取值安全使用了，而可选类型参数则需要在使用前检查变量是否有值，通常我们会这样检查</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> optionalVariable != <span class="literal">nil</span> &#123;</span><br><span class="line">    optionalVariable!.append(<span class="string">"test"</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其中用到了感叹号运算符，它表示对可选值的强制解析，表明开发者明确知道这个可选类型变量在此处是有值的所以强制从中取值，但是如果变量中的确没有值就会引发运行时崩溃了。</p>
+<p>所以强制解析功能应当谨慎使用，Swift 更推荐的方式是可选绑定(Optional Binding)，与强制解析不同，可选绑定会判断可选类型是否有值，如果有值就将其赋值给一个临时常量或变量，可选绑定可以用在 if 和 while 语句中来对可选类型的值进行判断后赋值给临时常量或变量。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> <span class="keyword">let</span> tempVariable = <span class="keyword">self</span>.optionalVariable &#123;</span><br><span class="line">    <span class="built_in">print</span>(tempVariable)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>临时变量也可以是 var 型的，从而可以在分支中改变它的值。在分支中使用到临时变量时能保证它一定值，从而就避免了强制解析的过程。</p>
+<h2 id="隐式可选类型"><a href="#隐式可选类型" class="headerlink" title="隐式可选类型"></a>隐式可选类型</h2><p>可选类型变量增强了代码的安全性，但是每次使用到可选类型变量都需要加判断或者强制解析比较麻烦，这时可以利用隐式可选类型。隐式可选类型实际就是一个普通的可选类型，但是开发者明确知道此可选类型变量在第一次赋值后一定总有值，从而用隐式可选类型省却了强制解析的过程。</p>
+<p>声明一个隐式可选类型的方式</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> hiddenOptinalVariable:<span class="type">String!</span> = <span class="literal">nil</span></span><br></pre></td></tr></table></figure>
+
+<p>使用时可以直接取值，此时表明开发者能明确保证可以取到值，但是如果的确没有值，就会引发运行时崩溃。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hiddenOptinalVariable.append(<span class="string">"yasic"</span>)</span><br></pre></td></tr></table></figure>
+
+<p>当然也可以用上面的方法对隐式可选类型进行判空</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> var temp = <span class="keyword">self</span>.hiddenOptinalVariable &#123;</span><br><span class="line">    temp.append(<span class="string">"yasic"</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="可选类型的应用"><a href="#可选类型的应用" class="headerlink" title="可选类型的应用"></a>可选类型的应用</h2><h3 id="空合运算符-Nil-Coalescing-Operator"><a href="#空合运算符-Nil-Coalescing-Operator" class="headerlink" title="空合运算符 Nil Coalescing Operator"></a>空合运算符 Nil Coalescing Operator</h3><p>空合运算符 “??” 是对三目运算符的简化，针对可选类型变量 a 进行空判断，若非空则返回 a 的变量值，否则返回空合运算符后的默认值 b。它的使用有两个条件</p>
+<ul>
+<li>a 必须是可选类型</li>
+<li>b 的类型必须与 a 一致</li>
+</ul>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> temp = <span class="keyword">self</span>.hiddenOptinalVariable ?? <span class="string">"123"</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="方法返回可选类型值"><a href="#方法返回可选类型值" class="headerlink" title="方法返回可选类型值"></a>方法返回可选类型值</h3><p>可选类型变量可以出现在方法的返回值当中，表明此方法的返回值能为 nil</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">returnOptinalVariable</span><span class="params">(input:Bool)</span></span> -&gt; <span class="type">String?</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> !input &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"true"</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="类返回可选类型对象"><a href="#类返回可选类型对象" class="headerlink" title="类返回可选类型对象"></a>类返回可选类型对象</h3><p>对于 Swift 的类有一个特殊的方法，构造方法 init，这个方法也可以返回一个可选类型的值，它的主要意义在于能够根据初始化时传入的值以及环境参数来判断是否可以返回一个实例对象，通常也称这类构造方法为可失败构造器。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">convenience</span> <span class="keyword">init</span>?(input:<span class="type">Bool</span>)&#123;</span><br><span class="line">    <span class="keyword">if</span> !input &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">self</span>.<span class="keyword">init</span>()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="闭包返回可选类型值"><a href="#闭包返回可选类型值" class="headerlink" title="闭包返回可选类型值"></a>闭包返回可选类型值</h3><p>闭包返回可选类型闭包，表明此闭包可能为 nil</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">returnOptionalBlock</span><span class="params">(value: Bool)</span></span> -&gt; (() -&gt; (<span class="type">Void</span>))? &#123;</span><br><span class="line">    <span class="keyword">if</span> value &#123;</span><br><span class="line">        <span class="keyword">return</span> &#123; () <span class="keyword">in</span></span><br><span class="line">            <span class="built_in">print</span>(<span class="string">"可选闭包"</span>)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> <span class="keyword">let</span> voidBlock = <span class="keyword">self</span>.returnOptionalBlock(value: <span class="literal">false</span>) &#123;</span><br><span class="line">    voidBlock()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>要注意对于为 nil 的闭包进行强制解析执行会发生运行时错误 “Fatal error: Unexpectedly found nil while unwrapping an Optional value”。</p>
+<h3 id="结构体和枚举的可失败构造器"><a href="#结构体和枚举的可失败构造器" class="headerlink" title="结构体和枚举的可失败构造器"></a>结构体和枚举的可失败构造器</h3><p>类似类的可失败构造器，结构体的可失败构造器也是支持的</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">OperationError</span>:<span class="title">Error</span> </span>&#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="type">ErrorFirst</span></span><br><span class="line">    <span class="keyword">case</span> <span class="type">ErrorSecond</span></span><br><span class="line">    <span class="keyword">case</span> <span class="type">ErrorThird</span></span><br><span class="line">    <span class="keyword">init</span>?(type:<span class="type">String</span>) &#123;</span><br><span class="line">        <span class="keyword">switch</span> type &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="string">"first"</span>:</span><br><span class="line">            <span class="keyword">self</span> = .<span class="type">ErrorFirst</span></span><br><span class="line">        <span class="keyword">case</span> <span class="string">"second"</span>:</span><br><span class="line">            <span class="keyword">self</span> = .<span class="type">ErrorSecond</span></span><br><span class="line">        <span class="keyword">case</span> <span class="string">"third"</span>:</span><br><span class="line">            <span class="keyword">self</span> = .<span class="type">ErrorThird</span></span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">PersonStruct</span> </span>&#123;</span><br><span class="line">    <span class="keyword">let</span> name: <span class="type">String</span></span><br><span class="line">    <span class="keyword">init</span>?(name: <span class="type">String</span>) &#123; <span class="comment">// 可失败构造器</span></span><br><span class="line">        <span class="keyword">if</span> name.isEmpty &#123; <span class="keyword">return</span> <span class="literal">nil</span> &#125; <span class="comment">// 如果实例化为空串，则返回nil(即实例化失败)</span></span><br><span class="line">        <span class="keyword">self</span>.name = name</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="错误处理中的可选类型"><a href="#错误处理中的可选类型" class="headerlink" title="错误处理中的可选类型"></a>错误处理中的可选类型</h3><p>对于可能抛出错误的方法调用时应当使用 try 语法来捕捉错误，当然有时候并不对捕捉到的错误进行处理，此时代码可能会写成这个样子</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> picture = <span class="keyword">try</span>! loadImage(atPath: <span class="string">"..."</span>)</span><br></pre></td></tr></table></figure>
+
+<p>这样其实是禁止了错误的抛出，一旦有错误时就会崩溃，所以建议的语法如下</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> picture = <span class="keyword">try</span>? loadImage(atPath: <span class="string">"..."</span>)</span><br></pre></td></tr></table></figure>
+
+<h3 id="类型转换中的可选类型"><a href="#类型转换中的可选类型" class="headerlink" title="类型转换中的可选类型"></a>类型转换中的可选类型</h3><p>对于某种类型的变量进行向上转换时不会出现失败的情况，但是向下转型就可能会失败</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> yasic = <span class="type">Person</span>(name: <span class="string">"Yasic"</span>)</span><br><span class="line"><span class="keyword">let</span> yasicCopy = yasic <span class="keyword">as</span> <span class="type">Male</span></span><br></pre></td></tr></table></figure>
+
+<p>这样做会有编译期报错 <code>&#39;Person&#39; is not convertible to &#39;Male&#39;; did you mean to use &#39;as!&#39; to force downcast?</code></p>
+<p>此时建议使用可选绑定来进行类型向下转换</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> yasic = <span class="type">Person</span>(name: <span class="string">"Yasic"</span>)</span><br><span class="line"><span class="keyword">if</span> <span class="keyword">let</span> yasicCopy = yasic <span class="keyword">as</span>? <span class="type">Male</span> &#123;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="可选链-Optional-Chaining"><a href="#可选链-Optional-Chaining" class="headerlink" title="可选链 Optional Chaining"></a>可选链 Optional Chaining</h2><p>Swift 对可选链的定义如下</p>
+<blockquote>
+<p>可选链是一种可以请求和调用属性、方法及下标脚本的过程，它的可选性体现在请求或调用的目标当前可能为空 nil。如果可选的目标有值，那么调用就会成功；相反，如果可选的目标为 nil，那么调用就会返回 nil。多次请求或调用可以被链接在一起形成一个链，如果任何一个节点为空 nil 将导致整个链失效。</p>
+</blockquote>
+<p>此处假设有两个类 Person 和 Room</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Person</span> </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> name:<span class="type">String?</span></span><br><span class="line">    <span class="keyword">var</span> room:<span class="type">Room?</span></span><br><span class="line">    <span class="keyword">init</span>(name:<span class="type">String</span>) &#123;</span><br><span class="line">        <span class="keyword">self</span>.name = name</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">func</span> <span class="title">nameStr</span><span class="params">()</span></span> -&gt; <span class="type">String?</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">let</span> name = <span class="keyword">self</span>.name &#123;</span><br><span class="line">           <span class="keyword">return</span> name</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Room</span> </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> roomAddr:<span class="type">String?</span></span><br><span class="line">    <span class="keyword">var</span> roomArea:<span class="type">Int</span></span><br><span class="line">    <span class="keyword">var</span> people:[<span class="type">String</span>]?</span><br><span class="line">    <span class="keyword">init</span>(roomAddr:<span class="type">String</span>, roomArea:<span class="type">Int</span>) &#123;</span><br><span class="line">        <span class="keyword">self</span>.roomAddr = roomAddr</span><br><span class="line">        <span class="keyword">self</span>.roomArea = roomArea</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">func</span> <span class="title">roomAddrStr</span><span class="params">()</span></span> -&gt; <span class="type">String?</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">let</span> addr = <span class="keyword">self</span>.roomAddr &#123;</span><br><span class="line">            <span class="keyword">return</span> addr</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到，Person 有一个可选类型的成员变量 room，表示它可能为 nil，也可能有值，还有一个返回可选类型值的方法 nameStr，Room 类也有一个返回可选类型值的方法 roomAddrStr。</p>
+<p>下面是一些具体的使用</p>
+<ul>
+<li>可选链调用属性</li>
+</ul>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> <span class="keyword">let</span> area = yasic.room?.roomArea &#123;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这样获取的就是一个 Int? 类型的值，而不是 roomArea 所定义的 Int 类型。</p>
+<ul>
+<li>可选链调用方法</li>
+</ul>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> <span class="keyword">let</span> result = yasic.room?.roomAddrStr() &#123;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>可选链访问数组下标</li>
+</ul>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> <span class="keyword">let</span> result = yasic.room?.people?[<span class="number">1</span>] &#123;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>需要注意的是可选链始终返回的是可选类型变量，不会因为最后一层的变量是非可选类型变量就返回非可选类型变量，并且可选链中任意一节失败就会直接返回 nil。</p>
+
+    </div>
+
+    
+    
+    
+      
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/01/23/AutoLayout/AutoLayout%E6%8C%87%E5%8D%97%C2%B7AutoLayout%20Cookbook%C2%B7StackView/" rel="prev" title="AutoLayout指南·AutoLayout Cookbook·StackView">
+      <i class="fa fa-chevron-left"></i> AutoLayout指南·AutoLayout Cookbook·StackView
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/02/28/iOS%E5%BC%80%E5%8F%91/%E4%BF%AE%E6%AD%A3UIImage%E7%9A%84Orientation%E5%B1%9E%E6%80%A7/" rel="next" title="修正UIImage的Orientation属性">
+      修正UIImage的Orientation属性 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Swift-可选类型、隐式可选类型与可选链"><span class="nav-text">Swift 可选类型、隐式可选类型与可选链</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#可选类型-optional"><span class="nav-text">可选类型 optional</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#隐式可选类型"><span class="nav-text">隐式可选类型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#可选类型的应用"><span class="nav-text">可选类型的应用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#空合运算符-Nil-Coalescing-Operator"><span class="nav-text">空合运算符 Nil Coalescing Operator</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#方法返回可选类型值"><span class="nav-text">方法返回可选类型值</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#类返回可选类型对象"><span class="nav-text">类返回可选类型对象</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#闭包返回可选类型值"><span class="nav-text">闭包返回可选类型值</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#结构体和枚举的可失败构造器"><span class="nav-text">结构体和枚举的可失败构造器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#错误处理中的可选类型"><span class="nav-text">错误处理中的可选类型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#类型转换中的可选类型"><span class="nav-text">类型转换中的可选类型</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#可选链-Optional-Chaining"><span class="nav-text">可选链 Optional Chaining</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Yasic Yu"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Yasic Yu</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">46</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Yasic" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Yasic" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:yuxuan2580@gmail.com" title="E-Mail → mailto:yuxuan2580@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yasic Yu</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.1
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

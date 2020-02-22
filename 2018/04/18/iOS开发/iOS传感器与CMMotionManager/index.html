@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Muse","version":"7.7.1","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":3,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="iOS 中常见传感器如下所示">
+<meta property="og:type" content="article">
+<meta property="og:title" content="iOS传感器与CMMotionManager">
+<meta property="og:url" content="http://yoursite.com/2018/04/18/iOS%E5%BC%80%E5%8F%91/iOS%E4%BC%A0%E6%84%9F%E5%99%A8%E4%B8%8ECMMotionManager/index.html">
+<meta property="og:site_name" content="Yasic Yu">
+<meta property="og:description" content="iOS 中常见传感器如下所示">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://blog.denivip.ru/wp-content/uploads/2013/07/CoreMotionAxes.png">
+<meta property="og:image" content="http://blog.denivip.ru/wp-content/uploads/2013/07/CoreMotionRotationAxes.png">
+<meta property="article:published_time" content="2018-04-17T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-02-22T08:11:34.115Z">
+<meta property="article:author" content="Yasic Yu">
+<meta property="article:tag" content="iOS">
+<meta property="article:tag" content=" ObjectiveC">
+<meta property="article:tag" content=" Swift">
+<meta property="article:tag" content=" XCode">
+<meta property="article:tag" content=" Computer">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://blog.denivip.ru/wp-content/uploads/2013/07/CoreMotionAxes.png">
+
+<link rel="canonical" href="http://yoursite.com/2018/04/18/iOS%E5%BC%80%E5%8F%91/iOS%E4%BC%A0%E6%84%9F%E5%99%A8%E4%B8%8ECMMotionManager/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>iOS传感器与CMMotionManager | Yasic Yu</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Yasic Yu</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">In Code We Trust</p>
+  </div>
+
+  <div class="site-nav-right"></div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类<span class="badge">4</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">46</span></a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/yasic" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/04/18/iOS%E5%BC%80%E5%8F%91/iOS%E4%BC%A0%E6%84%9F%E5%99%A8%E4%B8%8ECMMotionManager/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Yasic Yu">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yasic Yu">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          iOS传感器与CMMotionManager
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-04-18 00:00:00" itemprop="dateCreated datePublished" datetime="2018-04-18T00:00:00+08:00">2018-04-18</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS%E5%BC%80%E5%8F%91/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS开发</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">iOS 中常见传感器如下所示</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>iOS 中常见传感器如下所示</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>环境光传感器</td>
+<td>感应光照强度</td>
+</tr>
+<tr>
+<td>距离传感器</td>
+<td>感应靠近设备屏幕的物体</td>
+</tr>
+<tr>
+<td>磁力计传感器</td>
+<td>感应周边磁场</td>
+</tr>
+<tr>
+<td>内部温度传感器</td>
+<td>感应设备内部温度（非公开）</td>
+</tr>
+<tr>
+<td>湿度传感器</td>
+<td>感应设备是否进水（非微电子传感器）</td>
+</tr>
+<tr>
+<td>陀螺仪</td>
+<td>感应持握方式</td>
+</tr>
+<tr>
+<td>加速计</td>
+<td>感应设备运动</td>
+</tr>
+</tbody></table>
+<p>其中陀螺仪、加速计和磁力计的数据获取均依赖于 CMMotionManager。</p>
+<h2 id="CMMotionManager"><a href="#CMMotionManager" class="headerlink" title="CMMotionManager"></a>CMMotionManager</h2><p>CMMotionManager 是 Core Motion 库的核心类，负责获取和处理手机的运动信息，它可以获取的数据有</p>
+<ul>
+<li>加速度，标识设备在三维空间中的瞬时加速度</li>
+<li>陀螺仪，标识设备在三个主轴上的瞬时旋转</li>
+<li>磁场信息，标识设备相对于地球磁场的方位</li>
+<li>设备运动数据，标识关键的运动相关属性，包括设备用户引起的加速度、姿态、旋转速率、相对于校准磁场的方位以及相对于重力的方位等，这些数据均来自于 Core Motion 的传感器融合算法，从这一个数据接口即可获取以上三种数据，因此使用较为广泛</li>
+</ul>
+<p>CMMotionManager 有 “push” 和 “pull” 两种方式获取数据，push 方式实时获取数据，采样频率高，pull 方式仅在需要数据时采集数据，Apple 更加推荐这种方式获取数据。</p>
+<h3 id="push-方式"><a href="#push-方式" class="headerlink" title="push 方式"></a>push 方式</h3><p>将 CMMotionManager 采集频率 interval 设置好以后，CMMotionManager 会在一个操作队列里从特定的 block 返回实时数据更新，这里以设备运动数据 DeviceMotion 为例，代码如下</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">CMMotionManager</span> *motionManager = [[<span class="built_in">CMMotionManager</span> alloc] init];</span><br><span class="line">motionManager.deviceMotionUpdateInterval = <span class="number">1</span>/<span class="number">15.0</span>;</span><br><span class="line"><span class="keyword">if</span> (motionManager.deviceMotionAvailable) &#123;</span><br><span class="line">    [motionManager startDeviceMotionUpdatesToQueue:[<span class="built_in">NSOperationQueue</span> currentQueue]</span><br><span class="line">                                       withHandler: ^(<span class="built_in">CMDeviceMotion</span> *motion, <span class="built_in">NSError</span> *error)&#123;</span><br><span class="line">                                           <span class="keyword">double</span> x = motion.gravity.x;</span><br><span class="line">                                           <span class="keyword">double</span> y = motion.gravity.y;</span><br><span class="line">                                           <span class="keyword">double</span> z = motion.gravity.z;</span><br><span class="line">                                           <span class="comment">//NSLog(@"roll:%f, pitch:%f, yew:%f", motion.attitude.roll, motion.attitude.pitch, motion.attitude.yaw);</span></span><br><span class="line">                                           <span class="built_in">NSLog</span>(<span class="string">@"x:%f, y:%f, z:%f"</span>, x, y, z);</span><br><span class="line">                                       &#125;];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>首先要注意尽可能在 app 中只创建一个 CMMotionManager 对象，多个 CMMotionManager 对象会影响从加速计和陀螺仪接受数据的速率。其次，在启动接收设备传感器信息前要检查传感器是否硬件可达，可以用<br>deviceMotionAvailable 检测硬件是否正常，用 deviceMotionActive 检测当前 CMMotionManager 是否正在提供数据更新。</p>
+<p>暂停更新也很容易，直接调用 stopXXXUpdates 即可。</p>
+<h3 id="pull-方式"><a href="#pull-方式" class="headerlink" title="pull 方式"></a>pull 方式</h3><p>仍以 DevideMotion 为例，pull 方式代码如下</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">CMMotionManager</span> *motionManager = [[<span class="built_in">CMMotionManager</span> alloc] init];</span><br><span class="line">motionManager.deviceMotionUpdateInterval = <span class="number">1</span>/<span class="number">15.0</span>;</span><br><span class="line"><span class="keyword">if</span> (motionManager.deviceMotionAvailable) &#123;</span><br><span class="line">    [motionManager startDeviceMotionUpdates];</span><br><span class="line">    <span class="keyword">double</span> x = motionManager.deviceMotion.gravity.x;</span><br><span class="line">    <span class="keyword">double</span> y = motionManager.deviceMotion.gravity.y;</span><br><span class="line">    <span class="keyword">double</span> z = motionManager.deviceMotion.gravity.z;</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"x:%f, y:%f, z:%f"</span>, x, y, z);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>但是这样的方式获取的数据实时性不高，第一次获取可能没有数据，同时要注意不能过于频繁的获取，否则可能引起崩溃。</p>
+<p>下面是 CMMotionManager 监听的各类运动信息的简单描述。首先需要明确，iOS 设备的运动传感器使用了如下的坐标系</p>
+<img src="http://blog.denivip.ru/wp-content/uploads/2013/07/CoreMotionAxes.png" width=500>
+
+<p>而 DeviceMotion 信息具体对应 iOS 中的 CMDeviceMotion 类，它包含的数据有</p>
+<h4 id="1-attitude"><a href="#1-attitude" class="headerlink" title="1. attitude"></a>1. attitude</h4><p>attitude 用于标识空间位置的欧拉角（roll、yaw、pitch）和四元数（quaternion）</p>
+<img src="http://blog.denivip.ru/wp-content/uploads/2013/07/CoreMotionRotationAxes.png" width=500>
+
+<p>其中绕 x 轴运动称作 pitch（俯仰），绕 y 轴运动称作 roll（滚转），绕 z 轴运动称作 yaw（偏航）。</p>
+<p>当设备正面向上、顶部指向正北、水平放置时，pitch、yaw 和 roll 值均为 0，其他变化如下</p>
+<ul>
+<li>设备顶部上扬，pitch 由 0 递增 pi/2，顶部下沉，由 0 递减 pi/2</li>
+<li>设备顶部左偏 180 度范围内，yaw 由 0 递增 pi，右偏递减</li>
+<li>设备左部上旋，roll 由 0 递增 pi，左部下旋，roll 由 0 递减</li>
+</ul>
+<h4 id="2-rotationRate"><a href="#2-rotationRate" class="headerlink" title="2. rotationRate"></a>2. rotationRate</h4><p>rotationRate 标识设备旋转速率，具体变化如下</p>
+<ul>
+<li>pitch 增加，x &gt; 0，pictch 减少，x &lt; 0</li>
+<li>roll 增加，y &gt; 0，row 减少，y &lt; 0</li>
+<li>yaw 增加，z &gt; 0，yaw 减少，z &lt; 0</li>
+</ul>
+<h4 id="3-gravity"><a href="#3-gravity" class="headerlink" title="3. gravity"></a>3. gravity</h4><p>gravity 用于标识重力在设备各个方向的分量，具体值的变化遵循如下规律：重力方向始终指向地球，而在设备的三个方向上有不同分量，最大可达 1.0，最小是 0.0。</p>
+<p>其中设备顶部向上时 y 轴分量为负数，向下为正数。设备顶部向右时 x 轴分量为正数，向左时 x 轴分量为负数。</p>
+<h4 id="4-userAcceleration"><a href="#4-userAcceleration" class="headerlink" title="4. userAcceleration"></a>4. userAcceleration</h4><p>userAcceleration 用于标识设备各个方向上的加速度，注意是加速度值，可以标识当前设备正在当前方向上减速 or 加速。</p>
+<h4 id="5-magneticField-amp-heading"><a href="#5-magneticField-amp-heading" class="headerlink" title="5. magneticField &amp; heading"></a>5. magneticField &amp; heading</h4><p>magneticField 用于标识设备周围的磁场范围和精度，heading 用于标识北极方向。但是要注意，这两个值的检测需要指定 ReferenceFrame，它是一个 CMAttitudeReferenceFrame 的枚举，有四个值</p>
+<ul>
+<li>CMAttitudeReferenceFrameXArbitraryZVertical</li>
+<li>CMAttitudeReferenceFrameXArbitraryCorrectedZVertical</li>
+<li>CMAttitudeReferenceFrameXMagneticNorthZVertical</li>
+<li>CMAttitudeReferenceFrameXTrueNorthZVertical</li>
+</ul>
+<p>其中前两个 frame 下磁性返回非法负值，只有选择了 CMAttitudeReferenceFrameXMagneticNorthZVertical 或 CMAttitudeReferenceFrameXTrueNorthZVertical 才有有效值，这两个枚举分别指代磁性北极和地理北极。</p>
+<h2 id="距离传感器"><a href="#距离传感器" class="headerlink" title="距离传感器"></a>距离传感器</h2><p>距离传感器可以检测有物理在靠近或者远离屏幕，使用如下</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">    [<span class="built_in">UIDevice</span> currentDevice].proximityMonitoringEnabled = <span class="literal">YES</span>;</span><br><span class="line">    </span><br><span class="line">    [[<span class="built_in">NSNotificationCenter</span> defaultCenter] addObserver:<span class="keyword">self</span> selector:<span class="keyword">@selector</span>(proximityStateDidChange:) name:<span class="built_in">UIDeviceProximityStateDidChangeNotification</span> object:<span class="literal">nil</span>];</span><br><span class="line">    </span><br><span class="line">- (<span class="keyword">void</span>)proximityStateDidChange:(<span class="built_in">NSNotification</span> *)note</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> ([<span class="built_in">UIDevice</span> currentDevice].proximityState) &#123;</span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"Coming"</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"Leaving"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="环境光传感器"><a href="#环境光传感器" class="headerlink" title="环境光传感器"></a>环境光传感器</h2><p>目前没有找到相应的 API，可以采取的思路是通过摄像头获取每一帧，进行光线强度检测</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSData</span> *imageData = [<span class="built_in">AVCaptureStillImageOutput</span> jpegStillImageNSDataRepresentation:imageDataSampleBuffer];</span><br><span class="line"><span class="built_in">CFDictionaryRef</span> metadataDict = <span class="built_in">CMCopyDictionaryOfAttachments</span>(<span class="literal">NULL</span>, imageDataSampleBuffer, kCMAttachmentMode_ShouldPropagate);</span><br><span class="line"><span class="built_in">NSDictionary</span> *metadata = [[<span class="built_in">NSDictionary</span> alloc] initWithDictionary:(__bridge <span class="built_in">NSDictionary</span>*)metadataDict];</span><br><span class="line"><span class="built_in">CFRelease</span>(metadataDict);</span><br><span class="line"><span class="built_in">NSDictionary</span> *exifMetadata = [[metadata objectForKey:(<span class="built_in">NSString</span> *) kCGImagePropertyExifDictionary] mutableCopy];</span><br><span class="line"><span class="keyword">float</span> brightnessValue = [[exifMetadata  objectForKey:(<span class="built_in">NSString</span> *) kCGImagePropertyExifBrightnessValue] floatValue];</span><br><span class="line"><span class="built_in">NSLog</span>(<span class="string">@"%f"</span>,brightnessValue);</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+      
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/04/17/AVFoundation/AVFoundation%E8%A7%86%E9%A2%91%E6%92%AD%E6%94%BE/" rel="prev" title="AVFoundation视频播放">
+      <i class="fa fa-chevron-left"></i> AVFoundation视频播放
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/04/18/AVFoundation/AVFoundation%E6%8D%95%E6%8D%89%E5%AA%92%E4%BD%93/" rel="next" title="AVFoundation捕捉媒体">
+      AVFoundation捕捉媒体 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#CMMotionManager"><span class="nav-text">CMMotionManager</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#push-方式"><span class="nav-text">push 方式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pull-方式"><span class="nav-text">pull 方式</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-attitude"><span class="nav-text">1. attitude</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-rotationRate"><span class="nav-text">2. rotationRate</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-gravity"><span class="nav-text">3. gravity</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-userAcceleration"><span class="nav-text">4. userAcceleration</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-magneticField-amp-heading"><span class="nav-text">5. magneticField &amp; heading</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#距离传感器"><span class="nav-text">距离传感器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#环境光传感器"><span class="nav-text">环境光传感器</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Yasic Yu"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Yasic Yu</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">46</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Yasic" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Yasic" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:yuxuan2580@gmail.com" title="E-Mail → mailto:yuxuan2580@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yasic Yu</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.1
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

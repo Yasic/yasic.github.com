@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Muse","version":"7.7.1","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":3,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="接下来的例子中将使用一些相对简单的例子实现一些常用的布局效果，这些例子可以作为基础构建块用于组建更大更复杂的布局。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AutoLayout指南·AutoLayout Cookbook·简单约束">
+<meta property="og:url" content="http://yoursite.com/2017/12/21/AutoLayout/AutoLayout%E6%8C%87%E5%8D%97%C2%B7AutoLayout%20Cookbook%C2%B7%E7%AE%80%E5%8D%95%E7%BA%A6%E6%9D%9F/index.html">
+<meta property="og:site_name" content="Yasic Yu">
+<meta property="og:description" content="接下来的例子中将使用一些相对简单的例子实现一些常用的布局效果，这些例子可以作为基础构建块用于组建更大更复杂的布局。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/Simple_Single_View_Screenshot_2x.png">
+<meta property="og:image" content="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/simple_single_view_2x.png">
+<meta property="og:image" content="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/Adaptive_Single_View_Screenshot_2x.png">
+<meta property="og:image" content="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/SideBySide_2x.png">
+<meta property="og:image" content="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/adaptive_single_view_2x.png">
+<meta property="og:image" content="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/Two_Equal_Width_Views_Screenshot_2x.png">
+<meta property="og:image" content="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/two_equal_width_views_2x.png">
+<meta property="og:image" content="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/Two_Different_Sized_Views_2x.png">
+<meta property="og:image" content="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/two_different_sized_views_2x.png">
+<meta property="og:image" content="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/Two_Views_with_Complex_Widths_Screenshot_2x.png">
+<meta property="og:image" content="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/two_views_with_complex_widths_2x.png">
+<meta property="article:published_time" content="2017-12-20T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-02-22T08:11:34.000Z">
+<meta property="article:author" content="Yasic Yu">
+<meta property="article:tag" content="iOS">
+<meta property="article:tag" content=" ObjectiveC">
+<meta property="article:tag" content=" Swift">
+<meta property="article:tag" content=" XCode">
+<meta property="article:tag" content=" Computer">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/Simple_Single_View_Screenshot_2x.png">
+
+<link rel="canonical" href="http://yoursite.com/2017/12/21/AutoLayout/AutoLayout%E6%8C%87%E5%8D%97%C2%B7AutoLayout%20Cookbook%C2%B7%E7%AE%80%E5%8D%95%E7%BA%A6%E6%9D%9F/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>AutoLayout指南·AutoLayout Cookbook·简单约束 | Yasic Yu</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Yasic Yu</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">In Code We Trust</p>
+  </div>
+
+  <div class="site-nav-right"></div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类<span class="badge">4</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">46</span></a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/yasic" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/12/21/AutoLayout/AutoLayout%E6%8C%87%E5%8D%97%C2%B7AutoLayout%20Cookbook%C2%B7%E7%AE%80%E5%8D%95%E7%BA%A6%E6%9D%9F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Yasic Yu">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yasic Yu">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AutoLayout指南·AutoLayout Cookbook·简单约束
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-12-21 00:00:00" itemprop="dateCreated datePublished" datetime="2017-12-21T00:00:00+08:00">2017-12-21</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/AutoLayout/" itemprop="url" rel="index">
+                    <span itemprop="name">AutoLayout</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">接下来的例子中将使用一些相对简单的例子实现一些常用的布局效果，这些例子可以作为基础构建块用于组建更大更复杂的布局。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="AutoLayout指南·AutoLayout-Cookbook"><a href="#AutoLayout指南·AutoLayout-Cookbook" class="headerlink" title="AutoLayout指南·AutoLayout Cookbook"></a>AutoLayout指南·AutoLayout Cookbook</h1><h2 id="约束示例"><a href="#约束示例" class="headerlink" title="约束示例"></a>约束示例</h2><p>接下来的例子中将使用一些相对简单的例子实现一些常用的布局效果，这些例子可以作为基础构建块用于组建更大更复杂的布局。</p>
+<p>查看示例的源码请查阅 <a href="https://developer.apple.com/sample-code/xcode/downloads/Auto-Layout-Cookbook.zip" target="_blank" rel="noopener">Auto Layout Cookbook</a></p>
+<h3 id="单一-view"><a href="#单一-view" class="headerlink" title="单一 view"></a>单一 view</h3><p>这一节我们将一个红色 view 放进父视图中，并使其四个边线与父 view 保持一定的间距。</p>
+<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/Simple_Single_View_Screenshot_2x.png" width=500>
+
+<h4 id="视图和约束"><a href="#视图和约束" class="headerlink" title="视图和约束"></a>视图和约束</h4><p>在 IB 中，拖拽一个 view 到你的场景中，然后改变其尺寸以填满场景，使用 Ib 向导选择一个与父视图四条边线相对合适的位置。</p>
+<blockquote>
+<p>注意</p>
+<p>你并不需要完全保证 view 放置在正确的像素点位置上，当你设置完约束后，系统会自动帮你计算出正确的尺寸和位置。</p>
+</blockquote>
+<p>放置好 view 后设置如下约束</p>
+<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/simple_single_view_2x.png" width=500>
+
+<figure class="highlight mathematica"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">Red</span> View.Leading = Superview.LeadingMargin</span><br><span class="line"></span><br><span class="line"><span class="keyword">Red</span> View.Trailing = Superview.TrailingMargin</span><br><span class="line"></span><br><span class="line"><span class="keyword">Red</span> View.<span class="keyword">Top</span> = <span class="keyword">Top</span> Layout Guide.<span class="keyword">Bottom</span> + <span class="number">20.0</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">Bottom</span> Layout Guide.<span class="keyword">Top</span> = <span class="keyword">Red</span> View.<span class="keyword">Bottom</span> + <span class="number">20.0</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="属性"><a href="#属性" class="headerlink" title="属性"></a>属性</h4><p>为了给 view 配置一个红色背景，需要在属性检查器中设置如下属性</p>
+<table>
+<thead>
+<tr>
+<th>View</th>
+<th>Attribute</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Red View</td>
+<td>Background</td>
+<td>Red</td>
+</tr>
+</tbody></table>
+<h4 id="讨论"><a href="#讨论" class="headerlink" title="讨论"></a>讨论</h4><p>这一节示例中的约束使得红色 view 与父视图的边线保持了一个固定距离，对于左右边线，将 view 与父视图的 margin 相联系，对于上下边线，将 view 与父视图的 Layout guide 相联系。</p>
+<blockquote>
+<p>注意</p>
+<p>系统会自动设置根 view 的边距使得左右边距为 16 或 20 个像素点（根据不同设备），上下边距为 0。这使得你非常容易将内容与不同的 control bar （statusbar，navigationbar，tabbar，toolbar 等）协同布局。</p>
+<p>但是在这里你需要将内容放置在 bar 下面一点距离，因此你只能设置 view 自身的上下间距相对于 Layout guide 的间距。</p>
+</blockquote>
+<p>IB 默认会将 view 与父视图的边线设置 20 像素点的空白间距，将兄弟 view 之间边线设置 8 像素点空白间距。这意味着你应当在红色 view 的顶部与状态栏的底部使用 8 像素点的间距。但是当 iphone 横屏显示时，状态栏会隐藏，此时 8 像素点会显得比较拥挤。</p>
+<p>因此应当总是在 app 中选择效果最好的布局，这里我们用固定 20 像素的间距设置 app 的顶部和底部，这使得约束逻辑尽量简单，同时在横屏和竖屏上的展示效果看起来也很合理，所以其他的布局或许会比默认的固定 8 像素点要好。</p>
+<p>如果你需要一个能动态根据 bars 的展示和隐藏而调整自身的布局，你应当看看 <a href="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/WorkingwithSimpleConstraints.html#//apple_ref/doc/uid/TP40010853-CH12-SW4" target="_blank" rel="noopener">Adaptive Single View</a></p>
+<h3 id="自适应单一-view"><a href="#自适应单一-view" class="headerlink" title="自适应单一 view"></a>自适应单一 view</h3><p>这一节的示例将一个蓝色 view 以固定边距放置在父视图中，并填满父视图。但是不像上一节那样，蓝色 view 的顶部边距会随着 View 的上下文不同情况而变化。当存在状态栏时，view 会与状态栏保持 8 像素点间距，当状态栏不存在时，view 顶部会与父视图边线保持 20 像素点间距。</p>
+<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/Adaptive_Single_View_Screenshot_2x.png" width=500>
+
+<p>下面是简单 view 和自适应 view 的比较图</p>
+<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/SideBySide_2x.png" width=500>
+
+<h4 id="视图和约束-1"><a href="#视图和约束-1" class="headerlink" title="视图和约束"></a>视图和约束</h4><p>在 IB 中，将一个 view 拖进场景中，设置其尺寸铺满场景，设置约束如下</p>
+<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/adaptive_single_view_2x.png" width=500>
+
+<figure class="highlight mathematica"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">Blue</span> View.Leading = Superview.LeadingMargin</span><br><span class="line"></span><br><span class="line"><span class="keyword">Blue</span> View.Trailing = Superview.TrailingMargin</span><br><span class="line"></span><br><span class="line"><span class="keyword">Blue</span> View.<span class="keyword">Top</span> = <span class="keyword">Top</span> Layout Guide.<span class="keyword">Bottom</span> + Standard (Priority <span class="number">750</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">Blue</span> View.<span class="keyword">Top</span> &gt;= Superview.<span class="keyword">Top</span> + <span class="number">20.0</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">Bottom</span> Layout Guide.<span class="keyword">Top</span> = <span class="keyword">Blue</span> View.<span class="keyword">Bottom</span> + Standard (Priority <span class="number">750</span>)</span><br><span class="line"></span><br><span class="line">Superview.<span class="keyword">Bottom</span> &gt;= <span class="keyword">Blue</span> View.<span class="keyword">Bottom</span> + <span class="number">20.0</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="属性-1"><a href="#属性-1" class="headerlink" title="属性"></a>属性</h4><p>设置 view 背景为蓝色，设置如下属性</p>
+<table>
+<thead>
+<tr>
+<th>View</th>
+<th>Attribute</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Blue View</td>
+<td>Background</td>
+<td>Blue</td>
+</tr>
+</tbody></table>
+<h4 id="讨论-1"><a href="#讨论-1" class="headerlink" title="讨论"></a>讨论</h4><p>这一节示例中为蓝色 view 的顶部和底部创建了一个自适应的边距，如果存在 bar，view 的边距就会与 bar 相距 8 像素，如果不存在 bar，view 就会与父视图的边距保持 20 像素。</p>
+<p>示例用到了 LayoutGuide 去设置内容正确的位置。系统会基于 bar 的尺寸和是否展示将 LayoutGuide 放置在合适的位置。top LayoutGuide 会被放置在任何顶部 bar (例如 statusbar，navigationbar)的下边线。bottom LayoutGuide 会被放置在任何底部 bar 的上边线(例如 tabbar)。如果没有 bar，系统会将 LayoutGuide 放置在父视图相应的边线上。</p>
+<p>示例利用一对约束来实现自适应视图的效果。首先是一个必需的约束，大于等于约束。这个约束保证了蓝色 view 的边线至少与父视图边线有 20 像素点距离。</p>
+<p>然后是一个可选的约束，它尝试将 view 与对应的 LayoutGuide 保持 8 像素间距。由于这个约束是可选的，所以当系统无法满足这个约束的时候，会尝试尽量靠近这个约束的效果。所以这个约束像是弹簧一样将蓝色 view 系在 LayoutGuide 上。</p>
+<p>如果系统没有展示 bar，则 LayoutGuide 与父视图的边线相等，此时蓝色 view 的边线与父视图边线既不能保持 8 像素间距也不能保持 20 像素间距，因此系统将无法满足可选约束，但它仍会尽量保证间距最小值为 20 像素。</p>
+<p>如果 bar 存在，则两个约束都可以满足，因为所有的 bar 都有至少 20 像素的高度。所以如果系统将 view 与 bar 的边线保持 8 像素，也一定能满足 view 与父视图有至少 20 像素点的距离。</p>
+<p>使用一对表现得像是相反力的约束在创建自适应布局时是非常常见的技术，当我们在 <a href="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/ViewswithIntrinsicContentSize.html#//apple_ref/doc/uid/TP40010853-CH13-SW1" target="_blank" rel="noopener">Views with Intrinsic Content Size</a> 讲到 content-hugging 和 compression-resistance 的优先级时会再次用到它。</p>
+<h3 id="两个等宽-view"><a href="#两个等宽-view" class="headerlink" title="两个等宽 view"></a>两个等宽 view</h3><p>这一节示例将展示两个 view，无论父视图的尺寸如何变化，它们始终保持等宽度。同时两个 view 会填满父视图，与父视图有一个固定间距，两个 view 之间也有一个标准空白间距。</p>
+<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/Two_Equal_Width_Views_Screenshot_2x.png" width=500>
+
+<h4 id="视图和约束-2"><a href="#视图和约束-2" class="headerlink" title="视图和约束"></a>视图和约束</h4><p>在 IB 中拖两个 view 放进场景中，并使它们填满父视图。使用 guideline 设置它们与场景的间距。</p>
+<p>不要担心不能使二者完全等宽，稍后可以用约束来精确保证这一效果。</p>
+<p>放置好 view 后设置如下约束</p>
+<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/two_equal_width_views_2x.png" width=500>
+
+<figure class="highlight mathematica"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">Yellow View.Leading = Superview.LeadingMargin</span><br><span class="line"></span><br><span class="line"><span class="keyword">Green</span> View.Leading = Yellow View.Trailing + Standard</span><br><span class="line"></span><br><span class="line"><span class="keyword">Green</span> View.Trailing = Superview.TrailingMargin</span><br><span class="line"></span><br><span class="line">Yellow View.<span class="keyword">Top</span> = <span class="keyword">Top</span> Layout Guide.<span class="keyword">Bottom</span> + <span class="number">20.0</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">Green</span> View.<span class="keyword">Top</span> = <span class="keyword">Top</span> Layout Guide.<span class="keyword">Bottom</span> + <span class="number">20.0</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">Bottom</span> Layout Guide.<span class="keyword">Top</span> = Yellow View.<span class="keyword">Bottom</span> + <span class="number">20.0</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">Bottom</span> Layout Guide.<span class="keyword">Top</span> = <span class="keyword">Green</span> View.<span class="keyword">Bottom</span> + <span class="number">20.0</span></span><br><span class="line"></span><br><span class="line">Yellow View.Width = <span class="keyword">Green</span> View.Width</span><br></pre></td></tr></table></figure>
+
+<h4 id="属性-2"><a href="#属性-2" class="headerlink" title="属性"></a>属性</h4><p>在属性检查器中设置两个 view 的背景颜色</p>
+<table>
+<thead>
+<tr>
+<th>View</th>
+<th>Attribute</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Yellow View</td>
+<td>Background</td>
+<td>Yellow</td>
+</tr>
+<tr>
+<td>Green View</td>
+<td>Background</td>
+<td>Green</td>
+</tr>
+</tbody></table>
+<h4 id="讨论-2"><a href="#讨论-2" class="headerlink" title="讨论"></a>讨论</h4><p>这个布局显式地定义了两个 view 的顶部和底部间距，只要这些间距是相同的，这两个 view 就会有相同的高度。但是这并不唯一可能的实现方式，除了将绿色 view 与父视图的顶部和底部绑定，你也可以设置它与黄色 view 的顶部底部相等。对齐顶部和底部边线会显式地设置这些 view 相同的垂直布局。</p>
+<p>即使是像这样一个相对简单的布局也可以用多种约束方式实现，一些会更加清晰，但是大多数都是等价的。每一个方式有其自己的优缺点，示例用到的方式有两个主要的优点。首先也是最重要的一点是，它很容易被理解，其次，这个布局可以最大限度保证其完整性，即使你从中移除一个 view。</p>
+<p>从视图层级移除一个 view 的同时也会移除它上面的约束。对于这个例子，移除黄色 view 的同时，约束 1，2，4，6 和 8 也会被移除。但是剩下的三条约束仍可以使绿色 view 在其正确位置上，你只需要加入一条约束来定义绿色 view 左边线的位置就能修复这个布局了。</p>
+<p>这个布局最大的缺点是你需要手动确保所有 view 的顶部约束和底部约束是相等的。改变其中一个约束的常数就会使视图展示出错。一般来说，用 IB 设置一个固定常量相对还比较容易，如果用拖拽方式创建约束就可能比较困难了。</p>
+<p>当面对复杂而等价的诸多约束方式时，应当根据布局的上下文选择最容易理解和维护的方式。比如如果你需要居中一些不同尺寸的 view 时，最容易的方式是设置它们的 CenterX 属性，而其他布局可能设置 view 的边线或长宽会更容易一些。</p>
+<p>更多关于选择最好的约束方式的信息请查阅 <a href="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/AnatomyofaConstraint.html#//apple_ref/doc/uid/TP40010853-CH9-SW16" target="_blank" rel="noopener">Creating Nonambiguous, Satisfiable Layouts</a></p>
+<h3 id="两个不同宽度的-view"><a href="#两个不同宽度的-view" class="headerlink" title="两个不同宽度的 view"></a>两个不同宽度的 view</h3><p>这个示例与上一节很类似，但是显著的不同在于这个示例中橙色 view 的宽度始终是紫色 view 的两倍。</p>
+<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/Two_Different_Sized_Views_2x.png" width=500>
+
+<h4 id="视图和约束-3"><a href="#视图和约束-3" class="headerlink" title="视图和约束"></a>视图和约束</h4><p>像之前那样，简单向场景拖进两个 view 并放置在大致位置后设置约束如下</p>
+<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/two_different_sized_views_2x.png" width=500>
+
+<figure class="highlight mathematica"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">Purple</span> View.Leading = Superview.LeadingMargin</span><br><span class="line"></span><br><span class="line"><span class="keyword">Orange</span> View.Leading = <span class="keyword">Purple</span> View.Trailing + Standard</span><br><span class="line"></span><br><span class="line"><span class="keyword">Orange</span> View.Trailing = Superview.TrailingMargin</span><br><span class="line"></span><br><span class="line"><span class="keyword">Purple</span> View.<span class="keyword">Top</span> = <span class="keyword">Top</span> Layout Guide.<span class="keyword">Bottom</span> + <span class="number">20.0</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">Orange</span> View.<span class="keyword">Top</span> = <span class="keyword">Top</span> Layout Guide.<span class="keyword">Bottom</span> + <span class="number">20.0</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">Bottom</span> Layout Guide.<span class="keyword">Top</span> = <span class="keyword">Purple</span> View.<span class="keyword">Bottom</span> + <span class="number">20.0</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">Bottom</span> Layout Guide.<span class="keyword">Top</span> = <span class="keyword">Orange</span> View.<span class="keyword">Bottom</span> + <span class="number">20.0</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">Orange</span> View.Width = <span class="number">2.0</span> x <span class="keyword">Purple</span> View.Width</span><br></pre></td></tr></table></figure>
+
+<h4 id="属性-3"><a href="#属性-3" class="headerlink" title="属性"></a>属性</h4><p>在属性检查器中设置 view 的背景颜色</p>
+<table>
+<thead>
+<tr>
+<th>View</th>
+<th>Attribute</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Purple View</td>
+<td>Background</td>
+<td>Purple</td>
+</tr>
+<tr>
+<td>Orange View</td>
+<td>Background</td>
+<td>Orange</td>
+</tr>
+</tbody></table>
+<h4 id="讨论-3"><a href="#讨论-3" class="headerlink" title="讨论"></a>讨论</h4><p>这个示例在宽度约束中使用了一个乘数因子，乘数因子只能被用在宽高的约束中，它能帮你设置不同 view 的相对尺寸。同时你也可以设置一个 view 的长宽比为一个常数。</p>
+<p>IB 能让你用多种形式来表达一个乘数因子，可以是十进制整数、百分数、分数或者一个比值。</p>
+<h3 id="两个有复杂宽度的-view"><a href="#两个有复杂宽度的-view" class="headerlink" title="两个有复杂宽度的 view"></a>两个有复杂宽度的 view</h3><p>这一节示例几乎和两个不同宽度的 view 的示例是一样的，但是这里你需要使用一对约束来定义对 view 的宽度定义一个更加复杂的效果。在一节里，系统将尝试使红色 view 的宽度是蓝色 view 宽度的两倍，而蓝色 view 至少要有 150 像素点的宽度。所以在 iphone 的竖屏模式下两个 view 的宽度几乎一样，但是在横屏模式下红色 view 的宽度很明显比蓝色 view 宽 2 倍。</p>
+<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/Two_Views_with_Complex_Widths_Screenshot_2x.png" width=500>
+
+<h4 id="视图和约束-4"><a href="#视图和约束-4" class="headerlink" title="视图和约束"></a>视图和约束</h4><p>在画布上放上两个 view，然后设置约束如下</p>
+<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/two_views_with_complex_widths_2x.png" width=500>
+
+<figure class="highlight mathematica"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">Blue</span> View.Leading = Superview.LeadingMargin</span><br><span class="line"></span><br><span class="line"><span class="keyword">Red</span> View.Leading = <span class="keyword">Blue</span> View.Trailing + Standard</span><br><span class="line"></span><br><span class="line"><span class="keyword">Red</span> View.Trailing = Superview.TrailingMargin</span><br><span class="line"></span><br><span class="line"><span class="keyword">Blue</span> View.<span class="keyword">Top</span> = <span class="keyword">Top</span> Layout Guide.<span class="keyword">Bottom</span> + <span class="number">20.0</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">Red</span> View.<span class="keyword">Top</span> = <span class="keyword">Top</span> Layout Guide.<span class="keyword">Bottom</span> + <span class="number">20.0</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">Bottom</span> Layout Guide.<span class="keyword">Top</span> = <span class="keyword">Blue</span> View.<span class="keyword">Bottom</span> + <span class="number">20.0</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">Bottom</span> Layout Guide.<span class="keyword">Top</span> = <span class="keyword">Red</span> View.<span class="keyword">Bottom</span> + <span class="number">20.0</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">Red</span> View.Width = <span class="number">2.0</span> x <span class="keyword">Blue</span> View.Width (Priority <span class="number">750</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">Blue</span> View.Width &gt;= <span class="number">150.0</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="属性-4"><a href="#属性-4" class="headerlink" title="属性"></a>属性</h4><p>在属性检查器设置 view 的背景颜色</p>
+<table>
+<thead>
+<tr>
+<th>View</th>
+<th>Attribute</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Red View</td>
+<td>Background</td>
+<td>Red</td>
+</tr>
+<tr>
+<td>Blue View</td>
+<td>Background</td>
+<td>Blue</td>
+</tr>
+</tbody></table>
+<h4 id="讨论-4"><a href="#讨论-4" class="headerlink" title="讨论"></a>讨论</h4><p>示例用到了一对约束来控制 view 的宽度，一个可选的成比例的约束使红色 view 的宽度是蓝色 view 的 2 倍。而必需的大于等于约束则定义了蓝色 view 的最小宽度。</p>
+<p>当父视图的左右边线距离大于等于 458（150 + 300 + 8）像素点时，红色 view 的宽度会是蓝色 view 的两倍。而如果父视图的左右间距小于这个值，则会保证蓝色 view 的宽度是 150 像素点，而红色 view 填充剩余的空间，并保持两个 view 之间有 8 个像素点的间距。</p>
+<p>你可能已经发现了这种方式就是 <a href="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/WorkingwithSimpleConstraints.html#//apple_ref/doc/uid/TP40010853-CH12-SW4" target="_blank" rel="noopener">Adaptive Single View</a> 一节提到的方法的变种。</p>
+<p>你还可以用三个约束关系式拓展这种设计。例如你可以设置一个必需的约束对红色 view 的宽度进行限制，一个高优先级的可选约束限制蓝色 view 的宽度，然后一个低优先级的可选约束用于限制两个 view 的宽度比例。</p>
+
+    </div>
+
+    
+    
+    
+      
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2017/11/08/iOS%E5%BC%80%E5%8F%91/%E5%AE%9E%E7%8E%B0%203D%20touch%20%E4%B8%AD%E7%9A%84%20Peek&Pop%20%E6%95%88%E6%9E%9C/" rel="prev" title="实现 3D touch 中的 Peek&Pop 效果">
+      <i class="fa fa-chevron-left"></i> 实现 3D touch 中的 Peek&Pop 效果
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2017/12/26/AutoLayout/Autolayout%E6%8C%87%E5%8D%97%C2%B7%E8%B0%83%E8%AF%95%20AutoLayout%C2%B7%E9%94%99%E8%AF%AF%E7%B1%BB%E5%9E%8B/" rel="next" title="Autolayout指南·调试 AutoLayout·错误类型">
+      Autolayout指南·调试 AutoLayout·错误类型 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#AutoLayout指南·AutoLayout-Cookbook"><span class="nav-text">AutoLayout指南·AutoLayout Cookbook</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#约束示例"><span class="nav-text">约束示例</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#单一-view"><span class="nav-text">单一 view</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#视图和约束"><span class="nav-text">视图和约束</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#属性"><span class="nav-text">属性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#讨论"><span class="nav-text">讨论</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#自适应单一-view"><span class="nav-text">自适应单一 view</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#视图和约束-1"><span class="nav-text">视图和约束</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#属性-1"><span class="nav-text">属性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#讨论-1"><span class="nav-text">讨论</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#两个等宽-view"><span class="nav-text">两个等宽 view</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#视图和约束-2"><span class="nav-text">视图和约束</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#属性-2"><span class="nav-text">属性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#讨论-2"><span class="nav-text">讨论</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#两个不同宽度的-view"><span class="nav-text">两个不同宽度的 view</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#视图和约束-3"><span class="nav-text">视图和约束</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#属性-3"><span class="nav-text">属性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#讨论-3"><span class="nav-text">讨论</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#两个有复杂宽度的-view"><span class="nav-text">两个有复杂宽度的 view</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#视图和约束-4"><span class="nav-text">视图和约束</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#属性-4"><span class="nav-text">属性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#讨论-4"><span class="nav-text">讨论</span></a></li></ol></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Yasic Yu"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Yasic Yu</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">46</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Yasic" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Yasic" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:yuxuan2580@gmail.com" title="E-Mail → mailto:yuxuan2580@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yasic Yu</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.1
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

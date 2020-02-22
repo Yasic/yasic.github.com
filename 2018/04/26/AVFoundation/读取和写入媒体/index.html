@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Muse","version":"7.7.1","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":3,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="AVFoundation 提供了对底层数据的读写功能，需要用到 AVAssetReader 和 AVAssetWriter 两个核心类。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="读取和写入媒体">
+<meta property="og:url" content="http://yoursite.com/2018/04/26/AVFoundation/%E8%AF%BB%E5%8F%96%E5%92%8C%E5%86%99%E5%85%A5%E5%AA%92%E4%BD%93/index.html">
+<meta property="og:site_name" content="Yasic Yu">
+<meta property="og:description" content="AVFoundation 提供了对底层数据的读写功能，需要用到 AVAssetReader 和 AVAssetWriter 两个核心类。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-04-25T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-02-22T08:11:34.077Z">
+<meta property="article:author" content="Yasic Yu">
+<meta property="article:tag" content="iOS">
+<meta property="article:tag" content=" ObjectiveC">
+<meta property="article:tag" content=" Swift">
+<meta property="article:tag" content=" XCode">
+<meta property="article:tag" content=" Computer">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://yoursite.com/2018/04/26/AVFoundation/%E8%AF%BB%E5%8F%96%E5%92%8C%E5%86%99%E5%85%A5%E5%AA%92%E4%BD%93/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>读取和写入媒体 | Yasic Yu</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Yasic Yu</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">In Code We Trust</p>
+  </div>
+
+  <div class="site-nav-right"></div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类<span class="badge">4</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">46</span></a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/yasic" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/04/26/AVFoundation/%E8%AF%BB%E5%8F%96%E5%92%8C%E5%86%99%E5%85%A5%E5%AA%92%E4%BD%93/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Yasic Yu">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yasic Yu">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          读取和写入媒体
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-04-26 00:00:00" itemprop="dateCreated datePublished" datetime="2018-04-26T00:00:00+08:00">2018-04-26</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/AVFoundation/" itemprop="url" rel="index">
+                    <span itemprop="name">AVFoundation</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">AVFoundation 提供了对底层数据的读写功能，需要用到 AVAssetReader 和 AVAssetWriter 两个核心类。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="1-综述"><a href="#1-综述" class="headerlink" title="1. 综述"></a>1. 综述</h2><p>AVFoundation 提供了对底层数据的读写功能，需要用到 AVAssetReader 和 AVAssetWriter 两个核心类。</p>
+<p>AVAssetReader 用于从 AVAsset 实例读取媒体样本，需要配置一个或多个 AVAssetReaderOutput 实例。</p>
+<p>AVAssetReaderOutput 是一个抽象类，下分三个具体类，负责读取指定 AVAssetTrack 的AVAssetReaderTrackOutput，负责读取多音频轨道的 AVAssetReaderAudioMixOutput，负责读取多媒体轨道的 AVAssetReaderVideoCompositionOutput。其内部通道以多线程方式读取下一个可用样本，从而降低请求资源的延时。但仍然不推荐用 AVAssetReaderOutput 实现包括播放在内的实时操作。</p>
+<p>AVAssetWriter 用于对媒体资源进行编码和写入，需要配置一个或多个 AVAssetWriterInput 实例，一个 AVAssetWriterInput 负责一种媒体类型，最终生成独立的 AVAssetTrack。同时还需要用到 AVAssetWriterInputPixelBufferAdaptor 为视频样本提供最优性能。</p>
+<p>下面是一个简单的使用示例</p>
+<ul>
+<li>进行媒体资源读取准备</li>
+</ul>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">AVURLAsset</span> *asset = [[<span class="built_in">AVURLAsset</span> alloc] initWithURL:videoURL options:<span class="literal">nil</span>];</span><br><span class="line"><span class="built_in">AVAssetTrack</span> *videoTrack = [[asset tracksWithMediaType:<span class="built_in">AVMediaTypeVideo</span>] firstObject]; <span class="comment">// 获取 video 类型的媒体轨道</span></span><br><span class="line"><span class="keyword">self</span>.assetReader = [[<span class="built_in">AVAssetReader</span> alloc] initWithAsset:asset error:<span class="literal">nil</span>];</span><br><span class="line"><span class="built_in">NSDictionary</span> *readerOutputSettings = @&#123;(<span class="keyword">id</span>)kCVPixelBufferPixelFormatTypeKey:@(kCVPixelFormatType_32BGRA)&#125;; <span class="comment">// 将视频帧解压缩为 32 位 BGRA 格式</span></span><br><span class="line"><span class="built_in">AVAssetReaderTrackOutput</span> *trackout = [[<span class="built_in">AVAssetReaderTrackOutput</span> alloc] initWithTrack:videoTrack outputSettings:readerOutputSettings];</span><br><span class="line">[<span class="keyword">self</span>.assetReader addOutput:trackout];</span><br><span class="line">[<span class="keyword">self</span>.assetReader startReading];<span class="comment">// 做好从 AVAsset 读取样本的准备，如果返回 NO 则表明出错了</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>进行媒体资源写入准备</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">self.assetWriter &#x3D; [[AVAssetWriter alloc] initWithURL:[self outputURL] fileType:AVFileTypeQuickTimeMovie error:nil]; &#x2F;&#x2F; 指定待写入的 URL 和 媒体类型</span><br><span class="line">NSDictionary *writeOutputSettings &#x3D; @&#123;AVVideoCodecKey:AVVideoCodecH264, &#x2F;&#x2F; 视频格式</span><br><span class="line">                                      AVVideoWidthKey:@1280,</span><br><span class="line">                                      AVVideoHeightKey:@720,</span><br><span class="line">                                      AVVideoCompressionPropertiesKey:@&#123; &#x2F;&#x2F; 硬编码参数</span><br><span class="line">                                              AVVideoAverageBitRateKey:@10500000,</span><br><span class="line">                                              AVVideoProfileLevelKey:AVVideoProfileLevelH264Main31</span><br><span class="line">                                              &#125;</span><br><span class="line">                                      &#125;;</span><br><span class="line">AVAssetWriterInput *writerInput &#x3D; [[AVAssetWriterInput alloc] initWithMediaType:AVMediaTypeVideo outputSettings:writeOutputSettings];</span><br><span class="line">[self.assetWriter addInput:writerInput];</span><br><span class="line">[self.assetWriter startWriting]; &#x2F;&#x2F; 做好写入准备</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>以拉模式写入</li>
+</ul>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">dispatch_queue_t</span> queue = dispatch_queue_create(<span class="string">"writer"</span>, <span class="literal">NULL</span>); <span class="comment">// 在串行队列上写入</span></span><br><span class="line">[<span class="keyword">self</span>.assetWriter startSessionAtSourceTime:kCMTimeZero]; <span class="comment">// 从视频起始位置开始写入会话</span></span><br><span class="line">[writerInput requestMediaDataWhenReadyOnQueue:queue usingBlock:^&#123; <span class="comment">// 准备写入更多样本时调用 block</span></span><br><span class="line">    <span class="built_in">BOOL</span> complete = <span class="literal">NO</span>;</span><br><span class="line">    <span class="keyword">while</span> ([writerInput isReadyForMoreMediaData] &amp;&amp; !complete) &#123;</span><br><span class="line">        <span class="built_in">CMSampleBufferRef</span> sampleBuffer = [trackout copyNextSampleBuffer]; <span class="comment">// 从读取器读取更多样本</span></span><br><span class="line">        <span class="keyword">if</span> (sampleBuffer) &#123;</span><br><span class="line">            <span class="built_in">BOOL</span> result = [writerInput appendSampleBuffer:sampleBuffer]; <span class="comment">// 将样本附加到写入器通道</span></span><br><span class="line">            <span class="built_in">CFRelease</span>(sampleBuffer);</span><br><span class="line">            complete = !result;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            [writerInput markAsFinished]; <span class="comment">// 标记写入完成</span></span><br><span class="line">            complete = <span class="literal">YES</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (complete) &#123;</span><br><span class="line">        [<span class="keyword">self</span>.assetWriter finishWritingWithCompletionHandler:^&#123; <span class="comment">// 完成写入</span></span><br><span class="line">            <span class="keyword">if</span> (<span class="keyword">self</span>.assetWriter.status == <span class="built_in">AVAssetWriterStatusCompleted</span>) &#123; <span class="comment">// 判断是否写入成功</span></span><br><span class="line">                <span class="built_in">NSLog</span>(<span class="string">@"complete"</span>);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="built_in">NSLog</span>(<span class="string">@"fail"</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-创建音频波形视图"><a href="#2-创建音频波形视图" class="headerlink" title="2. 创建音频波形视图"></a>2. 创建音频波形视图</h2><p>音频波形视图即提供图像化显示的音频波形，方便用户查看和编辑音频轨道。其主要步骤包括</p>
+<ul>
+<li>读取：解压读取音频数据</li>
+<li>采样：实际读取到的样本数量巨大，需要进行采样，在每一个样本块上取 min、max 或者 average 值</li>
+<li>渲染：在 UI 界面上渲染得到的采样值（与 AVFoundation 无关）</li>
+</ul>
+<h3 id="2-1-读取音频样本"><a href="#2-1-读取音频样本" class="headerlink" title="2.1 读取音频样本"></a>2.1 读取音频样本</h3><p>首先是对读取器和读取通道的初始化</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">  <span class="built_in">NSError</span> *error = <span class="literal">nil</span>;</span><br><span class="line">  </span><br><span class="line">  <span class="built_in">AVAssetReader</span> *assetReader = [[<span class="built_in">AVAssetReader</span> alloc] initWithAsset:asset error:&amp;error]; <span class="comment">// 配置 AVAssetReader</span></span><br><span class="line">  <span class="keyword">if</span> (!assetReader) &#123;</span><br><span class="line">      <span class="built_in">NSLog</span>(<span class="string">@"Error creating asset reader: %@"</span>, [error localizedDescription]);</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">AVAssetTrack</span> *track = [[asset tracksWithMediaType:<span class="built_in">AVMediaTypeAudio</span>] firstObject]; <span class="comment">// 配置音频轨道</span></span><br><span class="line">  <span class="built_in">NSDictionary</span> *outputSettings = @&#123;</span><br><span class="line">      <span class="built_in">AVFormatIDKey</span>               : @(kAudioFormatLinearPCM), <span class="comment">// 读取格式为 PCM，一种未压缩的音频样本格式</span></span><br><span class="line">      <span class="built_in">AVLinearPCMIsBigEndianKey</span>   : @NO, <span class="comment">// 小端字节顺序</span></span><br><span class="line"><span class="built_in">AVLinearPCMIsFloatKey</span>		: @NO, <span class="comment">// 有符号整型</span></span><br><span class="line"><span class="built_in">AVLinearPCMBitDepthKey</span>		: @(<span class="number">16</span>) <span class="comment">// 位元深度 16 位</span></span><br><span class="line">  &#125;;</span><br><span class="line">  <span class="built_in">AVAssetReaderTrackOutput</span> *trackOutput = [[<span class="built_in">AVAssetReaderTrackOutput</span> alloc] initWithTrack:track outputSettings:outputSettings];</span><br><span class="line">  [assetReader addOutput:trackOutput];</span><br><span class="line">  [assetReader startReading];</span><br></pre></td></tr></table></figure>
+
+<p>然后循环读取样本值并转移</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSMutableData</span> *sampleData = [<span class="built_in">NSMutableData</span> data];</span><br><span class="line"><span class="keyword">while</span> (assetReader.status == <span class="built_in">AVAssetReaderStatusReading</span>) &#123; <span class="comment">// 持续读取样本</span></span><br><span class="line">    <span class="built_in">CMSampleBufferRef</span> sampleBuffer = [trackOutput copyNextSampleBuffer]; <span class="comment">// 读取一个音频样本</span></span><br><span class="line">    <span class="keyword">if</span> (sampleBuffer) &#123;</span><br><span class="line">        <span class="built_in">CMBlockBufferRef</span> blockBufferRef = <span class="built_in">CMSampleBufferGetDataBuffer</span>(sampleBuffer); <span class="comment">// 获取其对应的不保留引用的 block buffer</span></span><br><span class="line">        size_t length = <span class="built_in">CMBlockBufferGetDataLength</span>(blockBufferRef); <span class="comment">// 获取样本长度</span></span><br><span class="line">        SInt16 sampleBytes[length];</span><br><span class="line">        <span class="built_in">CMBlockBufferCopyDataBytes</span>(blockBufferRef, <span class="number">0</span>, length, sampleBytes); <span class="comment">// 转移样本内的数据到一个空数组</span></span><br><span class="line">        [sampleData appendBytes:sampleBytes length:length]; <span class="comment">// 添加数组到 NSMutableData 中</span></span><br><span class="line">        <span class="built_in">CMSampleBufferInvalidate</span>(sampleBuffer);</span><br><span class="line">        <span class="built_in">CFRelease</span>(sampleBuffer);<span class="comment">// 回收样本</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-2-采样音频样本"><a href="#2-2-采样音频样本" class="headerlink" title="2.2 采样音频样本"></a>2.2 采样音频样本</h3><p>屏幕空间有限，而读取的音频样本非常庞大，因此需要进行采样。基本思路是将样本按照一定距离进行分割，在分割出的一个独立”箱”中找到最大样本。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">NSArray</span> *)filteredSamplesForSize:(<span class="built_in">CGSize</span>)size &#123;</span><br><span class="line">    <span class="built_in">NSMutableArray</span> *filteredSamples = [[<span class="built_in">NSMutableArray</span> alloc] init];</span><br><span class="line">    <span class="built_in">NSUInteger</span> sampleCount = <span class="keyword">self</span>.sampleData.length / <span class="keyword">sizeof</span>(SInt16); <span class="comment">// 获取样本个数，样本格式是 SInt16，总长度除以单个数据长度</span></span><br><span class="line">    <span class="built_in">NSUInteger</span> binSize = sampleCount / size.width; <span class="comment">// 获取一个样本箱的大小</span></span><br><span class="line"></span><br><span class="line">    SInt16 *bytes = (SInt16 *) <span class="keyword">self</span>.sampleData.bytes; <span class="comment">// 获取样本的基地址</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="built_in">NSUInteger</span> i = <span class="number">0</span>; i &lt; sampleCount; i += binSize) &#123; <span class="comment">// 遍历样本箱</span></span><br><span class="line">        SInt16 sampleBin[binSize];</span><br><span class="line">        <span class="keyword">for</span> (<span class="built_in">NSUInteger</span> j = <span class="number">0</span>; j &lt; binSize; j++) &#123; <span class="comment">// 遍历箱内样本</span></span><br><span class="line">			sampleBin[j] = <span class="built_in">CFSwapInt16LittleToHost</span>(bytes[i + j]); <span class="comment">// 由于是按照小端顺序读取，需要通过 CFSwapInt16LittleToHost 方法转换为主机的本地字节顺序</span></span><br><span class="line">        &#125;</span><br><span class="line">        SInt16 value = [<span class="keyword">self</span> maxValueInArray:sampleBin ofSize:binSize]; <span class="comment">// 取出样本箱中最大值</span></span><br><span class="line">        [filteredSamples addObject:@(value)]; <span class="comment">// 添加到采样数组中</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> filteredSamples;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-捕捉录制的高级方法"><a href="#3-捕捉录制的高级方法" class="headerlink" title="3. 捕捉录制的高级方法"></a>3. 捕捉录制的高级方法</h2><p>AVCaptureVideoDataOutput 无法像 AVCaptureMovieFileOutput 一样便捷地记录输出，它需要用到 AVAssetWriter 方法，但是另一方面可以对每一帧数据进行实时处理，因此更为灵活和强大。使用 AVCaptureVideoDataOutput 记录媒体资源需要注意以下几个地方</p>
+<ul>
+<li>初始化过程</li>
+<li>实时渲染预览页面</li>
+<li>记录媒体输出</li>
+</ul>
+<h3 id="3-1-初始化"><a href="#3-1-初始化" class="headerlink" title="3.1 初始化"></a>3.1 初始化</h3><p>初始化 AVCaptureVideoDataOutput 和 AVCaptureAudioDataOutput</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">self</span>.videoDataOutput = [[<span class="built_in">AVCaptureVideoDataOutput</span> alloc] init];</span><br><span class="line"><span class="built_in">NSDictionary</span> *outputSettings = @&#123;(<span class="keyword">id</span>)kCVPixelBufferPixelFormatTypeKey : @(kCVPixelFormatType_32BGRA)&#125;; <span class="comment">// 设置输出为 32 位 BGRA 格式</span></span><br><span class="line"><span class="keyword">self</span>.videoDataOutput.videoSettings = outputSettings;</span><br><span class="line"><span class="keyword">self</span>.videoDataOutput.alwaysDiscardsLateVideoFrames = <span class="literal">NO</span>; <span class="comment">// 默认为 YES，会立即丢弃在 captureOutput：didOutputSampleBuffer：fromConnection：delegate 方法中阻止处理当前捕获帧的帧，设置为 NO 可以给委托方法额外时间处理样本，但是会带来性能上的损耗</span></span><br><span class="line">[<span class="keyword">self</span>.videoDataOutput setSampleBufferDelegate:<span class="keyword">self</span> queue:<span class="keyword">self</span>.dispatchQueue]; <span class="comment">// 将委托回调加入到串行队列中</span></span><br><span class="line"><span class="keyword">if</span> ([<span class="keyword">self</span>.captureSession canAddOutput:<span class="keyword">self</span>.videoDataOutput]) &#123;</span><br><span class="line">    [<span class="keyword">self</span>.captureSession addOutput:<span class="keyword">self</span>.videoDataOutput];</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NO</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">self</span>.audioDataOutput = [[<span class="built_in">AVCaptureAudioDataOutput</span> alloc] init];</span><br><span class="line">[<span class="keyword">self</span>.audioDataOutput setSampleBufferDelegate:<span class="keyword">self</span> queue:<span class="keyword">self</span>.dispatchQueue];</span><br><span class="line"><span class="keyword">if</span> ([<span class="keyword">self</span>.captureSession canAddOutput:<span class="keyword">self</span>.audioDataOutput]) &#123;</span><br><span class="line">    [<span class="keyword">self</span>.captureSession addOutput:<span class="keyword">self</span>.audioDataOutput];</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NO</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-2-实时渲染预览页面"><a href="#3-2-实时渲染预览页面" class="headerlink" title="3.2 实时渲染预览页面"></a>3.2 实时渲染预览页面</h3><figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)captureOutput:(<span class="built_in">AVCaptureOutput</span> *)captureOutput</span><br><span class="line">didOutputSampleBuffer:(<span class="built_in">CMSampleBufferRef</span>)sampleBuffer</span><br><span class="line">       fromConnection:(<span class="built_in">AVCaptureConnection</span> *)connection &#123;</span><br><span class="line">    <span class="keyword">if</span> (captureOutput == <span class="keyword">self</span>.videoDataOutput) &#123; <span class="comment">// 判断是 video 通道</span></span><br><span class="line">        CVPixelBufferRef imageBuffer = <span class="built_in">CMSampleBufferGetImageBuffer</span>(sampleBuffer); <span class="comment">// 取出像素帧</span></span><br><span class="line">        <span class="built_in">CIImage</span> *sourceImage = [<span class="built_in">CIImage</span> imageWithCVPixelBuffer:imageBuffer options:<span class="literal">nil</span>]; <span class="comment">// 生成预览的 UIImage</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>当然实际上很多时候我们需要对预览加上滤镜效果，此时可以用 CIFilter 实现，首先通过 name 获取一系列的 CIFilter</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">+ (<span class="built_in">NSArray</span> *)filterNames &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> @[<span class="string">@"CIPhotoEffectChrome"</span>,</span><br><span class="line">             <span class="string">@"CIPhotoEffectFade"</span>,</span><br><span class="line">             <span class="string">@"CIPhotoEffectInstant"</span>,</span><br><span class="line">             <span class="string">@"CIPhotoEffectMono"</span>,</span><br><span class="line">             <span class="string">@"CIPhotoEffectNoir"</span>,</span><br><span class="line">             <span class="string">@"CIPhotoEffectProcess"</span>,</span><br><span class="line">             <span class="string">@"CIPhotoEffectTonal"</span>,</span><br><span class="line">             <span class="string">@"CIPhotoEffectTransfer"</span>];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">+ (<span class="built_in">CIFilter</span> *)filterForDisplayName:(<span class="built_in">NSString</span> *)displayName &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="built_in">NSString</span> *name <span class="keyword">in</span> [<span class="keyword">self</span> filterNames]) &#123;</span><br><span class="line">        <span class="keyword">if</span> ([name containsString:displayName]) &#123;</span><br><span class="line">            <span class="keyword">return</span> [<span class="built_in">CIFilter</span> filterWithName:name];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>然后对 UIImage 对象使用 CIFilter</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[<span class="keyword">self</span>.filter setValue:sourceImage forKey:kCIInputImageKey];</span><br><span class="line"><span class="built_in">CIImage</span> *filteredImage = <span class="keyword">self</span>.filter.outputImage;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-3-记录媒体输出"><a href="#3-3-记录媒体输出" class="headerlink" title="3.3 记录媒体输出"></a>3.3 记录媒体输出</h3><p>记录输出前首先要对 videoInput 和 audioInput 进行初始化</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">      <span class="built_in">NSError</span> *error = <span class="literal">nil</span>;</span><br><span class="line">      <span class="built_in">NSString</span> *fileType = <span class="built_in">AVFileTypeQuickTimeMovie</span>;</span><br><span class="line">      <span class="keyword">self</span>.assetWriter = [<span class="built_in">AVAssetWriter</span> assetWriterWithURL:[<span class="keyword">self</span> outputURL] fileType:fileType error:&amp;error]; <span class="comment">// 初始化 writer</span></span><br><span class="line">      <span class="keyword">if</span> (!<span class="keyword">self</span>.assetWriter || error) &#123;</span><br><span class="line">          <span class="built_in">NSString</span> *formatString = <span class="string">@"Could not create AVAssetWriter: %@"</span>;</span><br><span class="line">          <span class="built_in">NSLog</span>(<span class="string">@"%@"</span>, [<span class="built_in">NSString</span> stringWithFormat:formatString, error]);</span><br><span class="line">          <span class="keyword">return</span>;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">self</span>.assetWriterVideoInput = [[<span class="built_in">AVAssetWriterInput</span> alloc] initWithMediaType:<span class="built_in">AVMediaTypeVideo</span> outputSettings:<span class="keyword">self</span>.videoSettings];</span><br><span class="line">      <span class="keyword">self</span>.assetWriterVideoInput.expectsMediaDataInRealTime = <span class="literal">YES</span>; <span class="comment">// 指明输入应该针对实时性进行优化</span></span><br><span class="line">      </span><br><span class="line">      <span class="built_in">UIDeviceOrientation</span> orientation = [<span class="built_in">UIDevice</span> currentDevice].orientation;</span><br><span class="line"><span class="keyword">self</span>.assetWriterVideoInput.transform = THTransformForDeviceOrientation(orientation); <span class="comment">// 修复 orientation</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">NSDictionary</span> *attributes = @&#123;</span><br><span class="line">	(<span class="keyword">id</span>)kCVPixelBufferPixelFormatTypeKey : @(kCVPixelFormatType_32BGRA), <span class="comment">// 与 AVCaptureVideoDataOutput 使用的像素格式一致能够保证最大效率</span></span><br><span class="line">	(<span class="keyword">id</span>)kCVPixelBufferWidthKey : <span class="keyword">self</span>.videoSettings[<span class="built_in">AVVideoWidthKey</span>],</span><br><span class="line">	(<span class="keyword">id</span>)kCVPixelBufferHeightKey : <span class="keyword">self</span>.videoSettings[<span class="built_in">AVVideoHeightKey</span>],</span><br><span class="line">	(<span class="keyword">id</span>)kCVPixelFormatOpenGLESCompatibility : (<span class="keyword">id</span>)kCFBooleanTrue</span><br><span class="line">&#125;;</span><br><span class="line">      <span class="keyword">self</span>.assetWriterInputPixelBufferAdaptor = [[<span class="built_in">AVAssetWriterInputPixelBufferAdaptor</span> alloc] initWithAssetWriterInput:<span class="keyword">self</span>.assetWriterVideoInput sourcePixelBufferAttributes:attributes]; <span class="comment">//AVAssetWriterInputPixelBufferAdaptor 提供一个优化的 pixelBufferPool</span></span><br><span class="line">      </span><br><span class="line"><span class="keyword">if</span> ([<span class="keyword">self</span>.assetWriter canAddInput:<span class="keyword">self</span>.assetWriterVideoInput]) &#123;</span><br><span class="line">	[<span class="keyword">self</span>.assetWriter addInput:<span class="keyword">self</span>.assetWriterVideoInput];</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">	<span class="built_in">NSLog</span>(<span class="string">@"Unable to add video input."</span>);</span><br><span class="line">	<span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">self</span>.assetWriterAudioInput = [[<span class="built_in">AVAssetWriterInput</span> alloc] initWithMediaType:<span class="built_in">AVMediaTypeAudio</span> outputSettings:<span class="keyword">self</span>.audioSettings];</span><br><span class="line">      <span class="keyword">self</span>.assetWriterAudioInput.expectsMediaDataInRealTime = <span class="literal">YES</span>;</span><br><span class="line">      <span class="keyword">if</span> ([<span class="keyword">self</span>.assetWriter canAddInput:<span class="keyword">self</span>.assetWriterAudioInput]) &#123;</span><br><span class="line">          [<span class="keyword">self</span>.assetWriter addInput:<span class="keyword">self</span>.assetWriterAudioInput];</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          <span class="built_in">NSLog</span>(<span class="string">@"Unable to add audio input."</span>);</span><br><span class="line">      &#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里要注意，对于初始化 AVAssetWriterInput 和 AVAssetWriterInput 时需要用到的 settings 值，iOS 7 提供了一些便捷方法来获取</p>
+<ul>
+<li>recommendedVideoSettingsForAssetWriterWithOutputFileType 获取指定类型的视频设置</li>
+<li>recommendedAudioSettingsForAssetWriterWithOutputFileType 获取指定类型的音频设置</li>
+</ul>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (!<span class="keyword">self</span>.isWriting) &#123; <span class="comment">// 检测是否正在记录</span></span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">CMFormatDescriptionRef</span> formatDesc = <span class="built_in">CMSampleBufferGetFormatDescription</span>(sampleBuffer); <span class="comment">// 获取当前帧的描述信息</span></span><br><span class="line"><span class="built_in">CMMediaType</span> mediaType = <span class="built_in">CMFormatDescriptionGetMediaType</span>(formatDesc); <span class="comment">// 获取媒体类型</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (mediaType == kCMMediaType_Video) &#123;</span><br><span class="line">    <span class="built_in">CMTime</span> timestamp = <span class="built_in">CMSampleBufferGetPresentationTimeStamp</span>(sampleBuffer); <span class="comment">// 获取时间戳</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.firstSample) &#123; <span class="comment">// 如果是第一帧，则进行写入启动操作</span></span><br><span class="line">        <span class="keyword">if</span> ([<span class="keyword">self</span>.assetWriter startWriting]) &#123;</span><br><span class="line">            [<span class="keyword">self</span>.assetWriter startSessionAtSourceTime:timestamp]; <span class="comment">// 在当前时间戳启动</span></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="built_in">NSLog</span>(<span class="string">@"Failed to start writing."</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">self</span>.firstSample = <span class="literal">NO</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    CVPixelBufferRef outputRenderBuffer = <span class="literal">NULL</span>;</span><br><span class="line">    CVPixelBufferPoolRef pixelBufferPool = <span class="keyword">self</span>.assetWriterInputPixelBufferAdaptor.pixelBufferPool; <span class="comment">// 获取到 adaptor 的 pixelBufferPool</span></span><br><span class="line">    OSStatus err = CVPixelBufferPoolCreatePixelBuffer(<span class="literal">NULL</span>, pixelBufferPool, &amp;outputRenderBuffer); <span class="comment">// 创建一个空的 CVPixelBufferRef，使用该 buffer 渲染筛选好的视频帧</span></span><br><span class="line">    <span class="keyword">if</span> (err) &#123;</span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"Unable to obtain a pixel buffer from the pool."</span>);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    CVPixelBufferRef imageBuffer = <span class="built_in">CMSampleBufferGetImageBuffer</span>(sampleBuffer); <span class="comment">// 获取当前样本的像素帧</span></span><br><span class="line">    <span class="built_in">CIImage</span> *sourceImage = [<span class="built_in">CIImage</span> imageWithCVPixelBuffer:imageBuffer options:<span class="literal">nil</span>]; <span class="comment">// 生成 CIImage</span></span><br><span class="line">    [<span class="keyword">self</span>.activeFilter setValue:sourceImage forKey:kCIInputImageKey]; <span class="comment">// 滤镜配置</span></span><br><span class="line">    <span class="built_in">CIImage</span> *filteredImage = <span class="keyword">self</span>.activeFilter.outputImage;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (!filteredImage) &#123;</span><br><span class="line">        filteredImage = sourceImage;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    [<span class="keyword">self</span>.ciContext render:filteredImage toCVPixelBuffer:outputRenderBuffer bounds:filteredImage.extent colorSpace:<span class="keyword">self</span>.colorSpace]; <span class="comment">// 将 CIImage 渲染到空的 CVPixelBufferRef 中</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.assetWriterVideoInput.readyForMoreMediaData) &#123;</span><br><span class="line">        <span class="keyword">if</span> (![<span class="keyword">self</span>.assetWriterInputPixelBufferAdaptor appendPixelBuffer:outputRenderBuffer withPresentationTime:timestamp]) &#123; <span class="comment">// 写入到 adaptor 中，完成对视频帧的处理</span></span><br><span class="line">            <span class="built_in">NSLog</span>(<span class="string">@"Error appending pixel buffer."</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    CVPixelBufferRelease(outputRenderBuffer); <span class="comment">// 回收被渲染的帧</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span> <span class="keyword">if</span> (!<span class="keyword">self</span>.firstSample &amp;&amp; mediaType == kCMMediaType_Audio) &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.assetWriterAudioInput.isReadyForMoreMediaData) &#123;</span><br><span class="line">        <span class="keyword">if</span> (![<span class="keyword">self</span>.assetWriterAudioInput appendSampleBuffer:sampleBuffer]) &#123; <span class="comment">// 音频样本直接写入</span></span><br><span class="line">            <span class="built_in">NSLog</span>(<span class="string">@"Error appending audio sample buffer."</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>具体的操作已经在注释中写明了，此处不再过多说明。最终结束写入操作时，仍然需要调用 finishWritingWithCompletionHandler 方法</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[<span class="keyword">self</span>.assetWriter finishWritingWithCompletionHandler:^&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.assetWriter.status == <span class="built_in">AVAssetWriterStatusCompleted</span>) &#123;</span><br><span class="line">        <span class="built_in">dispatch_async</span>(dispatch_get_main_queue(), ^&#123;</span><br><span class="line">            <span class="built_in">NSURL</span> *fileURL = [<span class="keyword">self</span>.assetWriter outputURL]; <span class="comment">// 拿到 url 后进行相册保存操作</span></span><br><span class="line">        &#125;);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"Failed to write movie: %@"</span>, <span class="keyword">self</span>.assetWriter.error);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+      
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/04/24/AVFoundation/AVFoundation-%E5%85%A5%E9%97%A8/" rel="prev" title="AVFoundation-入门">
+      <i class="fa fa-chevron-left"></i> AVFoundation-入门
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/04/26/AVFoundation/AVFoundation%E8%B5%84%E6%BA%90%E5%92%8C%E5%85%83%E6%95%B0%E6%8D%AE/" rel="next" title="AVFoundation资源和元数据">
+      AVFoundation资源和元数据 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-综述"><span class="nav-text">1. 综述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-创建音频波形视图"><span class="nav-text">2. 创建音频波形视图</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-读取音频样本"><span class="nav-text">2.1 读取音频样本</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-采样音频样本"><span class="nav-text">2.2 采样音频样本</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-捕捉录制的高级方法"><span class="nav-text">3. 捕捉录制的高级方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-初始化"><span class="nav-text">3.1 初始化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-实时渲染预览页面"><span class="nav-text">3.2 实时渲染预览页面</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-记录媒体输出"><span class="nav-text">3.3 记录媒体输出</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Yasic Yu"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Yasic Yu</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">46</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Yasic" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Yasic" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:yuxuan2580@gmail.com" title="E-Mail → mailto:yuxuan2580@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yasic Yu</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.1
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

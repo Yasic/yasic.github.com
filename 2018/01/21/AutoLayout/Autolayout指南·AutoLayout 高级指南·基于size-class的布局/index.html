@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Muse","version":"7.7.1","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":3,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="IB 的 storyboard 默认会使用 size-class。size-class 是为 UI 元素，如 scene 或 view，所声明的形状。它们提供了对于元素尺寸的一个粗糙的表述。IB 能使你基于当前的 size-class 自定义许多你的布局的特性。然后当 size-class 变化时布局就会自动适应。特别的，你可以在每一个 size-class 的基础上设置以下特性：">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Autolayout指南·AutoLayout 高级指南·基于size-class的布局">
+<meta property="og:url" content="http://yoursite.com/2018/01/21/AutoLayout/Autolayout%E6%8C%87%E5%8D%97%C2%B7AutoLayout%20%E9%AB%98%E7%BA%A7%E6%8C%87%E5%8D%97%C2%B7%E5%9F%BA%E4%BA%8Esize-class%E7%9A%84%E5%B8%83%E5%B1%80/index.html">
+<meta property="og:site_name" content="Yasic Yu">
+<meta property="og:description" content="IB 的 storyboard 默认会使用 size-class。size-class 是为 UI 元素，如 scene 或 view，所声明的形状。它们提供了对于元素尺寸的一个粗糙的表述。IB 能使你基于当前的 size-class 自定义许多你的布局的特性。然后当 size-class 变化时布局就会自动适应。特别的，你可以在每一个 size-class 的基础上设置以下特性：">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/Size_Class_Tool_2x.png">
+<meta property="og:image" content="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/Selecting_A__Size_Class_2x.png">
+<meta property="og:image" content="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/Adding_Size_Class_2x.png">
+<meta property="og:image" content="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/Setting_Size-Class_Specific_Values_2x.png">
+<meta property="article:published_time" content="2018-01-20T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-02-22T08:11:34.018Z">
+<meta property="article:author" content="Yasic Yu">
+<meta property="article:tag" content="iOS">
+<meta property="article:tag" content=" ObjectiveC">
+<meta property="article:tag" content=" Swift">
+<meta property="article:tag" content=" XCode">
+<meta property="article:tag" content=" Computer">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/Size_Class_Tool_2x.png">
+
+<link rel="canonical" href="http://yoursite.com/2018/01/21/AutoLayout/Autolayout%E6%8C%87%E5%8D%97%C2%B7AutoLayout%20%E9%AB%98%E7%BA%A7%E6%8C%87%E5%8D%97%C2%B7%E5%9F%BA%E4%BA%8Esize-class%E7%9A%84%E5%B8%83%E5%B1%80/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>Autolayout指南·AutoLayout 高级指南·基于size-class的布局 | Yasic Yu</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Yasic Yu</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">In Code We Trust</p>
+  </div>
+
+  <div class="site-nav-right"></div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类<span class="badge">4</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">46</span></a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/yasic" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/01/21/AutoLayout/Autolayout%E6%8C%87%E5%8D%97%C2%B7AutoLayout%20%E9%AB%98%E7%BA%A7%E6%8C%87%E5%8D%97%C2%B7%E5%9F%BA%E4%BA%8Esize-class%E7%9A%84%E5%B8%83%E5%B1%80/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Yasic Yu">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yasic Yu">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Autolayout指南·AutoLayout 高级指南·基于size-class的布局
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-01-21 00:00:00" itemprop="dateCreated datePublished" datetime="2018-01-21T00:00:00+08:00">2018-01-21</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/AutoLayout/" itemprop="url" rel="index">
+                    <span itemprop="name">AutoLayout</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">IB 的 storyboard 默认会使用 size-class。size-class 是为 UI 元素，如 scene 或 view，所声明的形状。它们提供了对于元素尺寸的一个粗糙的表述。IB 能使你基于当前的 size-class 自定义许多你的布局的特性。然后当 size-class 变化时布局就会自动适应。特别的，你可以在每一个 size-class 的基础上设置以下特性：</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="013-Autolayout指南·AutoLayout-高级指南"><a href="#013-Autolayout指南·AutoLayout-高级指南" class="headerlink" title="013-Autolayout指南·AutoLayout 高级指南"></a>013-Autolayout指南·AutoLayout 高级指南</h1><h2 id="基于-size-class-的布局"><a href="#基于-size-class-的布局" class="headerlink" title="基于 size-class 的布局"></a>基于 size-class 的布局</h2><p>IB 的 storyboard 默认会使用 size-class。size-class 是为 UI 元素，如 scene 或 view，所声明的形状。它们提供了对于元素尺寸的一个粗糙的表述。IB 能使你基于当前的 size-class 自定义许多你的布局的特性。然后当 size-class 变化时布局就会自动适应。特别的，你可以在每一个 size-class 的基础上设置以下特性：</p>
+<ul>
+<li>注册或取消注册一个 view 或者控制器</li>
+<li>注册或取消注册一个约束</li>
+<li>设置选中属性的值（例如字体或布局边界设置）</li>
+</ul>
+<p>当系统加载 scene 时会实例化所有视图，控件和约束，并将这些项目分配给视图控制器（如果有的话）中相应的 outlet。你可以通过它们的 outlet 访问其中任何一个元素，无论当前 scene 的 size-class 是什么。但是系统只会在元素被注册到当前 size-class 时爱会添加这些元素到视图层级上。</p>
+<p>当 view 的 size-class 改变时（例如，当你旋转一个 iphone 或者在 iPad 的全屏和 splitView 间切换 app 时），系统会自动从视图层级中添加或移除元素。系统也会为 view 的布局变化添加动画。</p>
+<blockquote>
+<p>注意：</p>
+<p>系统会保持对一个未注册元素的引用，所以这些元素不会被销毁，即使它们被移除出视图层级。</p>
+</blockquote>
+<h2 id="final-size-class-与-base-size-class"><a href="#final-size-class-与-base-size-class" class="headerlink" title="final-size-class 与 base-size-class"></a>final-size-class 与 base-size-class</h2><p>IB 能识别出九种不同的 size-class。</p>
+<p>其中四种属于 final-size-class：Compact-Compact, Compact-Regular, Regular-Compact, and Regular-Regular。final-size-class 代表设备上显示的实际 size-class。</p>
+<p>剩下五种属于 base-size-class：Compact-Any, Regular-Any, Any-Compact, Any-Regular, and Any-Any。它们是一些代表两种或两种以上 final-size-class 的抽象 size-class。例如，注册在 Compact-Any 下的元素会同时展示在 Compact-Compact 和 Compact-Regular 两种 size-class 下。</p>
+<p>任何设置在更具体的 size-class 中的东西总是会覆盖更一般的 size-class。此外，你必须为一共九个 size-class（甚至是 base-size-class）都提供一个无歧义、可满足的布局。 因此，从最一般性的 size-class 到最具体性的 size-class 通常是最容易的。你可以选择你的的应用程序的默认布局，并在 Any-Any size-class 中设计它，然后根据需要修改其他的 base-size-class 或 final-size-class。</p>
+<h3 id="使用-size-class-工具"><a href="#使用-size-class-工具" class="headerlink" title="使用 size-class 工具"></a>使用 size-class 工具</h3><p>利用 IB 的 size-class 工具选中你正在编辑的 size-class，这个工具被展示在编辑窗口的底部中央位置。IB 默认会选择 Any-Any 作为启动时的 size-class。</p>
+<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/Size_Class_Tool_2x.png" width=500>
+
+<p>可以点击 size-class 工具来切换到一个新的 size-class。IB 会展示一个弹窗，里面有一个包含所有 size-class 的九宫格。在九宫格上移动鼠标来改变 size-class。九宫格的顶部会展示选中的 size-class 的名称，底部展示这个 size-class 的描述信息（包括它会影响到的设备和旋转方向）。九宫格还会在当前 size-class 所影响到的 size-class 的格子上展示一个绿色原点。</p>
+<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/Selecting_A__Size_Class_2x.png" width=500>
+
+<p>只有被注册到当前 size-class 的 view 和约束才能被添加到画布上。而当删除元素的时候，元素如何删除会影响到删除时的布局表现。</p>
+<ul>
+<li>从画布或 document outline 中删除元素将会完全从项目中删除此元素</li>
+<li>通过命令行从画布或 document outline 中删除元素只会从当前 size-class 取消注册此元素</li>
+<li>如果 scene 有多个 size-class，则从画布或 document outline 以外的任何地方删除元素（例如，从尺寸检查器中选择和删除约束）将会仅从当前的 size-class 中取消注册此元素</li>
+<li>如果你只编辑了 Any-Any 这个 size-class，那么删除一个元素将会完全从项目中移除此元素</li>
+</ul>
+<p>如果你编辑了任何非 Any-Any 的 size-class，IB 就会将编辑窗口底部的 toolbar 变成蓝色高亮显示。这样能使你很容易发现你在编辑一个更加具体确定的 size-class。</p>
+<h3 id="使用检查器"><a href="#使用检查器" class="headerlink" title="使用检查器"></a>使用检查器</h3><p>你也可以修改检查器中的 size-class-specific 设置，任何支持 size-class-specific 的设置都会在检查器中展示，旁边还会有一个小加号图标。</p>
+<p>默认的，检查器会设置 Any-Any 的值。为了给更加具体的 size-class 设置一个不同的值，你可以点击加号图标来添加一个新的 size-class，然后选择你想添加的 size-class 的宽度和高度。</p>
+<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/Adding_Size_Class_2x.png" width=500>
+
+<p>检查器会按行显示每个 size-class： Any-Any 设置在最上面一行，下面列出了更具体的 size-class。你可以独立编辑每行的值，同时不影响到其他行的设置。</p>
+<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/Setting_Size-Class_Specific_Values_2x.png" width=500>
+
+<p>点击每一行行首的 x 图标可以移除一个自定义的 size-class。</p>
+<p>查看 Size-Classes-Design-Help 获取更多帮助信息。</p>
+
+    </div>
+
+    
+    
+    
+      
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/01/15/AutoLayout/Autolayout%E6%8C%87%E5%8D%97%C2%B7%E8%B0%83%E8%AF%95%20AutoLayout%C2%B7%E8%B0%83%E8%AF%95%E6%8A%80%E5%B7%A7/" rel="prev" title="Autolayout指南·调试 AutoLayout·调试技巧">
+      <i class="fa fa-chevron-left"></i> Autolayout指南·调试 AutoLayout·调试技巧
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/01/22/AutoLayout/Autolayout%E6%8C%87%E5%8D%97%C2%B7AutoLayout%20%E9%AB%98%E7%BA%A7%E6%8C%87%E5%8D%97%C2%B7%E6%9B%B4%E6%94%B9%E7%BA%A6%E6%9D%9F/" rel="next" title="Autolayout指南·AutoLayout 高级指南·更改约束">
+      Autolayout指南·AutoLayout 高级指南·更改约束 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#013-Autolayout指南·AutoLayout-高级指南"><span class="nav-text">013-Autolayout指南·AutoLayout 高级指南</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#基于-size-class-的布局"><span class="nav-text">基于 size-class 的布局</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#final-size-class-与-base-size-class"><span class="nav-text">final-size-class 与 base-size-class</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#使用-size-class-工具"><span class="nav-text">使用 size-class 工具</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用检查器"><span class="nav-text">使用检查器</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Yasic Yu"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Yasic Yu</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">46</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Yasic" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Yasic" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:yuxuan2580@gmail.com" title="E-Mail → mailto:yuxuan2580@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yasic Yu</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.1
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

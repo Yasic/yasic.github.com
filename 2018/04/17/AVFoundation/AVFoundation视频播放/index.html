@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Muse","version":"7.7.1","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":3,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="AVFoundation 对于播放封装了主要的三个类 AVPlay、AVPlayerLayer 和 AVPlayerItem。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AVFoundation视频播放">
+<meta property="og:url" content="http://yoursite.com/2018/04/17/AVFoundation/AVFoundation%E8%A7%86%E9%A2%91%E6%92%AD%E6%94%BE/index.html">
+<meta property="og:site_name" content="Yasic Yu">
+<meta property="og:description" content="AVFoundation 对于播放封装了主要的三个类 AVPlay、AVPlayerLayer 和 AVPlayerItem。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-04-16T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-02-22T08:11:34.036Z">
+<meta property="article:author" content="Yasic Yu">
+<meta property="article:tag" content="iOS">
+<meta property="article:tag" content=" ObjectiveC">
+<meta property="article:tag" content=" Swift">
+<meta property="article:tag" content=" XCode">
+<meta property="article:tag" content=" Computer">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://yoursite.com/2018/04/17/AVFoundation/AVFoundation%E8%A7%86%E9%A2%91%E6%92%AD%E6%94%BE/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>AVFoundation视频播放 | Yasic Yu</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Yasic Yu</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">In Code We Trust</p>
+  </div>
+
+  <div class="site-nav-right"></div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类<span class="badge">4</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">46</span></a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/yasic" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/04/17/AVFoundation/AVFoundation%E8%A7%86%E9%A2%91%E6%92%AD%E6%94%BE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Yasic Yu">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yasic Yu">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AVFoundation视频播放
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-04-17 00:00:00" itemprop="dateCreated datePublished" datetime="2018-04-17T00:00:00+08:00">2018-04-17</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/AVFoundation/" itemprop="url" rel="index">
+                    <span itemprop="name">AVFoundation</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">AVFoundation 对于播放封装了主要的三个类 AVPlay、AVPlayerLayer 和 AVPlayerItem。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="1-播放视频综述"><a href="#1-播放视频综述" class="headerlink" title="1. 播放视频综述"></a>1. 播放视频综述</h2><p>AVFoundation 对于播放封装了主要的三个类 AVPlay、AVPlayerLayer 和 AVPlayerItem。</p>
+<ul>
+<li>AVPlayer</li>
+</ul>
+<p>AVPlayer 是一个用于播放基于时间的试听媒体的控制器对象，可以播放本地、分布下载以及 HTTP Live Streaming 协议得到的流媒体。</p>
+<blockquote>
+<p>HTTP Live Streaming（缩写是HLS）是一个由苹果公司提出的基于HTTP的流媒体网络传输协议。是苹果公司QuickTime X和iPhone软件系统的一部分。它的工作原理是把整个流分成一个个小的基于HTTP的文件来下载，每次只下载一些。当媒体流正在播放时，客户端可以选择从许多不同的备用源中以不同的速率下载同样的资源，允许流媒体会话适应不同的数据速率。在开始一个流媒体会话时，客户端会下载一个包含元数据的extended M3U (m3u8)playlist文件，用于寻找可用的媒体流。</p>
+<p>HLS只请求基本的HTTP报文，与实时传输协议（RTP)不同，HLS可以穿过任何允许HTTP数据通过的防火墙或者代理服务器。它也很容易使用内容分发网络来传输媒体流。</p>
+<p>苹果公司把HLS协议作为一个互联网草案（逐步提交），在第一阶段中已作为一个非正式的标准提交到IETF。但是，即使苹果偶尔地提交一些小的更新，IETF却没有关于制定此标准的有关进一步的动作。</p>
+</blockquote>
+<p>AVPlayer 只管理一个单独资源的播放，其子类 AVQueuePlayer 可以管理资源队列。</p>
+<ul>
+<li>AVPlayerLayer</li>
+</ul>
+<p>AVPlayerLayer 构建于 Core Animation 之上，扩展了 Core Animation 的 CALayer 类，不提供除内容渲染面以外的任何可视化控件，支持的自定义属性只有 video gravity，可以选择 AVLayerVideoGravityResizeAspect、AVLayerVideoGravityResizeAspectFill、AVLayerVideoGravityResize 三个值，分别是等比例完全展示，等比例完全铺满，和不等比例完全铺满。</p>
+<ul>
+<li>AVPlayerItem</li>
+</ul>
+<p>AVAsset 只包含媒体资源的静态信息，AVPlayerItem 可以建立媒体资源动态视角的数据模型，并保存 AVPlayer 播放状态。</p>
+<h2 id="2-播放视频"><a href="#2-播放视频" class="headerlink" title="2. 播放视频"></a>2. 播放视频</h2><p>从一个待播放的 AVAsset 开始，需要做以下初始化操作</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">self</span>.avPlayerItem = [<span class="built_in">AVPlayerItem</span> playerItemWithAsset:<span class="keyword">self</span>.targetAVAsset];</span><br><span class="line"><span class="keyword">self</span>.avPlayer = [<span class="built_in">AVPlayer</span> playerWithPlayerItem:<span class="keyword">self</span>.avPlayerItem];</span><br><span class="line"><span class="keyword">self</span>.avPlayerLayer = [<span class="built_in">AVPlayerLayer</span> playerLayerWithPlayer:<span class="keyword">self</span>.avPlayer];</span><br><span class="line">[<span class="keyword">self</span>.layer addSublayer:<span class="keyword">self</span>.avPlayerLayer];</span><br></pre></td></tr></table></figure>
+
+<p>依次创建 AVPlayerItem、AVPlayer 和 AVPlayerLayer 三个对象，最终将 AVPlaterLayer 加入到待展示内容的 view 上。但是此时不能立即播放，AVPlayerItem 有一个 status 状态，用于标识当前视频是否准备好被播放，需要监听这一个属性。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">[RACObserve(<span class="keyword">self</span>.avPlayerItem, status) subscribeNext:^(<span class="keyword">id</span> x) &#123;</span><br><span class="line">    @strongify(<span class="keyword">self</span>);</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.avPlayerItem.status == <span class="built_in">AVPlayerItemStatusReadyToPlay</span>) &#123;</span><br><span class="line">        <span class="comment">// 视频准备就绪</span></span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">self</span>.autoPlayMode) &#123;</span><br><span class="line">            <span class="keyword">self</span>.playerButton.hidden = <span class="literal">YES</span>;</span><br><span class="line">            [<span class="keyword">self</span> beginPlay];</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">self</span>.playerButton.enabled = <span class="literal">YES</span>;</span><br><span class="line">            <span class="keyword">self</span>.playerButton.hidden = <span class="literal">NO</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;<span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">self</span>.avPlayerItem.status == <span class="built_in">AVPlayerItemStatusFailed</span>)&#123;</span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"failed"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-处理时间"><a href="#3-处理时间" class="headerlink" title="3. 处理时间"></a>3. 处理时间</h2><p>使用浮点型数据类型来表示时间在视频播放时会由于数据不精确、多时间计算累加导致时间明显偏移，是的数据流无法同步，且不能做到自我描述，在不同的时间轴进行比较和运算时比较困难。所以 AVFoundation 使用 CMTime 数据结构来表示时间。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="built_in">CMTimeValue</span>	value;</span><br><span class="line">	<span class="built_in">CMTimeScale</span>	timescale;</span><br><span class="line">	<span class="built_in">CMTimeFlags</span>	flags;</span><br><span class="line">	<span class="built_in">CMTimeEpoch</span>	epoch;		<span class="comment">/* CMTime 结构体的纪元数量通常设置为 0，但是你可以用它来区分不相关的时间轴。例如，纪元可以通过使用演示循环每个周期递增，区分循环0中的时间 N与循环1中的时间 N。*/</span></span><br><span class="line">&#125; <span class="built_in">CMTime</span>;</span><br></pre></td></tr></table></figure>
+
+<p>CMTime 对时间的描述就是 time = value/timescale。</p>
+<h2 id="4-实践"><a href="#4-实践" class="headerlink" title="4. 实践"></a>4. 实践</h2><h3 id="4-1-创建视频视图"><a href="#4-1-创建视频视图" class="headerlink" title="4.1 创建视频视图"></a>4.1 创建视频视图</h3><p>UIView 寄宿在 CALayer 实例之上，可以继承 UIView 覆写其类方法 <code>+ (Class)layerClass</code> 返回特定类型的 CALayer，这样 UIView 在初始化时就会选择此类型来创建宿主 Layer。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">+ (Class)layerClass &#123;</span><br><span class="line">    <span class="keyword">return</span> [<span class="built_in">AVPlayerLayer</span> <span class="keyword">class</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>接下来在自定义初始化方法里直接传入一个 AVPlayer 对象就可以对 UIView 的根 layer 设置 AVPlayer 属性了。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">id</span>)initWithPlayer:(<span class="built_in">AVPlayer</span> *)player &#123;</span><br><span class="line">    <span class="keyword">self</span> = [<span class="keyword">super</span> initWithFrame:<span class="built_in">CGRectZero</span>];</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>) &#123;</span><br><span class="line">        <span class="keyword">self</span>.backgroundColor = [<span class="built_in">UIColor</span> blackColor];</span><br><span class="line">        [(<span class="built_in">AVPlayerLayer</span> *) [<span class="keyword">self</span> layer] setPlayer:player];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以在加载 AVPlayerItem 时选择一些元数据 key 值进行加载，形式如下</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSArray</span> *keys = @[</span><br><span class="line">    <span class="string">@"tracks"</span>,</span><br><span class="line">    <span class="string">@"duration"</span>,</span><br><span class="line">    <span class="string">@"commonMetadata"</span>,</span><br><span class="line">    <span class="string">@"availableMediaCharacteristicsWithMediaSelectionOptions"</span></span><br><span class="line">];</span><br><span class="line"><span class="keyword">self</span>.playerItem = [<span class="built_in">AVPlayerItem</span> playerItemWithAsset:<span class="keyword">self</span>.asset</span><br><span class="line">                       automaticallyLoadedAssetKeys:keys];</span><br><span class="line"><span class="keyword">self</span>.player = [<span class="built_in">AVPlayer</span> playerWithPlayerItem:<span class="keyword">self</span>.playerItem];</span><br><span class="line"><span class="keyword">self</span>.playerView = [[THPlayerView alloc] initWithPlayer:<span class="keyword">self</span>.player];</span><br></pre></td></tr></table></figure>
+
+<p>这样可以在加载 AVPlayerItem 时同时加载音轨、时长、common 元数据和备用。</p>
+<h3 id="4-2-监听状态"><a href="#4-2-监听状态" class="headerlink" title="4.2 监听状态"></a>4.2 监听状态</h3><p>初始化 AVPlayerItem 之后需要等待其状态变为 AVPlayerItemStatusReadyToPlay，因此需要进行监听</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[RACObserve(<span class="keyword">self</span>.avPlayerItem, status) subscribeNext:^(<span class="keyword">id</span> x) &#123;</span><br><span class="line">    @strongify(<span class="keyword">self</span>);</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.avPlayerItem.status == <span class="built_in">AVPlayerItemStatusReadyToPlay</span>) &#123;</span><br><span class="line">        <span class="comment">// 视频准备就绪</span></span><br><span class="line">        <span class="built_in">CMTime</span> duration = <span class="keyword">self</span>.playerItem.duration;</span><br><span class="line">        [<span class="keyword">self</span>.player play];</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">self</span>.avPlayerItem.status == <span class="built_in">AVPlayerItemStatusFailed</span>)&#123;</span><br><span class="line">        <span class="comment">// 视频无法播放</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-3-监听时间"><a href="#4-3-监听时间" class="headerlink" title="4.3 监听时间"></a>4.3 监听时间</h3><p>对于播放时间的监听，AVPlayer 提供了两个方法</p>
+<ul>
+<li>定期监听</li>
+</ul>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">self</span>.intervalObserver =  [<span class="keyword">self</span>.avPlayer addPeriodicTimeObserverForInterval:<span class="built_in">CMTimeMake</span>(<span class="number">1</span>, <span class="number">2</span>) queue:dispatch_get_main_queue() usingBlock:^(<span class="built_in">CMTime</span> time) &#123;</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"%f"</span>, <span class="built_in">CMTimeGetSeconds</span>(time));</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
+
+<p>这个方法以一定时间间隔，发送消息到指定队列，这里要求队列必须是串行队列，回调 block 的参数是一个用 CMTime 表示的播放器的当前时间。</p>
+<ul>
+<li>边界时间监听</li>
+</ul>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">self</span>.intervalObserver = [<span class="keyword">self</span>.avPlayer addBoundaryTimeObserverForTimes:@[[<span class="built_in">NSValue</span> valueWithCMTime:<span class="built_in">CMTimeMake</span>(<span class="number">1</span>, <span class="number">2</span>)], [<span class="built_in">NSValue</span> valueWithCMTime:<span class="built_in">CMTimeMake</span>(<span class="number">2</span>, <span class="number">2</span>)]] queue:dispatch_get_main_queue() usingBlock:^&#123;</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@".."</span>);</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
+
+<p>这个方法接受一个 CMTime 组成的数组，当到达数组包含的边界点时触发回调 block，但 block 不提供当前的 CMTime 值。</p>
+<p>同时要注意对监听的释放</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (<span class="keyword">self</span>.intervalObserver)&#123;</span><br><span class="line">    [<span class="keyword">self</span>.avPlayer removeTimeObserver:<span class="keyword">self</span>.intervalObserver];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-4-监听播放结束"><a href="#4-4-监听播放结束" class="headerlink" title="4.4 监听播放结束"></a>4.4 监听播放结束</h3><p>视频播放结束时会发出 AVPlayerItemDidPlayToEndTimeNotification 通知，可以注册此通知来获知视频已经播放结束</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[[<span class="built_in">NSNotificationCenter</span> defaultCenter] addObserverForName:<span class="built_in">AVPlayerItemDidPlayToEndTimeNotification</span> object:<span class="keyword">self</span>.avPlayerItem queue:[<span class="built_in">NSOperationQueue</span> mainQueue] usingBlock:^(<span class="built_in">NSNotification</span> * _Nonnull note) &#123;</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"did play to end"</span>);</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
+
+<p>还有一种办法是监听 AVPlayer 的速度 rate，当速度降为 0 时，判断当前时间与总时长的关系</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">@weakify(<span class="keyword">self</span>);</span><br><span class="line">[RACObserve(<span class="keyword">self</span>.avPlayer, rate) subscribeNext:^(<span class="keyword">id</span> x) &#123;</span><br><span class="line">    @strongify(<span class="keyword">self</span>);</span><br><span class="line">    <span class="keyword">float</span> currentTime = <span class="built_in">CMTimeGetSeconds</span>(<span class="keyword">self</span>.avPlayerItem.currentTime);</span><br><span class="line">    <span class="keyword">float</span> durationTime = <span class="built_in">CMTimeGetSeconds</span>(<span class="keyword">self</span>.avPlayerItem.duration);</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.avPlayer.rate == <span class="number">0</span> &amp;&amp; currentTime &gt;= durationTime) &#123;</span><br><span class="line">        <span class="built_in">dispatch_async</span>(dispatch_get_main_queue(), ^&#123;</span><br><span class="line">            [<span class="keyword">self</span> endPlayer];</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-5-控制播放进度"><a href="#4-5-控制播放进度" class="headerlink" title="4.5 控制播放进度"></a>4.5 控制播放进度</h3><p>我们用一个 UISlider 来控制视频播放,UISlider 有三个事件可以加入 selector，分别是</p>
+<ul>
+<li>点按开始 UIControlEventTouchDown</li>
+<li>滑动中 UIControlEventValueChanged</li>
+<li>点按结束 UIControlEventTouchUpInside</li>
+</ul>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">_scrubberSlider = [[<span class="built_in">UISlider</span> alloc] init];</span><br><span class="line">[_scrubberSlider addTarget:<span class="keyword">self</span> action:<span class="keyword">@selector</span>(sliderValueChange) forControlEvents:<span class="built_in">UIControlEventValueChanged</span>];</span><br><span class="line">[_scrubberSlider addTarget:<span class="keyword">self</span> action:<span class="keyword">@selector</span>(sliderStop) forControlEvents:<span class="built_in">UIControlEventTouchUpInside</span>];</span><br><span class="line">[_scrubberSlider addTarget:<span class="keyword">self</span> action:<span class="keyword">@selector</span>(sliderBegin) forControlEvents:<span class="built_in">UIControlEventTouchDown</span>];</span><br></pre></td></tr></table></figure>
+
+<p>同时获取到视频大小后可以设置 slider 的 value 属性</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">self</span>.scrubberSlider.minimumValue = <span class="number">0.0</span>;</span><br><span class="line"><span class="keyword">self</span>.scrubberSlider.maximumValue = <span class="built_in">CMTimeGetSeconds</span>(<span class="keyword">self</span>.avPlayerItem.duration);</span><br></pre></td></tr></table></figure>
+
+<p>接下来是三个 selector 的实现</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)sliderBegin</span><br><span class="line">&#123;</span><br><span class="line">    [<span class="keyword">self</span> pausePlayer];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)sliderValueChange</span><br><span class="line">&#123;</span><br><span class="line">    [<span class="keyword">self</span>.avPlayerItem cancelPendingSeeks];</span><br><span class="line">    [<span class="keyword">self</span>.avPlayerItem seekToTime:<span class="built_in">CMTimeMakeWithSeconds</span>(<span class="keyword">self</span>.scrubberSlider.value, <span class="built_in">NSEC_PER_SEC</span>)];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)sliderStop</span><br><span class="line">&#123;</span><br><span class="line">    [<span class="keyword">self</span> beginPlay];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其中当滑动开始时要暂时停止视频播放，滑动过程中出于性能考虑，调用 cancelPendingSeeks 方法，它能取消之前所有的 seekTime 操作，然后再根据 slider 的 value 值去进行 seekToTime 操作，最后滑动结束后恢复播放。</p>
+<h3 id="4-6-获取图片序列"><a href="#4-6-获取图片序列" class="headerlink" title="4.6 获取图片序列"></a>4.6 获取图片序列</h3><p>AVAssetImageGenerator 可以用来生成一个视频的固定时间点的图片序列集合，其具体使用如下。</p>
+<p>首先初始化一个 AVAssetImageGenerator 对象</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">self</span>.imageGenerator = [<span class="built_in">AVAssetImageGenerator</span> assetImageGeneratorWithAsset:targetAVAsset];</span><br><span class="line"><span class="keyword">self</span>.imageGenerator.maximumSize = <span class="built_in">CGSizeMake</span>(<span class="number">400.0</span>f, <span class="number">0.0</span>f);</span><br><span class="line">[<span class="keyword">self</span>.imageGenerator setRequestedTimeToleranceBefore:kCMTimeZero];</span><br><span class="line">[<span class="keyword">self</span>.imageGenerator setRequestedTimeToleranceAfter:kCMTimeZero];</span><br></pre></td></tr></table></figure>
+
+<p>setRequestedTimeToleranceBefore 和 setRequestedTimeToleranceAfter 方法可以设置获取的帧时值偏移程度，越精确对性能要求越高。</p>
+<p>然后生成一串时值数组</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">CMTime</span> duration = <span class="keyword">self</span>.targetAVAsset.duration;</span><br><span class="line"><span class="built_in">NSMutableArray</span> *times = [<span class="built_in">NSMutableArray</span> array];</span><br><span class="line"><span class="built_in">CMTimeValue</span> increment = duration.value / <span class="number">20</span>;</span><br><span class="line"><span class="built_in">CMTimeValue</span> currentValue = <span class="number">2.0</span> * duration.timescale;</span><br><span class="line"><span class="keyword">while</span> (currentValue &lt;= duration.value) &#123;</span><br><span class="line">    <span class="built_in">CMTime</span> time = <span class="built_in">CMTimeMake</span>(currentValue, duration.timescale);</span><br><span class="line">    [times addObject:[<span class="built_in">NSValue</span> valueWithCMTime:time]];</span><br><span class="line">    currentValue += increment;</span><br><span class="line">&#125;</span><br><span class="line">__block <span class="built_in">NSUInteger</span> imageCount = times.count;</span><br><span class="line">__block <span class="built_in">NSMutableArray</span> *images = [<span class="built_in">NSMutableArray</span> array];</span><br></pre></td></tr></table></figure>
+
+<p>最后调用方法生成图片</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[<span class="keyword">self</span>.imageGenerator generateCGImagesAsynchronouslyForTimes:times completionHandler:^(<span class="built_in">CMTime</span> requestedTime, <span class="built_in">CGImageRef</span>  _Nullable imageref, <span class="built_in">CMTime</span> actualTime, <span class="built_in">AVAssetImageGeneratorResult</span> result, <span class="built_in">NSError</span> * _Nullable error) &#123;</span><br><span class="line">    <span class="keyword">if</span> (result == <span class="built_in">AVAssetImageGeneratorSucceeded</span>) &#123;</span><br><span class="line">        <span class="built_in">UIImage</span> *image = [<span class="built_in">UIImage</span> imageWithCGImage:imageref];</span><br><span class="line">        [images addObject:image];</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"Error: %@"</span>, [error localizedDescription]);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (--imageCount == <span class="number">0</span>) &#123;</span><br><span class="line">        </span><br><span class="line">    &#125;</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-7-显示字幕"><a href="#4-7-显示字幕" class="headerlink" title="4.7 显示字幕"></a>4.7 显示字幕</h3><p>AVMediaSelectionOption 用于标识 AVAsset 的备用媒体呈现方式，包含备用音频、视频或文本轨道，这些轨道可能是特定语言的音频轨道、备用相机角度或字幕。</p>
+<p>首先通过 AVAsset 的 availableMediaCharacteristicsWithMediaSelectionOptions 属性来获取当前视频的所有备用轨道，返回的字符串可能是 AVMediaCharacteristicVisual（备用视频轨道）、AVMediaCharacteristicAudible（备用音频轨道）、AVMediaCharacteristicLegible（字幕）等。</p>
+<p>获取到此数组后，通过 mediaSelectionGroupForMediaCharacteristic 获取到对应类型轨道包含的所有轨道的组合 AVMediaSelectionGroup，然后遍历 AVMediaSelectionGroup 的 options 属性可以获取到所有的 AVMediaSelectionOption 对象。得到 AVMediaSelectionOption 对象后就可以进行 AVPlayerItem 的属性设置了。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSString</span> *mc = <span class="built_in">AVMediaCharacteristicLegible</span>;</span><br><span class="line"><span class="built_in">AVMediaSelectionGroup</span> *group = [<span class="keyword">self</span>.asset mediaSelectionGroupForMediaCharacteristic:mc];</span><br><span class="line"><span class="keyword">if</span> (group) &#123;</span><br><span class="line">    <span class="built_in">NSMutableArray</span> *subtitles = [<span class="built_in">NSMutableArray</span> array];</span><br><span class="line">    <span class="keyword">for</span> (<span class="built_in">AVMediaSelectionOption</span> *option <span class="keyword">in</span> group.options) &#123;</span><br><span class="line">        [subtitles addObject:option.displayName];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 获取到所有支持的字幕名称</span></span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">&#125;</span><br><span class="line">   </span><br><span class="line">   </span><br><span class="line"><span class="built_in">NSString</span> *mc = <span class="built_in">AVMediaCharacteristicLegible</span>;</span><br><span class="line"><span class="built_in">AVMediaSelectionGroup</span> *group = [<span class="keyword">self</span>.asset mediaSelectionGroupForMediaCharacteristic:mc]; </span><br><span class="line"><span class="built_in">BOOL</span> selected = <span class="literal">NO</span>;</span><br><span class="line"><span class="keyword">for</span> (<span class="built_in">AVMediaSelectionOption</span> *option <span class="keyword">in</span> group.options) &#123;</span><br><span class="line">    <span class="keyword">if</span> ([option.displayName isEqualToString:subtitle]) &#123;</span><br><span class="line">        [<span class="keyword">self</span>.playerItem selectMediaOption:option inMediaSelectionGroup:group];</span><br><span class="line">        <span class="comment">// 匹配后设置字幕属性</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">[<span class="keyword">self</span>.playerItem selectMediaOption:<span class="literal">nil</span> inMediaSelectionGroup:group];<span class="comment">// 设置为 nil 可以取消字幕</span></span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+      
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/04/12/AVFoundation/AVFoundation-%E6%92%AD%E6%94%BE%E5%92%8C%E5%BD%95%E5%88%B6%E9%9F%B3%E9%A2%91/" rel="prev" title="AVFoundation-播放和录制音频">
+      <i class="fa fa-chevron-left"></i> AVFoundation-播放和录制音频
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/04/18/iOS%E5%BC%80%E5%8F%91/iOS%E4%BC%A0%E6%84%9F%E5%99%A8%E4%B8%8ECMMotionManager/" rel="next" title="iOS传感器与CMMotionManager">
+      iOS传感器与CMMotionManager <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-播放视频综述"><span class="nav-text">1. 播放视频综述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-播放视频"><span class="nav-text">2. 播放视频</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-处理时间"><span class="nav-text">3. 处理时间</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-实践"><span class="nav-text">4. 实践</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-创建视频视图"><span class="nav-text">4.1 创建视频视图</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-监听状态"><span class="nav-text">4.2 监听状态</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-监听时间"><span class="nav-text">4.3 监听时间</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-4-监听播放结束"><span class="nav-text">4.4 监听播放结束</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-5-控制播放进度"><span class="nav-text">4.5 控制播放进度</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-6-获取图片序列"><span class="nav-text">4.6 获取图片序列</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-7-显示字幕"><span class="nav-text">4.7 显示字幕</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Yasic Yu"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Yasic Yu</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">46</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Yasic" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Yasic" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:yuxuan2580@gmail.com" title="E-Mail → mailto:yuxuan2580@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yasic Yu</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.1
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
