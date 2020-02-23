@@ -897,73 +897,6 @@
       </tags>
   </entry>
   <entry>
-    <title>AVFoundation资源和元数据</title>
-    <url>/2018/04/26/AVFoundation/AVFoundation%E8%B5%84%E6%BA%90%E5%92%8C%E5%85%83%E6%95%B0%E6%8D%AE/</url>
-    <content><![CDATA[<p>AVAsset 是一个抽象类和不可变类，它定义了媒体资源混合呈现的方式，将媒体资源的静态属性模块化为一个整体，包括标题、时长和元数据。AVAsset 提供了基本媒体格式的层抽象，隐藏了资源的位置信息。</p>
-<h2 id="1-创建资源"><a href="#1-创建资源" class="headerlink" title="1. 创建资源"></a>1. 创建资源</h2><p>通过 URL 创建一个 AVAsset</p>
-<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line"><span class="built_in">NSURL</span> *assetUrl = <span class="comment">// url</span></span><br><span class="line"><span class="built_in">AVAsset</span> *asset  =[<span class="built_in">AVAsset</span> assetWithURL:assetUrl];</span><br></pre></td></tr></table></figure>
-
-<p>assetWithURL 方法生成的实际类是 AVAsset 的子类 AVURLAsset，它允许通过 options 字典来调整创建方式。</p>
-<h3 id="获取方式"><a href="#获取方式" class="headerlink" title="获取方式"></a>获取方式</h3><p>常见的获取 AVAsset 的途径有</p>
-<ul>
-<li>iOS Asset 库，即相册资源 —— Photo Framework</li>
-<li>iOS iPod 库 —— MediaPlayer</li>
-<li>MAC iTunes 库 —— iTunesLibrary 框架</li>
-</ul>
-<p>这里只举 Photo Framework 的例子</p>
-<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line">[[PHImageManager defaultManager] requestAVAssetForVideo:asset options:options resultHandler:^(<span class="built_in">AVAsset</span> * _Nullable obj, <span class="built_in">AVAudioMix</span> * _Nullable audioMix, <span class="built_in">NSDictionary</span> * _Nullable info) &#123;</span><br><span class="line">    @strongify(<span class="keyword">self</span>)</span><br><span class="line">    <span class="built_in">AVURLAsset</span> *urlAsset = (<span class="built_in">AVURLAsset</span> *)obj;</span><br><span class="line">    <span class="built_in">NSURL</span> *url = urlAsset.URL;</span><br><span class="line">    <span class="built_in">NSData</span> *data = [<span class="built_in">NSData</span> dataWithContentsOfURL:url];</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
-
-<h2 id="2-异步加载"><a href="#2-异步加载" class="headerlink" title="2. 异步加载"></a>2. 异步加载</h2><p>AVAsset 对资源属性实现了延迟加载特性，仅在请求时才载入，这样如果是同步请求属性，就可能因为属性没有预先载入而阻塞主线程，因此应采用异步加载属性的方法。</p>
-<p>AVAsset 和 AVAssetTrack 都遵循了 AVAsynchronousKeyValueLoading 协议，此协议有两个方法</p>
-<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line">- (<span class="built_in">AVKeyValueStatus</span>)statusOfValueForKey:(<span class="built_in">NSString</span> *)key error:(<span class="built_in">NSError</span> * _Nullable * _Nullable)outError;</span><br><span class="line">- (<span class="keyword">void</span>)loadValuesAsynchronouslyForKeys:(<span class="built_in">NSArray</span>&lt;<span class="built_in">NSString</span> *&gt; *)keys completionHandler:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="keyword">void</span>))handler;</span><br></pre></td></tr></table></figure>
-
-<p>第一个方法用于确定当前属性是预先加载好了、尚未加载还是加载出错了，而第二个方法则是异步加载属性的方法。</p>
-<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line">[<span class="keyword">self</span>.targetAVAsset loadValuesAsynchronouslyForKeys:@[<span class="string">@"trackss"</span>] completionHandler:^&#123;</span><br><span class="line">    <span class="built_in">NSError</span> *error = <span class="literal">nil</span>;</span><br><span class="line">    <span class="built_in">AVKeyValueStatus</span> status = [<span class="keyword">self</span>.targetAVAsset statusOfValueForKey:<span class="string">@"tracks"</span> error:<span class="literal">nil</span>];</span><br><span class="line">    <span class="keyword">switch</span> (status) &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="built_in">AVKeyValueStatusLoaded</span>: &#123;</span><br><span class="line">            <span class="built_in">NSLog</span>(<span class="string">@"AVKeyValueStatusLoaded"</span>);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">case</span> <span class="built_in">AVKeyValueStatusFailed</span>: &#123;</span><br><span class="line">            <span class="built_in">NSLog</span>(<span class="string">@"AVKeyValueStatusFailed"</span>);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">case</span> <span class="built_in">AVKeyValueStatusUnknown</span>: &#123;</span><br><span class="line">            <span class="built_in">NSLog</span>(<span class="string">@"AVKeyValueStatusUnknown"</span>);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">case</span> <span class="built_in">AVKeyValueStatusCancelled</span>: &#123;</span><br><span class="line">            <span class="built_in">NSLog</span>(<span class="string">@"AVKeyValueStatusCancelled"</span>);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
-
-<p>这里请求的参数可以是多个，但是当请求多个参数时，异步请求的回调只会调用一次，此时需要分别对各个属性调用 statusOfValueForKey 方法来判断是否加载完成。</p>
-<h2 id="3-媒体元数据"><a href="#3-媒体元数据" class="headerlink" title="3. 媒体元数据"></a>3. 媒体元数据</h2><h3 id="3-1-元数据格式"><a href="#3-1-元数据格式" class="headerlink" title="3.1 元数据格式"></a>3.1 元数据格式</h3><p>在 Apple 环境下，最常见四种媒体类型，分别是 QuickTime（mov）、MPEG-4 video（mp4 和 m4v）、MPEG-4 audio（m4a）和 MPEG-Layer III Audio（mp3）。</p>
-<p>QuickTime 是苹果公司开发的一种跨平台媒体架构，由一种称为 atoms 的数据结构组成，一个 atom 可以包含元数据，也可以包含其他 atom，但不能两者都包含。</p>
-<p>MPEG-4 Part 14 定义了 MP4 文件格式的规范，MP4 直接派生于 QuickTime 文件格式，结构类似。要注意，MP4 有多种文件拓展名。.mp4 是标准扩展名，.m4v 是带有苹果公司针对 FairPlay 加密及 AC3-audio 扩展的 MPEG-4 视频格式，而 .m4a 针对音频，m4p 针对较旧的 itunes 音频格式，m4b 针对有声读物。</p>
-<p>MP3 不是容器格式，使用编码音频数据，使用 ID3v2 格式保存元数据。由于专利限制，AVFoundation 只支持读取 MP3，不支持编码 MP3。</p>
-<h2 id="4-使用元数据"><a href="#4-使用元数据" class="headerlink" title="4. 使用元数据"></a>4. 使用元数据</h2><p>AVFoundation 使用键空间作为将相关键组合在一起的方法，可以实现对 AVMetaDataItem 实例集合的筛选。Common 键空间用于定义所有支持的媒体类型的键，包括曲名、歌手、插图信息等。开发者可以通过查询资源或曲目的 commonMetadata 属性从 common 键空间获取元数据，这个属性会返回一个包含所有可用元数据的数组。</p>
-<p>访问指定格式的元数据，需要对 AVAsset 对象调用 metadataForFormat 方法，此方法包含一个用于定义元数据格式的 NSString 对象并返回一个包含所有相关元数据信息的 NSArray。一个 AVAsset 所支持的资源格式可以通过 availableMetadataFormats 属性来获取。</p>
-<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line">[<span class="keyword">self</span>.targetAVAsset loadValuesAsynchronouslyForKeys:@[<span class="string">@"availableMetadataFormats"</span>] completionHandler:^&#123;</span><br><span class="line">    <span class="built_in">NSError</span> *error = <span class="literal">nil</span>;</span><br><span class="line">    <span class="built_in">AVKeyValueStatus</span> status = [<span class="keyword">self</span>.targetAVAsset statusOfValueForKey:<span class="string">@"availableMetadataFormats"</span> error:<span class="literal">nil</span>];</span><br><span class="line">    <span class="keyword">switch</span> (status) &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="built_in">AVKeyValueStatusLoaded</span>: &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="built_in">NSString</span> *format <span class="keyword">in</span> <span class="keyword">self</span>.targetAVAsset.availableMetadataFormats) &#123;</span><br><span class="line">                <span class="built_in">NSLog</span>(<span class="string">@"%@"</span>, format);</span><br><span class="line">                <span class="built_in">NSLog</span>(<span class="string">@"%@"</span>, [<span class="keyword">self</span>.targetAVAsset metadataForFormat:format]);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">case</span> <span class="built_in">AVKeyValueStatusFailed</span>: &#123;</span><br><span class="line">            <span class="built_in">NSLog</span>(<span class="string">@"AVKeyValueStatusFailed"</span>);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">case</span> <span class="built_in">AVKeyValueStatusUnknown</span>: &#123;</span><br><span class="line">            <span class="built_in">NSLog</span>(<span class="string">@"AVKeyValueStatusUnknown"</span>);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">case</span> <span class="built_in">AVKeyValueStatusCancelled</span>: &#123;</span><br><span class="line">            <span class="built_in">NSLog</span>(<span class="string">@"AVKeyValueStatusCancelled"</span>);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
-
-<p>示例输出如下</p>
-<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line">com.apple.quicktime.mdta</span><br><span class="line">(</span><br><span class="line"></span><br><span class="line">    <span class="string">"&lt;AVMetadataItem: 0x1c801f230, identifier=mdta/com.apple.quicktime.software, keySpace=mdta, key class = __NSCFString, key=com.apple.quicktime.software, commonKey=software, extendedLanguageTag=(null), dataType=com.apple.metadata.datatype.UTF-8, time=&#123;INVALID&#125;, duration=&#123;INVALID&#125;, startDate=(null), extras=&#123;\n    dataType = 1;\n    dataTypeNamespace = \"com.apple.quicktime.mdta\";\n&#125;, value class=__NSCFString, value=video.vue.ios.280&gt;"</span>,</span><br><span class="line"></span><br><span class="line">    <span class="string">"&lt;AVMetadataItem: 0x1c42004d0, identifier=mdta/com.apple.quicktime.description, keySpace=mdta, key class = __NSCFString, key=com.apple.quicktime.description, commonKey=description, extendedLanguageTag=(null), dataType=com.apple.metadata.datatype.UTF-8, time=&#123;INVALID&#125;, duration=&#123;INVALID&#125;, startDate=(null), extras=&#123;\n    dataType = 1;\n    dataTypeNamespace = \"com.apple.quicktime.mdta\";\n&#125;, value class=__NSCFString, value=ewogICJzc2Z3IiA6IFsKICAgICIiCiAgXSwKICAic2RldiIgOiBbCiAgICAiIgogIF0sCiAgInNjIiA6IDEsCiAgInNsb2MiIDogWwogICAgIiIKICBdLAogICJzdWIiIDogWwogICAgIiIKICBdLAogICJ0cnMiIDogWwogICAgMCwKICAgIDAKICBdLAogICJzZHVyIiA6IFsKICAgIDEwCiAgXSwKICAiY2FwIiA6ICIgIiwKICAiZiIgOiBbCiAgICAiMSIKICBdCn0=&gt;"</span></span><br><span class="line"></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
-
-<h2 id="5-实践"><a href="#5-实践" class="headerlink" title="5. 实践"></a>5. 实践</h2><h3 id="5-1-对-AVAsset-进行封装"><a href="#5-1-对-AVAsset-进行封装" class="headerlink" title="5.1 对 AVAsset 进行封装"></a>5.1 对 AVAsset 进行封装</h3><p>通过 url 我们可以实例化一个 AVAsset，也可以获取到其中一些有效的元数据信息</p>
-<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line">_url = url;</span><br><span class="line">_asset = [<span class="built_in">AVAsset</span> assetWithURL:url];</span><br><span class="line">_filename = [url lastPathComponent];</span><br><span class="line">_filetype = [<span class="keyword">self</span> fileTypeForURL:url];                              </span><br><span class="line">_editable = ![_filetype isEqualToString:<span class="built_in">AVFileTypeMPEGLayer3</span>];</span><br></pre></td></tr></table></figure>
-
-<p>lastPathComponent 从 URL （例如 “file:///Users/yasic/Library/Application%20Support/MetaManager/01%20Demo%20AAC.m4a”）的最后一个路径取出文件名，fileTypeForURL 具体实现如下</p>
-<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line">- (<span class="built_in">NSString</span> *)fileTypeForURL:(<span class="built_in">NSURL</span> *)url &#123;</span><br><span class="line">    <span class="built_in">NSString</span> *ext = [[<span class="keyword">self</span>.url lastPathComponent] pathExtension];</span><br><span class="line">    <span class="built_in">NSString</span> *type = <span class="literal">nil</span>;</span><br><span class="line">    <span class="keyword">if</span> ([ext isEqualToString:<span class="string">@"m4a"</span>]) &#123;</span><br><span class="line">        type = <span class="built_in">AVFileTypeAppleM4A</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> ([ext isEqualToString:<span class="string">@"m4v"</span>]) &#123;</span><br><span class="line">        type = <span class="built_in">AVFileTypeAppleM4V</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> ([ext isEqualToString:<span class="string">@"mov"</span>]) &#123;</span><br><span class="line">        type = <span class="built_in">AVFileTypeQuickTimeMovie</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> ([ext isEqualToString:<span class="string">@"mp4"</span>]) &#123;</span><br><span class="line">        type = <span class="built_in">AVFileTypeMPEG4</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        type = <span class="built_in">AVFileTypeMPEGLayer3</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> type;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="5-2-获取元数据"><a href="#5-2-获取元数据" class="headerlink" title="5.2 获取元数据"></a>5.2 获取元数据</h3><p>对于通用键空间，可以通过 commonMetadata 属性获取到元数据对应的 AVMetadataItem 对象。</p>
-<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line"><span class="built_in">NSArray</span> *keys = @[COMMON_META_KEY];</span><br><span class="line">[<span class="keyword">self</span>.asset loadValuesAsynchronouslyForKeys:keys completionHandler:^&#123;</span><br><span class="line">    <span class="built_in">AVKeyValueStatus</span> commonStatus =</span><br><span class="line">        [<span class="keyword">self</span>.asset statusOfValueForKey:COMMON_META_KEY error:<span class="literal">nil</span>];</span><br><span class="line">    <span class="keyword">self</span>.prepared = (commonStatus == <span class="built_in">AVKeyValueStatusLoaded</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.prepared) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="built_in">AVMetadataItem</span> *item <span class="keyword">in</span> <span class="keyword">self</span>.asset.commonMetadata) &#123;</span><br><span class="line">            <span class="comment">//NSLog(@"%@: %@", item.keyString, item.value);</span></span><br><span class="line">            [<span class="keyword">self</span>.metadata addMetadataItem:item withKey:item.commonKey];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
-
-<p>对于其他格式的元数据，先获取到可用格式的数组，然后分别进行元数据获取</p>
-<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line"><span class="built_in">NSArray</span> *keys = @[<span class="built_in">AVAILABLE_META_KEY</span>];</span><br><span class="line">[<span class="keyword">self</span>.asset loadValuesAsynchronouslyForKeys:keys completionHandler:^&#123;</span><br><span class="line">    <span class="built_in">AVKeyValueStatus</span> formatsStatus = [<span class="keyword">self</span>.asset statusOfValueForKey:<span class="built_in">AVAILABLE_META_KEY</span> error:<span class="literal">nil</span>];</span><br><span class="line">    <span class="keyword">self</span>.prepared = (formatsStatus == <span class="built_in">AVKeyValueStatusLoaded</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.prepared) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">id</span> format <span class="keyword">in</span> <span class="keyword">self</span>.asset.availableMetadataFormats) &#123;        <span class="comment">// 5</span></span><br><span class="line">            <span class="keyword">if</span> ([<span class="keyword">self</span>.acceptedFormats containsObject:format]) &#123;</span><br><span class="line">                <span class="built_in">NSArray</span> *items = [<span class="keyword">self</span>.asset metadataForFormat:format];</span><br><span class="line">                <span class="keyword">for</span> (<span class="built_in">AVMetadataItem</span> *item <span class="keyword">in</span> items) &#123;</span><br><span class="line">                    <span class="comment">//NSLog(@"%@: %@", item.keyString, item.value);</span></span><br><span class="line">                    [<span class="keyword">self</span>.metadata addMetadataItem:item</span><br><span class="line">                                           withKey:item.keyString];</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
-
-<p>获取到的元数据有些是可以直接阅读的，有些则不够语义化，需要进行不同方式的转化，包括 Artwork、注释、音轨数据、唱片数据、风格数据等类型的数据，这里不再赘述。</p>
-<h3 id="5-3-保存元数据"><a href="#5-3-保存元数据" class="headerlink" title="5.3 保存元数据"></a>5.3 保存元数据</h3><p>对于元数据的修改不能直接操作原 AVAsset，需要使用 AVAssetExportSession 导出一个新的资源副本来覆盖原本的资源对象。</p>
-<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line"><span class="built_in">NSString</span> *presetName = <span class="built_in">AVAssetExportPresetPassthrough</span>;</span><br><span class="line"><span class="built_in">AVAssetExportSession</span> *session =</span><br><span class="line">    [[<span class="built_in">AVAssetExportSession</span> alloc] initWithAsset:<span class="keyword">self</span>.asset</span><br><span class="line">                                     presetName:presetName];</span><br></pre></td></tr></table></figure>
-
-<p>AVAssetExportSession 的初始化需要一个待修改的 AVAsset 对象，以及一个预设值，AVAssetExportPresetPassthrough 预设值能够在不重新编码媒体的前提下实现写入元数据功能，但不能添加新的元数据。</p>
-<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line"><span class="built_in">NSURL</span> *outputURL = [<span class="keyword">self</span> tempURL];</span><br><span class="line">session.outputURL = outputURL;</span><br><span class="line">session.outputFileType = <span class="keyword">self</span>.filetype;</span><br><span class="line">session.metadata = [<span class="keyword">self</span>.metadata metadataItems];</span><br></pre></td></tr></table></figure>
-
-<p>指定导出副本的存储位置，配置到 session 上。</p>
-<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line">[session exportAsynchronouslyWithCompletionHandler:^&#123;</span><br><span class="line">    <span class="built_in">AVAssetExportSessionStatus</span> status = session.status;</span><br><span class="line">    <span class="built_in">BOOL</span> success = (status == <span class="built_in">AVAssetExportSessionStatusCompleted</span>);</span><br><span class="line">    <span class="keyword">if</span> (success) &#123;</span><br><span class="line">        <span class="built_in">NSURL</span> *sourceURL = <span class="keyword">self</span>.url;</span><br><span class="line">        <span class="built_in">NSFileManager</span> *manager = [<span class="built_in">NSFileManager</span> defaultManager];</span><br><span class="line">        [manager removeItemAtURL:sourceURL error:<span class="literal">nil</span>];</span><br><span class="line">        [manager moveItemAtURL:outputURL toURL:sourceURL error:<span class="literal">nil</span>];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
-
-<p>导出需要用到 exportAsynchronouslyWithCompletionHandler 方法，完成后对状态进行判断，获知导出是否成功，然后通过 NSFileManager 的 moveItemAtURL 方法来覆盖原始的媒体资源</p>
-]]></content>
-      <categories>
-        <category>AVFoundation</category>
-      </categories>
-      <tags>
-        <tag>AVFoundation</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>AVFoundation-读取和写入媒体</title>
     <url>/2018/04/26/AVFoundation/AVFoundation-%E8%AF%BB%E5%8F%96%E5%92%8C%E5%86%99%E5%85%A5%E5%AA%92%E4%BD%93/</url>
     <content><![CDATA[<h2 id="1-综述"><a href="#1-综述" class="headerlink" title="1. 综述"></a>1. 综述</h2><p>AVFoundation 提供了对底层数据的读写功能，需要用到 AVAssetReader 和 AVAssetWriter 两个核心类。</p>
@@ -1030,6 +963,73 @@
 
 <p>具体的操作已经在注释中写明了，此处不再过多说明。最终结束写入操作时，仍然需要调用 finishWritingWithCompletionHandler 方法</p>
 <figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line">[<span class="keyword">self</span>.assetWriter finishWritingWithCompletionHandler:^&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.assetWriter.status == <span class="built_in">AVAssetWriterStatusCompleted</span>) &#123;</span><br><span class="line">        <span class="built_in">dispatch_async</span>(dispatch_get_main_queue(), ^&#123;</span><br><span class="line">            <span class="built_in">NSURL</span> *fileURL = [<span class="keyword">self</span>.assetWriter outputURL]; <span class="comment">// 拿到 url 后进行相册保存操作</span></span><br><span class="line">        &#125;);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"Failed to write movie: %@"</span>, <span class="keyword">self</span>.assetWriter.error);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>]]></content>
+      <categories>
+        <category>AVFoundation</category>
+      </categories>
+      <tags>
+        <tag>AVFoundation</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>AVFoundation资源和元数据</title>
+    <url>/2018/04/26/AVFoundation/AVFoundation%E8%B5%84%E6%BA%90%E5%92%8C%E5%85%83%E6%95%B0%E6%8D%AE/</url>
+    <content><![CDATA[<p>AVAsset 是一个抽象类和不可变类，它定义了媒体资源混合呈现的方式，将媒体资源的静态属性模块化为一个整体，包括标题、时长和元数据。AVAsset 提供了基本媒体格式的层抽象，隐藏了资源的位置信息。</p>
+<h2 id="1-创建资源"><a href="#1-创建资源" class="headerlink" title="1. 创建资源"></a>1. 创建资源</h2><p>通过 URL 创建一个 AVAsset</p>
+<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line"><span class="built_in">NSURL</span> *assetUrl = <span class="comment">// url</span></span><br><span class="line"><span class="built_in">AVAsset</span> *asset  =[<span class="built_in">AVAsset</span> assetWithURL:assetUrl];</span><br></pre></td></tr></table></figure>
+
+<p>assetWithURL 方法生成的实际类是 AVAsset 的子类 AVURLAsset，它允许通过 options 字典来调整创建方式。</p>
+<h3 id="获取方式"><a href="#获取方式" class="headerlink" title="获取方式"></a>获取方式</h3><p>常见的获取 AVAsset 的途径有</p>
+<ul>
+<li>iOS Asset 库，即相册资源 —— Photo Framework</li>
+<li>iOS iPod 库 —— MediaPlayer</li>
+<li>MAC iTunes 库 —— iTunesLibrary 框架</li>
+</ul>
+<p>这里只举 Photo Framework 的例子</p>
+<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line">[[PHImageManager defaultManager] requestAVAssetForVideo:asset options:options resultHandler:^(<span class="built_in">AVAsset</span> * _Nullable obj, <span class="built_in">AVAudioMix</span> * _Nullable audioMix, <span class="built_in">NSDictionary</span> * _Nullable info) &#123;</span><br><span class="line">    @strongify(<span class="keyword">self</span>)</span><br><span class="line">    <span class="built_in">AVURLAsset</span> *urlAsset = (<span class="built_in">AVURLAsset</span> *)obj;</span><br><span class="line">    <span class="built_in">NSURL</span> *url = urlAsset.URL;</span><br><span class="line">    <span class="built_in">NSData</span> *data = [<span class="built_in">NSData</span> dataWithContentsOfURL:url];</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-异步加载"><a href="#2-异步加载" class="headerlink" title="2. 异步加载"></a>2. 异步加载</h2><p>AVAsset 对资源属性实现了延迟加载特性，仅在请求时才载入，这样如果是同步请求属性，就可能因为属性没有预先载入而阻塞主线程，因此应采用异步加载属性的方法。</p>
+<p>AVAsset 和 AVAssetTrack 都遵循了 AVAsynchronousKeyValueLoading 协议，此协议有两个方法</p>
+<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line">- (<span class="built_in">AVKeyValueStatus</span>)statusOfValueForKey:(<span class="built_in">NSString</span> *)key error:(<span class="built_in">NSError</span> * _Nullable * _Nullable)outError;</span><br><span class="line">- (<span class="keyword">void</span>)loadValuesAsynchronouslyForKeys:(<span class="built_in">NSArray</span>&lt;<span class="built_in">NSString</span> *&gt; *)keys completionHandler:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="keyword">void</span>))handler;</span><br></pre></td></tr></table></figure>
+
+<p>第一个方法用于确定当前属性是预先加载好了、尚未加载还是加载出错了，而第二个方法则是异步加载属性的方法。</p>
+<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line">[<span class="keyword">self</span>.targetAVAsset loadValuesAsynchronouslyForKeys:@[<span class="string">@"trackss"</span>] completionHandler:^&#123;</span><br><span class="line">    <span class="built_in">NSError</span> *error = <span class="literal">nil</span>;</span><br><span class="line">    <span class="built_in">AVKeyValueStatus</span> status = [<span class="keyword">self</span>.targetAVAsset statusOfValueForKey:<span class="string">@"tracks"</span> error:<span class="literal">nil</span>];</span><br><span class="line">    <span class="keyword">switch</span> (status) &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="built_in">AVKeyValueStatusLoaded</span>: &#123;</span><br><span class="line">            <span class="built_in">NSLog</span>(<span class="string">@"AVKeyValueStatusLoaded"</span>);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">case</span> <span class="built_in">AVKeyValueStatusFailed</span>: &#123;</span><br><span class="line">            <span class="built_in">NSLog</span>(<span class="string">@"AVKeyValueStatusFailed"</span>);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">case</span> <span class="built_in">AVKeyValueStatusUnknown</span>: &#123;</span><br><span class="line">            <span class="built_in">NSLog</span>(<span class="string">@"AVKeyValueStatusUnknown"</span>);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">case</span> <span class="built_in">AVKeyValueStatusCancelled</span>: &#123;</span><br><span class="line">            <span class="built_in">NSLog</span>(<span class="string">@"AVKeyValueStatusCancelled"</span>);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
+
+<p>这里请求的参数可以是多个，但是当请求多个参数时，异步请求的回调只会调用一次，此时需要分别对各个属性调用 statusOfValueForKey 方法来判断是否加载完成。</p>
+<h2 id="3-媒体元数据"><a href="#3-媒体元数据" class="headerlink" title="3. 媒体元数据"></a>3. 媒体元数据</h2><h3 id="3-1-元数据格式"><a href="#3-1-元数据格式" class="headerlink" title="3.1 元数据格式"></a>3.1 元数据格式</h3><p>在 Apple 环境下，最常见四种媒体类型，分别是 QuickTime（mov）、MPEG-4 video（mp4 和 m4v）、MPEG-4 audio（m4a）和 MPEG-Layer III Audio（mp3）。</p>
+<p>QuickTime 是苹果公司开发的一种跨平台媒体架构，由一种称为 atoms 的数据结构组成，一个 atom 可以包含元数据，也可以包含其他 atom，但不能两者都包含。</p>
+<p>MPEG-4 Part 14 定义了 MP4 文件格式的规范，MP4 直接派生于 QuickTime 文件格式，结构类似。要注意，MP4 有多种文件拓展名。.mp4 是标准扩展名，.m4v 是带有苹果公司针对 FairPlay 加密及 AC3-audio 扩展的 MPEG-4 视频格式，而 .m4a 针对音频，m4p 针对较旧的 itunes 音频格式，m4b 针对有声读物。</p>
+<p>MP3 不是容器格式，使用编码音频数据，使用 ID3v2 格式保存元数据。由于专利限制，AVFoundation 只支持读取 MP3，不支持编码 MP3。</p>
+<h2 id="4-使用元数据"><a href="#4-使用元数据" class="headerlink" title="4. 使用元数据"></a>4. 使用元数据</h2><p>AVFoundation 使用键空间作为将相关键组合在一起的方法，可以实现对 AVMetaDataItem 实例集合的筛选。Common 键空间用于定义所有支持的媒体类型的键，包括曲名、歌手、插图信息等。开发者可以通过查询资源或曲目的 commonMetadata 属性从 common 键空间获取元数据，这个属性会返回一个包含所有可用元数据的数组。</p>
+<p>访问指定格式的元数据，需要对 AVAsset 对象调用 metadataForFormat 方法，此方法包含一个用于定义元数据格式的 NSString 对象并返回一个包含所有相关元数据信息的 NSArray。一个 AVAsset 所支持的资源格式可以通过 availableMetadataFormats 属性来获取。</p>
+<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line">[<span class="keyword">self</span>.targetAVAsset loadValuesAsynchronouslyForKeys:@[<span class="string">@"availableMetadataFormats"</span>] completionHandler:^&#123;</span><br><span class="line">    <span class="built_in">NSError</span> *error = <span class="literal">nil</span>;</span><br><span class="line">    <span class="built_in">AVKeyValueStatus</span> status = [<span class="keyword">self</span>.targetAVAsset statusOfValueForKey:<span class="string">@"availableMetadataFormats"</span> error:<span class="literal">nil</span>];</span><br><span class="line">    <span class="keyword">switch</span> (status) &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="built_in">AVKeyValueStatusLoaded</span>: &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="built_in">NSString</span> *format <span class="keyword">in</span> <span class="keyword">self</span>.targetAVAsset.availableMetadataFormats) &#123;</span><br><span class="line">                <span class="built_in">NSLog</span>(<span class="string">@"%@"</span>, format);</span><br><span class="line">                <span class="built_in">NSLog</span>(<span class="string">@"%@"</span>, [<span class="keyword">self</span>.targetAVAsset metadataForFormat:format]);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">case</span> <span class="built_in">AVKeyValueStatusFailed</span>: &#123;</span><br><span class="line">            <span class="built_in">NSLog</span>(<span class="string">@"AVKeyValueStatusFailed"</span>);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">case</span> <span class="built_in">AVKeyValueStatusUnknown</span>: &#123;</span><br><span class="line">            <span class="built_in">NSLog</span>(<span class="string">@"AVKeyValueStatusUnknown"</span>);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">case</span> <span class="built_in">AVKeyValueStatusCancelled</span>: &#123;</span><br><span class="line">            <span class="built_in">NSLog</span>(<span class="string">@"AVKeyValueStatusCancelled"</span>);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
+
+<p>示例输出如下</p>
+<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line">com.apple.quicktime.mdta</span><br><span class="line">(</span><br><span class="line"></span><br><span class="line">    <span class="string">"&lt;AVMetadataItem: 0x1c801f230, identifier=mdta/com.apple.quicktime.software, keySpace=mdta, key class = __NSCFString, key=com.apple.quicktime.software, commonKey=software, extendedLanguageTag=(null), dataType=com.apple.metadata.datatype.UTF-8, time=&#123;INVALID&#125;, duration=&#123;INVALID&#125;, startDate=(null), extras=&#123;\n    dataType = 1;\n    dataTypeNamespace = \"com.apple.quicktime.mdta\";\n&#125;, value class=__NSCFString, value=video.vue.ios.280&gt;"</span>,</span><br><span class="line"></span><br><span class="line">    <span class="string">"&lt;AVMetadataItem: 0x1c42004d0, identifier=mdta/com.apple.quicktime.description, keySpace=mdta, key class = __NSCFString, key=com.apple.quicktime.description, commonKey=description, extendedLanguageTag=(null), dataType=com.apple.metadata.datatype.UTF-8, time=&#123;INVALID&#125;, duration=&#123;INVALID&#125;, startDate=(null), extras=&#123;\n    dataType = 1;\n    dataTypeNamespace = \"com.apple.quicktime.mdta\";\n&#125;, value class=__NSCFString, value=ewogICJzc2Z3IiA6IFsKICAgICIiCiAgXSwKICAic2RldiIgOiBbCiAgICAiIgogIF0sCiAgInNjIiA6IDEsCiAgInNsb2MiIDogWwogICAgIiIKICBdLAogICJzdWIiIDogWwogICAgIiIKICBdLAogICJ0cnMiIDogWwogICAgMCwKICAgIDAKICBdLAogICJzZHVyIiA6IFsKICAgIDEwCiAgXSwKICAiY2FwIiA6ICIgIiwKICAiZiIgOiBbCiAgICAiMSIKICBdCn0=&gt;"</span></span><br><span class="line"></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<h2 id="5-实践"><a href="#5-实践" class="headerlink" title="5. 实践"></a>5. 实践</h2><h3 id="5-1-对-AVAsset-进行封装"><a href="#5-1-对-AVAsset-进行封装" class="headerlink" title="5.1 对 AVAsset 进行封装"></a>5.1 对 AVAsset 进行封装</h3><p>通过 url 我们可以实例化一个 AVAsset，也可以获取到其中一些有效的元数据信息</p>
+<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line">_url = url;</span><br><span class="line">_asset = [<span class="built_in">AVAsset</span> assetWithURL:url];</span><br><span class="line">_filename = [url lastPathComponent];</span><br><span class="line">_filetype = [<span class="keyword">self</span> fileTypeForURL:url];                              </span><br><span class="line">_editable = ![_filetype isEqualToString:<span class="built_in">AVFileTypeMPEGLayer3</span>];</span><br></pre></td></tr></table></figure>
+
+<p>lastPathComponent 从 URL （例如 “file:///Users/yasic/Library/Application%20Support/MetaManager/01%20Demo%20AAC.m4a”）的最后一个路径取出文件名，fileTypeForURL 具体实现如下</p>
+<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line">- (<span class="built_in">NSString</span> *)fileTypeForURL:(<span class="built_in">NSURL</span> *)url &#123;</span><br><span class="line">    <span class="built_in">NSString</span> *ext = [[<span class="keyword">self</span>.url lastPathComponent] pathExtension];</span><br><span class="line">    <span class="built_in">NSString</span> *type = <span class="literal">nil</span>;</span><br><span class="line">    <span class="keyword">if</span> ([ext isEqualToString:<span class="string">@"m4a"</span>]) &#123;</span><br><span class="line">        type = <span class="built_in">AVFileTypeAppleM4A</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> ([ext isEqualToString:<span class="string">@"m4v"</span>]) &#123;</span><br><span class="line">        type = <span class="built_in">AVFileTypeAppleM4V</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> ([ext isEqualToString:<span class="string">@"mov"</span>]) &#123;</span><br><span class="line">        type = <span class="built_in">AVFileTypeQuickTimeMovie</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> ([ext isEqualToString:<span class="string">@"mp4"</span>]) &#123;</span><br><span class="line">        type = <span class="built_in">AVFileTypeMPEG4</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        type = <span class="built_in">AVFileTypeMPEGLayer3</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> type;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-2-获取元数据"><a href="#5-2-获取元数据" class="headerlink" title="5.2 获取元数据"></a>5.2 获取元数据</h3><p>对于通用键空间，可以通过 commonMetadata 属性获取到元数据对应的 AVMetadataItem 对象。</p>
+<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line"><span class="built_in">NSArray</span> *keys = @[COMMON_META_KEY];</span><br><span class="line">[<span class="keyword">self</span>.asset loadValuesAsynchronouslyForKeys:keys completionHandler:^&#123;</span><br><span class="line">    <span class="built_in">AVKeyValueStatus</span> commonStatus =</span><br><span class="line">        [<span class="keyword">self</span>.asset statusOfValueForKey:COMMON_META_KEY error:<span class="literal">nil</span>];</span><br><span class="line">    <span class="keyword">self</span>.prepared = (commonStatus == <span class="built_in">AVKeyValueStatusLoaded</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.prepared) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="built_in">AVMetadataItem</span> *item <span class="keyword">in</span> <span class="keyword">self</span>.asset.commonMetadata) &#123;</span><br><span class="line">            <span class="comment">//NSLog(@"%@: %@", item.keyString, item.value);</span></span><br><span class="line">            [<span class="keyword">self</span>.metadata addMetadataItem:item withKey:item.commonKey];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
+
+<p>对于其他格式的元数据，先获取到可用格式的数组，然后分别进行元数据获取</p>
+<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line"><span class="built_in">NSArray</span> *keys = @[<span class="built_in">AVAILABLE_META_KEY</span>];</span><br><span class="line">[<span class="keyword">self</span>.asset loadValuesAsynchronouslyForKeys:keys completionHandler:^&#123;</span><br><span class="line">    <span class="built_in">AVKeyValueStatus</span> formatsStatus = [<span class="keyword">self</span>.asset statusOfValueForKey:<span class="built_in">AVAILABLE_META_KEY</span> error:<span class="literal">nil</span>];</span><br><span class="line">    <span class="keyword">self</span>.prepared = (formatsStatus == <span class="built_in">AVKeyValueStatusLoaded</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.prepared) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">id</span> format <span class="keyword">in</span> <span class="keyword">self</span>.asset.availableMetadataFormats) &#123;        <span class="comment">// 5</span></span><br><span class="line">            <span class="keyword">if</span> ([<span class="keyword">self</span>.acceptedFormats containsObject:format]) &#123;</span><br><span class="line">                <span class="built_in">NSArray</span> *items = [<span class="keyword">self</span>.asset metadataForFormat:format];</span><br><span class="line">                <span class="keyword">for</span> (<span class="built_in">AVMetadataItem</span> *item <span class="keyword">in</span> items) &#123;</span><br><span class="line">                    <span class="comment">//NSLog(@"%@: %@", item.keyString, item.value);</span></span><br><span class="line">                    [<span class="keyword">self</span>.metadata addMetadataItem:item</span><br><span class="line">                                           withKey:item.keyString];</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
+
+<p>获取到的元数据有些是可以直接阅读的，有些则不够语义化，需要进行不同方式的转化，包括 Artwork、注释、音轨数据、唱片数据、风格数据等类型的数据，这里不再赘述。</p>
+<h3 id="5-3-保存元数据"><a href="#5-3-保存元数据" class="headerlink" title="5.3 保存元数据"></a>5.3 保存元数据</h3><p>对于元数据的修改不能直接操作原 AVAsset，需要使用 AVAssetExportSession 导出一个新的资源副本来覆盖原本的资源对象。</p>
+<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line"><span class="built_in">NSString</span> *presetName = <span class="built_in">AVAssetExportPresetPassthrough</span>;</span><br><span class="line"><span class="built_in">AVAssetExportSession</span> *session =</span><br><span class="line">    [[<span class="built_in">AVAssetExportSession</span> alloc] initWithAsset:<span class="keyword">self</span>.asset</span><br><span class="line">                                     presetName:presetName];</span><br></pre></td></tr></table></figure>
+
+<p>AVAssetExportSession 的初始化需要一个待修改的 AVAsset 对象，以及一个预设值，AVAssetExportPresetPassthrough 预设值能够在不重新编码媒体的前提下实现写入元数据功能，但不能添加新的元数据。</p>
+<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line"><span class="built_in">NSURL</span> *outputURL = [<span class="keyword">self</span> tempURL];</span><br><span class="line">session.outputURL = outputURL;</span><br><span class="line">session.outputFileType = <span class="keyword">self</span>.filetype;</span><br><span class="line">session.metadata = [<span class="keyword">self</span>.metadata metadataItems];</span><br></pre></td></tr></table></figure>
+
+<p>指定导出副本的存储位置，配置到 session 上。</p>
+<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line">[session exportAsynchronouslyWithCompletionHandler:^&#123;</span><br><span class="line">    <span class="built_in">AVAssetExportSessionStatus</span> status = session.status;</span><br><span class="line">    <span class="built_in">BOOL</span> success = (status == <span class="built_in">AVAssetExportSessionStatusCompleted</span>);</span><br><span class="line">    <span class="keyword">if</span> (success) &#123;</span><br><span class="line">        <span class="built_in">NSURL</span> *sourceURL = <span class="keyword">self</span>.url;</span><br><span class="line">        <span class="built_in">NSFileManager</span> *manager = [<span class="built_in">NSFileManager</span> defaultManager];</span><br><span class="line">        [manager removeItemAtURL:sourceURL error:<span class="literal">nil</span>];</span><br><span class="line">        [manager moveItemAtURL:outputURL toURL:sourceURL error:<span class="literal">nil</span>];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
+
+<p>导出需要用到 exportAsynchronouslyWithCompletionHandler 方法，完成后对状态进行判断，获知导出是否成功，然后通过 NSFileManager 的 moveItemAtURL 方法来覆盖原始的媒体资源</p>
+]]></content>
       <categories>
         <category>AVFoundation</category>
       </categories>
@@ -2699,50 +2699,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Autolayout指南·AutoLayout 高级指南·使用ScrollView</title>
-    <url>/2018/01/22/AutoLayout/Autolayout%E6%8C%87%E5%8D%97%C2%B7AutoLayout%20%E9%AB%98%E7%BA%A7%E6%8C%87%E5%8D%97%C2%B7%E4%BD%BF%E7%94%A8ScrollView/</url>
-    <content><![CDATA[<h1 id="014-Autolayout指南·AutoLayout-高级指南"><a href="#014-Autolayout指南·AutoLayout-高级指南" class="headerlink" title="014-Autolayout指南·AutoLayout 高级指南"></a>014-Autolayout指南·AutoLayout 高级指南</h1><h2 id="使用-ScrollView"><a href="#使用-ScrollView" class="headerlink" title="使用 ScrollView"></a>使用 ScrollView</h2><p>当你使用 scrollView 时，需要定义 scrollView 的 frame 在父视图中的尺寸和位置，同时定义内容区域的尺寸。所有这些属性都可以用 AutoLayout 来设置。</p>
-<p>为了支持 scrollView，系统会根据约束定位的位置不同来解释约束。</p>
-<ul>
-<li>与其他视图一样，scrollView 和 scrollView 外的对象之间的任何约束都会被附加到滚动视图的框架</li>
-<li>对于 scrollView 及其内容之间的约束，展示行为会根据受约束的属性而变化<ul>
-<li>scrollView 与其内容区的边缘和间距的约束会被附加到 scrollView 的内容区域</li>
-<li>高度，宽度或坐标中心等约束会被附加到滚动视图的 frame 上</li>
-</ul>
-</li>
-<li>你也可以使用 scrollView 的内容区和 scrollView 外部对象之间的约束来为 scrollView 的内容区提供一个固定的位置，使得内容区看起来像是浮动在 scrollView 上</li>
-</ul>
-<p>对于大多数常见的布局方案来说，如果使用虚拟视图或布局分组来包含 scrollView 的内容，逻辑就会变得容易很多，在使用 Interface Builder 进行这些操作时，一般步骤如下所示</p>
-<ul>
-<li>将 scrollView 添加到 scene 里</li>
-<li>像平常一样拖曳约束来定义 scrollView 的尺寸和位置</li>
-<li>向 scrollView 添加一个 view。设置 view 的 Xcode 特定标签为内容视图</li>
-<li>将内容视图的顶部，底部，头部和尾部固定到滚动视图的相应边缘，内容视图就会被定义为 scrollView 的内容区域</li>
-</ul>
-<blockquote>
-<p>提醒：</p>
-<p>内容视图并没有一个固定的尺寸，它可以伸展和压缩来适应你放进去的任何 view 或 control</p>
-</blockquote>
-<ul>
-<li>（可选的）设置内容视图的宽度等于 scrollView 的宽度可以使内容视图在水平方向上填满 scrollView，从而禁止水平方向上的滚动</li>
-<li>（可选的）设置内容视图的高度等于 scrollView 的高度可以使内容视图在竖直方向上填满 scrollView，从而禁止竖直方向上的滚动</li>
-<li>将 scrollView 的内容放置在内容视图里，和平常一样使用约束来定位内容视图内的内容</li>
-</ul>
-<blockquote>
-<p>重要：</p>
-<p>你的布局必须完全定义内容视图的尺寸（步骤 5 和 步骤 6 定义的除外）。要根据内容的 intrinsic size 来设置高度，你必须保证约束链和视图链从内容视图的顶边到底边有不间断的延伸。 同样，要设置宽度，你必须保证约束链和视图链从内容视图的前导边缘到后边缘有一个不间断的延伸。</p>
-<p>如果你的内容没有固有内容尺寸，你必须为内容视图或内容设置一个适当的尺寸约束。</p>
-<p>当内容视图比 scrollView 高度要高时，scrollView 就能够在垂直方向上滑动。当内容视图比 scrollView 宽度要宽时，scrollView 就能够在水平方向上滑动。否则默认情况下 scrollView 是不能滑动的。</p>
-</blockquote>
-]]></content>
-      <categories>
-        <category>AutoLayout</category>
-      </categories>
-      <tags>
-        <tag>AutoLayout</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Autolayout指南·AutoLayout 高级指南·更改约束</title>
     <url>/2018/01/22/AutoLayout/Autolayout%E6%8C%87%E5%8D%97%C2%B7AutoLayout%20%E9%AB%98%E7%BA%A7%E6%8C%87%E5%8D%97%C2%B7%E6%9B%B4%E6%94%B9%E7%BA%A6%E6%9D%9F/</url>
     <content><![CDATA[<h1 id="016-Autolayout指南·AutoLayout-高级指南"><a href="#016-Autolayout指南·AutoLayout-高级指南" class="headerlink" title="016-Autolayout指南·AutoLayout 高级指南"></a>016-Autolayout指南·AutoLayout 高级指南</h1><h2 id="更改约束"><a href="#更改约束" class="headerlink" title="更改约束"></a>更改约束</h2><p>约束改变是指任何改变约束的基础数学表达式的元素（见下图）。你可以查阅 <a href="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/AnatomyofaConstraint.html#//apple_ref/doc/uid/TP40010853-CH9-SW1" target="_blank" rel="noopener">详解约束</a> 了解约束表达式更多内容。</p>
@@ -2791,6 +2747,50 @@
 <li>不要调用 <a href="https://developer.apple.com/documentation/uikit/uiview/1622601-setneedslayout" target="_blank" rel="noopener">setNeedsLayout</a>，否则会引起循环调用</li>
 <li>要小心地改变约束，否则可能会意外地使你的子视图树外的某些 view 的布局失效</li>
 </ul>
+]]></content>
+      <categories>
+        <category>AutoLayout</category>
+      </categories>
+      <tags>
+        <tag>AutoLayout</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Autolayout指南·AutoLayout 高级指南·使用ScrollView</title>
+    <url>/2018/01/22/AutoLayout/Autolayout%E6%8C%87%E5%8D%97%C2%B7AutoLayout%20%E9%AB%98%E7%BA%A7%E6%8C%87%E5%8D%97%C2%B7%E4%BD%BF%E7%94%A8ScrollView/</url>
+    <content><![CDATA[<h1 id="014-Autolayout指南·AutoLayout-高级指南"><a href="#014-Autolayout指南·AutoLayout-高级指南" class="headerlink" title="014-Autolayout指南·AutoLayout 高级指南"></a>014-Autolayout指南·AutoLayout 高级指南</h1><h2 id="使用-ScrollView"><a href="#使用-ScrollView" class="headerlink" title="使用 ScrollView"></a>使用 ScrollView</h2><p>当你使用 scrollView 时，需要定义 scrollView 的 frame 在父视图中的尺寸和位置，同时定义内容区域的尺寸。所有这些属性都可以用 AutoLayout 来设置。</p>
+<p>为了支持 scrollView，系统会根据约束定位的位置不同来解释约束。</p>
+<ul>
+<li>与其他视图一样，scrollView 和 scrollView 外的对象之间的任何约束都会被附加到滚动视图的框架</li>
+<li>对于 scrollView 及其内容之间的约束，展示行为会根据受约束的属性而变化<ul>
+<li>scrollView 与其内容区的边缘和间距的约束会被附加到 scrollView 的内容区域</li>
+<li>高度，宽度或坐标中心等约束会被附加到滚动视图的 frame 上</li>
+</ul>
+</li>
+<li>你也可以使用 scrollView 的内容区和 scrollView 外部对象之间的约束来为 scrollView 的内容区提供一个固定的位置，使得内容区看起来像是浮动在 scrollView 上</li>
+</ul>
+<p>对于大多数常见的布局方案来说，如果使用虚拟视图或布局分组来包含 scrollView 的内容，逻辑就会变得容易很多，在使用 Interface Builder 进行这些操作时，一般步骤如下所示</p>
+<ul>
+<li>将 scrollView 添加到 scene 里</li>
+<li>像平常一样拖曳约束来定义 scrollView 的尺寸和位置</li>
+<li>向 scrollView 添加一个 view。设置 view 的 Xcode 特定标签为内容视图</li>
+<li>将内容视图的顶部，底部，头部和尾部固定到滚动视图的相应边缘，内容视图就会被定义为 scrollView 的内容区域</li>
+</ul>
+<blockquote>
+<p>提醒：</p>
+<p>内容视图并没有一个固定的尺寸，它可以伸展和压缩来适应你放进去的任何 view 或 control</p>
+</blockquote>
+<ul>
+<li>（可选的）设置内容视图的宽度等于 scrollView 的宽度可以使内容视图在水平方向上填满 scrollView，从而禁止水平方向上的滚动</li>
+<li>（可选的）设置内容视图的高度等于 scrollView 的高度可以使内容视图在竖直方向上填满 scrollView，从而禁止竖直方向上的滚动</li>
+<li>将 scrollView 的内容放置在内容视图里，和平常一样使用约束来定位内容视图内的内容</li>
+</ul>
+<blockquote>
+<p>重要：</p>
+<p>你的布局必须完全定义内容视图的尺寸（步骤 5 和 步骤 6 定义的除外）。要根据内容的 intrinsic size 来设置高度，你必须保证约束链和视图链从内容视图的顶边到底边有不间断的延伸。 同样，要设置宽度，你必须保证约束链和视图链从内容视图的前导边缘到后边缘有一个不间断的延伸。</p>
+<p>如果你的内容没有固有内容尺寸，你必须为内容视图或内容设置一个适当的尺寸约束。</p>
+<p>当内容视图比 scrollView 高度要高时，scrollView 就能够在垂直方向上滑动。当内容视图比 scrollView 宽度要宽时，scrollView 就能够在水平方向上滑动。否则默认情况下 scrollView 是不能滑动的。</p>
+</blockquote>
 ]]></content>
       <categories>
         <category>AutoLayout</category>
