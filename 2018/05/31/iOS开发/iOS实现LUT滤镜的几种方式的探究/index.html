@@ -27,8 +27,8 @@
 <meta property="og:site_name" content="Yasic Yu">
 <meta property="og:description" content="在 app 内利用各种图形算法可以对图片进行一些变换，这样的效果也称为“滤镜”，滤镜效果大致可以分为以下几类：">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1000992-852f4c476db2f3c3.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/300">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1000992-c777bfc79da65659.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/300">
+<meta property="og:image" content="http://yoursite.com/images/1000992-852f4c476db2f3c3.jpg">
+<meta property="og:image" content="http://yoursite.com/images/1000992-c777bfc79da65659.jpg">
 <meta property="og:image" content="http://yoursite.com/images/1000992-fd3714627648e7e7.png">
 <meta property="og:image" content="http://yoursite.com/images/1000992-eac5e0a21b8b8746.png">
 <meta property="og:image" content="http://yoursite.com/images/1000992-5d77580d41cbe1cc.png">
@@ -38,19 +38,19 @@
 <meta property="og:image" content="http://yoursite.com/images/1000992-c9d57726bad5d5f0.png">
 <meta property="og:image" content="http://yoursite.com/images/1000992-2811944b586055db.jpeg">
 <meta property="og:image" content="http://yoursite.com/images/1000992-e04ccbd090519eb2.jpeg">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1000992-8b96799868a5e202?imageMogr2/auto-orient/strip%7CimageView2/2/w/300">
+<meta property="og:image" content="http://yoursite.com/images/1000992-8b96799868a5e202">
 <meta property="og:image" content="http://yoursite.com/images/1000992-e04ccbd090519eb2.jpeg">
 <meta property="og:image" content="http://yoursite.com/images/1000992-e04ccbd090519eb2.jpeg">
 <meta property="og:image" content="http://yoursite.com/images/1000992-a38326e5fc51fd4c.png">
 <meta property="article:published_time" content="2018-05-30T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-02-23T07:53:02.810Z">
+<meta property="article:modified_time" content="2020-02-23T09:34:08.769Z">
 <meta property="article:author" content="Yasic Yu">
 <meta property="article:tag" content="多媒体">
 <meta property="article:tag" content="滤镜">
 <meta property="article:tag" content="Metal">
 <meta property="article:tag" content="OpenGL">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://upload-images.jianshu.io/upload_images/1000992-852f4c476db2f3c3.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/300">
+<meta name="twitter:image" content="http://yoursite.com/images/1000992-852f4c476db2f3c3.jpg">
 
 <link rel="canonical" href="http://yoursite.com/2018/05/31/iOS%E5%BC%80%E5%8F%91/iOS%E5%AE%9E%E7%8E%B0LUT%E6%BB%A4%E9%95%9C%E7%9A%84%E5%87%A0%E7%A7%8D%E6%96%B9%E5%BC%8F%E7%9A%84%E6%8E%A2%E7%A9%B6/">
 
@@ -269,13 +269,11 @@
 <figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">LUT</span><span class="params">(R1)</span></span> = R2</span><br><span class="line"><span class="function"><span class="title">LUT</span><span class="params">(G1)</span></span> = G2</span><br><span class="line"><span class="function"><span class="title">LUT</span><span class="params">(B1)</span></span> = B2</span><br></pre></td></tr></table></figure>
 
 <p>其中 R1、G1、B1 为原像素值，R2、G2、B2 为映射像素值，可以看出 1DLUT 的映射颜色值的每一个分量仅与其原始像素值的分量有关，用图像表示如下</p>
-<img src="http://upload-images.jianshu.io/upload_images/1000992-852f4c476db2f3c3.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/300">
-
+<p><img src="/images/1000992-852f4c476db2f3c3.jpg" alt=""></p>
 <p>对于 3DLUT，假设其映射关系为 LUT3，则</p>
 <p>LUT(R1, G1, B1) = (R2, G2, B2)</p>
 <p>3DLUT 相比于 1DLUT 能够实现全立体的色彩空间控制，非常适合用于精确的颜色控制工作，它的示意图如下</p>
-<img src="http://upload-images.jianshu.io/upload_images/1000992-c777bfc79da65659.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/300">
-
+<p><img src="/images/1000992-c777bfc79da65659.jpg" alt=""></p>
 <p>可以简单做一个计算，如果 RGB 三个分量分别可以取 256 种值的话，那么 3DLUT 技术就可以包含 256X256X256 种情况，大约占 48MB 空间，这样一个 3DLUT 映射关系的数据量有些庞大，通常会采取采样方式来降低数据量，例如可以对每一个分量按照每 4 个变化值为间距，进行 64 次采样，获得一个 64X64X64 大小的映射关系表，对于不在表内的颜色值进行内插法获得其相似结果。</p>
 <p>那么获得了 LUT 映射表以后，如何对任意一张图片进行滤镜变换呢。我们可以遍历图片的像素点，对于每一个像素点，获得其 RGB 组合，在 LUT 表格中查找此 RGB 组合及其对应的 RGB 映射值，然后用 RGB 映射值替换原图的像素点，就可以完成滤镜变换了。</p>
 <h3 id="1-2-3DLUT-数据存储方式"><a href="#1-2-3DLUT-数据存储方式" class="headerlink" title="1.2 3DLUT 数据存储方式"></a>1.2 3DLUT 数据存储方式</h3><p>3DLUT 是一个三维颜色空间体，通过下面的方式可以将其数据压入一张二维图片中。这里以一张 64X64X64 数据量的 LUT 图为例，它的大小是 512X512</p>
@@ -355,8 +353,7 @@
 <li><a href="https://www.jianshu.com/nb/2135411" target="_blank" rel="noopener">OpenGLES 系列文章</a></li>
 </ul>
 <p>iOS 原生支持 OpenGL-ES，OpenGL-ES 利用图形渲染管线（Graphic Pipeline）将原始图像数据经过变换处理后展示到屏幕上，其具体的流程如下</p>
-<img src="http://upload-images.jianshu.io/upload_images/1000992-8b96799868a5e202?imageMogr2/auto-orient/strip%7CimageView2/2/w/300">
-
+<p><img src="/images/1000992-8b96799868a5e202" alt=""></p>
 <p>其中顶点着色器（VertexShader）和片段着色器（FragmentShader）是可编程部分，也是主要开发部分，它们就是用前面提到的 GLSL 语法实现的。简单来说，我们需要向 OpenGL-ES 输入一系列的顶点，它们标识了某一帧的边界，以及每一个顶点上的色值或者纹理坐标值（用于寻找对应的纹理贴图），OpenGL-ES 执行顶点着色器处理顶点数据，然后将顶点间划分成一个个片段，并行地进行片段着色，也就是执行片段着色器，最终形成完整的图形数据。</p>
 <p>OpenGL-ES 将图形数据定义为帧缓存（frameBuffer），它类似于一个指针，而真正保存像素值等具体色值的对象是渲染缓存（renderBuffer），帧缓存则保存并维护了渲染缓存的索引。通过 OpenGL-ES 绘制一帧到屏幕的流程如下</p>
 <ul>
@@ -443,13 +440,13 @@
       <div class="popular-posts-title"><a href="/2018/10/23/iOS开发/iOS中错误处理CYMK颜色空间的问题/" rel="bookmark">iOS中错误处理CYMK颜色空间的问题</a></div>
     </li>
     <li class="popular-posts-item">
-      <div class="popular-posts-title"><a href="/2018/02/28/iOS开发/修正UIImage的Orientation属性/" rel="bookmark">修正UIImage的Orientation属性</a></div>
-    </li>
-    <li class="popular-posts-item">
       <div class="popular-posts-title"><a href="/2018/03/19/iOS开发/二维码生成与检测/" rel="bookmark">二维码生成与检测</a></div>
     </li>
     <li class="popular-posts-item">
-      <div class="popular-posts-title"><a href="/2018/03/16/iOS开发/视频列表异步获取视频大小的优化方案/" rel="bookmark">视频列表异步获取视频大小的优化方案</a></div>
+      <div class="popular-posts-title"><a href="/2018/02/28/iOS开发/修正UIImage的Orientation属性/" rel="bookmark">修正UIImage的Orientation属性</a></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="/2017/11/07/iOS开发/对 GIF 的裁剪与展示/" rel="bookmark">对 GIF 的裁剪与展示</a></div>
     </li>
   </ul>
 
