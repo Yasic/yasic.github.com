@@ -28,19 +28,17 @@
 <meta property="og:description" content="之前探究过 iOS 上通过 CoreImage、OpenGLES 等技术实现 LUT 滤镜的对比 -- [iOS 针对 LUT 滤镜的实现对比](https:&#x2F;&#x2F;www.jianshu.com&#x2F;p&#x2F;f054464e1b40)，但是其实在图形处理这块，Apple 更推崇自家公司的 Metal，这是一个和 OpenGLES 类似的面向底层的图形编程接口，最早在 2014 年的 WWDC 的时候发布，可">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://developer.apple.com/library/archive/documentation/Miscellaneous/Conceptual/MetalProgrammingGuide/Art/Cmd-Model-1_2x.png">
-<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/1000992-8b96799868a5e202?imageMogr2/auto-orient/strip%7CimageView2/2/w/748/format/png">
-<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/1000992-2811944b586055db.jpeg?imageMogr2/auto-orient/strip%7CimageView2/2/w/300/format/png">
-<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/1000992-f4f2b4f9b2b2e681.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/300/format/png">
-<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/1000992-ceed2484542cebb4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/300">
-<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/1000992-ad53a1779a2fce71.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/300/format/png">
+<meta property="og:image" content="http://yoursite.com/images/1000992-8b96799868a5e202">
+<meta property="og:image" content="http://yoursite.com/images/1000992-2811944b586055db.jpeg">
+<meta property="og:image" content="http://yoursite.com/images/1000992-f4f2b4f9b2b2e681.png">
+<meta property="og:image" content="http://yoursite.com/images/1000992-ceed2484542cebb4.png">
+<meta property="og:image" content="http://yoursite.com/images/1000992-ad53a1779a2fce71.png">
 <meta property="article:published_time" content="2018-09-25T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-02-22T08:11:34.111Z">
+<meta property="article:modified_time" content="2020-02-23T07:52:19.879Z">
 <meta property="article:author" content="Yasic Yu">
-<meta property="article:tag" content="iOS">
-<meta property="article:tag" content=" ObjectiveC">
-<meta property="article:tag" content=" Swift">
-<meta property="article:tag" content=" XCode">
-<meta property="article:tag" content=" Computer">
+<meta property="article:tag" content="多媒体">
+<meta property="article:tag" content="滤镜">
+<meta property="article:tag" content="Metal">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://developer.apple.com/library/archive/documentation/Miscellaneous/Conceptual/MetalProgrammingGuide/Art/Cmd-Model-1_2x.png">
 
@@ -132,9 +130,14 @@
     <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类<span class="badge">4</span></a>
 
   </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签<span class="badge">11</span></a>
+
+  </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">46</span></a>
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">45</span></a>
 
   </li>
         <li class="menu-item menu-item-about">
@@ -253,7 +256,8 @@
 <li>预编译着色器。Metal 的着色器函数能与代码一同在编译器编译，并在运行时加载，这样的流程能提供更方便的着色器调试功能。</li>
 </ul>
 <p>Metal 的对象关系如图所示</p>
-<p><img src="https://developer.apple.com/library/archive/documentation/Miscellaneous/Conceptual/MetalProgrammingGuide/Art/Cmd-Model-1_2x.png" alt=""></p>
+<img src="https://developer.apple.com/library/archive/documentation/Miscellaneous/Conceptual/MetalProgrammingGuide/Art/Cmd-Model-1_2x.png">
+
 <p>其中连接 CPU 和 GPU 的就是命令队列 Command Queue，其上装载多个命令缓冲 Command Buffer，Command Buffer 里能承载 Metal 定义的多种图形、计算命令编码器，在编码器中就是开发者创建的实际的命令和资源，它们最终被传送到 GPU 中进行计算和渲染。</p>
 <p>接下来就用 Metal 实现一个图片 LUT 滤镜。</p>
 <h2 id="1-初始化"><a href="#1-初始化" class="headerlink" title="1. 初始化"></a>1. 初始化</h2><p>Metal 初始化工作主要将一些初始化开销大、能够复用的对象进行预先生成和持有.</p>
@@ -264,7 +268,7 @@
 <figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[<span class="keyword">self</span>.view addSubview:<span class="keyword">self</span>.mtlView];</span><br><span class="line">[<span class="keyword">self</span>.mtlView mas_makeConstraints:^(MASConstraintMaker *make) &#123;</span><br><span class="line">    make.left.top.equalTo(<span class="keyword">self</span>.view);</span><br><span class="line">    make.width.height.equalTo(<span class="keyword">self</span>.view);</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
 
 <p>Metal 的渲染流程与 OpenGLES 很类似，大致如下图所示</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/1000992-8b96799868a5e202?imageMogr2/auto-orient/strip%7CimageView2/2/w/748/format/png" alt=""></p>
+<p><img src="/images/1000992-8b96799868a5e202" alt=""></p>
 <p>因此同样的，需要传入顶点数据、顶点着色器和片段着色器</p>
 <p>顶点数据定义如下，每一行的前四个分量为顶点坐标，后两个分量为纹理坐标（归一化）。</p>
 <figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">float</span> vertexArrayData[] = &#123;</span><br><span class="line">    <span class="number">-1.0</span>, <span class="number">-1.0</span>, <span class="number">0.0</span>, <span class="number">1.0</span>, <span class="number">0</span>, <span class="number">1</span>,</span><br><span class="line">    <span class="number">-1.0</span>, <span class="number">1.0</span>, <span class="number">0.0</span>, <span class="number">1.0</span>, <span class="number">0</span>, <span class="number">0</span>,</span><br><span class="line">    <span class="number">1.0</span>, <span class="number">-1.0</span>, <span class="number">0.0</span>, <span class="number">1.0</span>, <span class="number">1</span>, <span class="number">1</span>,</span><br><span class="line">    <span class="number">-1.0</span>, <span class="number">1.0</span>, <span class="number">0.0</span>, <span class="number">1.0</span>, <span class="number">0</span>, <span class="number">0</span>,</span><br><span class="line">    <span class="number">1.0</span>, <span class="number">1.0</span>, <span class="number">0.0</span>, <span class="number">1.0</span>, <span class="number">1</span>, <span class="number">0</span>,</span><br><span class="line">    <span class="number">1.0</span>, <span class="number">-1.0</span>, <span class="number">0.0</span>, <span class="number">1.0</span>, <span class="number">1</span>, <span class="number">1</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
@@ -297,7 +301,7 @@
 </ul>
 <p>这个问题的表现现象是最终渲染出来的图片偏暗，即使是原图也会偏暗，StackOverflow 上有很多对这个 strange color 问题的回答，均提到将 MTKTextureLoader 的 MTKTextureLoaderOptionSRGB 选项设置为 NO，它默认为 YES。</p>
 <p>我的理解是，sRGB 实际上是一种对颜色的编码，其效果是增加暗色域的编码精度，降低亮色域的编码精度。那么针对 sRGB 编码的图片就需要进行一次 gamma 校正，以确保进行诸如 LUT 对照计算时能够严格按照线性 RGB 计算。但是实际上我传入的图片都是以 RGB 格式排列，因此不需要进行 gamma 校正，如果不设置关闭 sRGB 的校正，就会对线性 RGB 格式的数据进行校正，导致最终图片偏暗。这个问题在我做 CoreImage 的滤镜调研时也出现过，下面是效果图</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/1000992-2811944b586055db.jpeg?imageMogr2/auto-orient/strip%7CimageView2/2/w/300/format/png" alt=""></p>
+<p><img src="/images/1000992-2811944b586055db.jpeg" alt=""></p>
 <ul>
 <li>最终代码</li>
 </ul>
@@ -324,11 +328,11 @@
 <figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[commandEncoder endEncoding];</span><br><span class="line">[commandBuffer presentDrawable:drawable];</span><br><span class="line">[commandBuffer commit];</span><br></pre></td></tr></table></figure>
 
 <p>仍然选取如下原图做测试</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/1000992-f4f2b4f9b2b2e681.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/300/format/png" alt=""></p>
+<p><img src="/images/1000992-f4f2b4f9b2b2e681.png" alt=""></p>
 <p>选择如下 LUT 图</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/1000992-ceed2484542cebb4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/300" alt="lookup.png"></p>
+<p><img src="/images/1000992-ceed2484542cebb4.png" alt=""></p>
 <p>最终滤镜效果</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/1000992-ad53a1779a2fce71.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/300/format/png" alt=""></p>
+<p><img src="/images/1000992-ad53a1779a2fce71.png" alt=""></p>
 
     </div>
 
@@ -336,9 +340,32 @@
     
     
       
+  <div class="popular-posts-header">相关文章</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="/2018/05/31/iOS开发/iOS实现LUT滤镜的几种方式的探究/" rel="bookmark">iOS实现LUT滤镜的几种方式的探究</a></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="/2018/10/23/iOS开发/iOS中错误处理CYMK颜色空间的问题/" rel="bookmark">iOS中错误处理CYMK颜色空间的问题</a></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="/2018/02/28/iOS开发/修正UIImage的Orientation属性/" rel="bookmark">修正UIImage的Orientation属性</a></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="/2017/11/07/iOS开发/对 GIF 的裁剪与展示/" rel="bookmark">对 GIF 的裁剪与展示</a></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="/2018/03/19/iOS开发/二维码生成与检测/" rel="bookmark">二维码生成与检测</a></div>
+    </li>
+  </ul>
 
 
       <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%A4%9A%E5%AA%92%E4%BD%93/" rel="tag"># 多媒体</a>
+              <a href="/tags/%E6%BB%A4%E9%95%9C/" rel="tag"># 滤镜</a>
+              <a href="/tags/Metal/" rel="tag"># Metal</a>
+          </div>
 
         
 
@@ -428,7 +455,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">46</span>
+          <span class="site-state-item-count">45</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -437,6 +464,12 @@
           
         <span class="site-state-item-count">4</span>
         <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
 </div>

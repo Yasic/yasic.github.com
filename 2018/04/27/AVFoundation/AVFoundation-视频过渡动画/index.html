@@ -22,22 +22,18 @@
 
   <meta name="description" content="两个独立的视频拼接起来以后很有可能会出现衔接处过于生硬的问题，此时就需要给视频添加过渡效果，这一效果需要用到 AVVideoComposition 及其子类 AVMutableVideoComposition。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="视频过渡动画">
-<meta property="og:url" content="http://yoursite.com/2018/04/27/AVFoundation/%E8%A7%86%E9%A2%91%E8%BF%87%E6%B8%A1%E5%8A%A8%E7%94%BB/index.html">
+<meta property="og:title" content="AVFoundation-视频过渡动画">
+<meta property="og:url" content="http://yoursite.com/2018/04/27/AVFoundation/AVFoundation-%E8%A7%86%E9%A2%91%E8%BF%87%E6%B8%A1%E5%8A%A8%E7%94%BB/index.html">
 <meta property="og:site_name" content="Yasic Yu">
 <meta property="og:description" content="两个独立的视频拼接起来以后很有可能会出现衔接处过于生硬的问题，此时就需要给视频添加过渡效果，这一效果需要用到 AVVideoComposition 及其子类 AVMutableVideoComposition。">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2018-04-26T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-02-22T08:11:34.058Z">
+<meta property="article:modified_time" content="2020-02-23T07:49:17.527Z">
 <meta property="article:author" content="Yasic Yu">
-<meta property="article:tag" content="iOS">
-<meta property="article:tag" content=" ObjectiveC">
-<meta property="article:tag" content=" Swift">
-<meta property="article:tag" content=" XCode">
-<meta property="article:tag" content=" Computer">
+<meta property="article:tag" content="AVFoundation">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="http://yoursite.com/2018/04/27/AVFoundation/%E8%A7%86%E9%A2%91%E8%BF%87%E6%B8%A1%E5%8A%A8%E7%94%BB/">
+<link rel="canonical" href="http://yoursite.com/2018/04/27/AVFoundation/AVFoundation-%E8%A7%86%E9%A2%91%E8%BF%87%E6%B8%A1%E5%8A%A8%E7%94%BB/">
 
 
 <script id="page-configurations">
@@ -49,7 +45,7 @@
   };
 </script>
 
-  <title>视频过渡动画 | Yasic Yu</title>
+  <title>AVFoundation-视频过渡动画 | Yasic Yu</title>
   
 
 
@@ -125,9 +121,14 @@
     <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类<span class="badge">4</span></a>
 
   </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签<span class="badge">11</span></a>
+
+  </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">46</span></a>
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">45</span></a>
 
   </li>
         <li class="menu-item menu-item-about">
@@ -188,7 +189,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/04/27/AVFoundation/%E8%A7%86%E9%A2%91%E8%BF%87%E6%B8%A1%E5%8A%A8%E7%94%BB/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/04/27/AVFoundation/AVFoundation-%E8%A7%86%E9%A2%91%E8%BF%87%E6%B8%A1%E5%8A%A8%E7%94%BB/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -201,7 +202,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          视频过渡动画
+          AVFoundation-视频过渡动画
         </h1>
 
         <div class="post-meta">
@@ -342,9 +343,30 @@
     
     
       
+  <div class="popular-posts-header">相关文章</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="/2018/04/24/AVFoundation/AVFoundation-入门/" rel="bookmark">AVFoundation-入门</a></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="/2018/04/12/AVFoundation/AVFoundation-播放和录制音频/" rel="bookmark">AVFoundation-播放和录制音频</a></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="/2018/04/27/AVFoundation/AVFoundation-混合音频/" rel="bookmark">AVFoundation-混合音频</a></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="/2018/04/26/AVFoundation/AVFoundation-媒体的组合和编辑/" rel="bookmark">AVFoundation-媒体的组合和编辑</a></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="/2018/04/28/AVFoundation/AVFoundation-视频与动画图层/" rel="bookmark">AVFoundation-视频与动画图层</a></div>
+    </li>
+  </ul>
 
 
       <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/AVFoundation/" rel="tag"># AVFoundation</a>
+          </div>
 
         
 
@@ -352,12 +374,12 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2018/04/26/AVFoundation/AVFoundation%E8%B5%84%E6%BA%90%E5%92%8C%E5%85%83%E6%95%B0%E6%8D%AE/" rel="prev" title="AVFoundation资源和元数据">
-      <i class="fa fa-chevron-left"></i> AVFoundation资源和元数据
+    <a href="/2018/04/26/AVFoundation/AVFoundation-%E5%AA%92%E4%BD%93%E7%9A%84%E7%BB%84%E5%90%88%E5%92%8C%E7%BC%96%E8%BE%91/" rel="prev" title="AVFoundation-媒体的组合和编辑">
+      <i class="fa fa-chevron-left"></i> AVFoundation-媒体的组合和编辑
     </a></div>
       <div class="post-nav-item">
-    <a href="/2018/04/27/AVFoundation/%E6%B7%B7%E5%90%88%E9%9F%B3%E9%A2%91/" rel="next" title="混合音频">
-      混合音频 <i class="fa fa-chevron-right"></i>
+    <a href="/2018/04/27/AVFoundation/AVFoundation-%E6%B7%B7%E5%90%88%E9%9F%B3%E9%A2%91/" rel="next" title="AVFoundation-混合音频">
+      AVFoundation-混合音频 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -434,7 +456,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">46</span>
+          <span class="site-state-item-count">45</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -443,6 +465,12 @@
           
         <span class="site-state-item-count">4</span>
         <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
 </div>

@@ -20,24 +20,20 @@
     var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Pisces","version":"7.7.1","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":3,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="在编辑视频的过程中，时常有场景需要对视频增添更多个性化的内容，如字幕、水印或者表情等，此时需要对视频增加一个动画叠加层，在实现上来讲就需要结合 AVFoundation 和 CoreAnimation 一同使用。">
+  <meta name="description" content="在组合媒体的过程中，需要用到 AVComposition 类，其中对于音频轨道可以使用与视频轨道一样的不重叠组合方式，同时音频轨道也可以重叠在一个时间段内，实现一种混音的效果，同时还可以设置不同轨道的音量变化。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="视频与动画图层">
-<meta property="og:url" content="http://yoursite.com/2018/04/28/AVFoundation/%E8%A7%86%E9%A2%91%E4%B8%8E%E5%8A%A8%E7%94%BB%E5%9B%BE%E5%B1%82/index.html">
+<meta property="og:title" content="AVFoundation-混合音频">
+<meta property="og:url" content="http://yoursite.com/2018/04/27/AVFoundation/AVFoundation-%E6%B7%B7%E5%90%88%E9%9F%B3%E9%A2%91/index.html">
 <meta property="og:site_name" content="Yasic Yu">
-<meta property="og:description" content="在编辑视频的过程中，时常有场景需要对视频增添更多个性化的内容，如字幕、水印或者表情等，此时需要对视频增加一个动画叠加层，在实现上来讲就需要结合 AVFoundation 和 CoreAnimation 一同使用。">
+<meta property="og:description" content="在组合媒体的过程中，需要用到 AVComposition 类，其中对于音频轨道可以使用与视频轨道一样的不重叠组合方式，同时音频轨道也可以重叠在一个时间段内，实现一种混音的效果，同时还可以设置不同轨道的音量变化。">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2018-04-27T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-02-22T08:11:34.027Z">
+<meta property="article:published_time" content="2018-04-26T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-02-23T07:49:17.535Z">
 <meta property="article:author" content="Yasic Yu">
-<meta property="article:tag" content="iOS">
-<meta property="article:tag" content=" ObjectiveC">
-<meta property="article:tag" content=" Swift">
-<meta property="article:tag" content=" XCode">
-<meta property="article:tag" content=" Computer">
+<meta property="article:tag" content="AVFoundation">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="http://yoursite.com/2018/04/28/AVFoundation/%E8%A7%86%E9%A2%91%E4%B8%8E%E5%8A%A8%E7%94%BB%E5%9B%BE%E5%B1%82/">
+<link rel="canonical" href="http://yoursite.com/2018/04/27/AVFoundation/AVFoundation-%E6%B7%B7%E5%90%88%E9%9F%B3%E9%A2%91/">
 
 
 <script id="page-configurations">
@@ -49,7 +45,7 @@
   };
 </script>
 
-  <title>视频与动画图层 | Yasic Yu</title>
+  <title>AVFoundation-混合音频 | Yasic Yu</title>
   
 
 
@@ -125,9 +121,14 @@
     <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类<span class="badge">4</span></a>
 
   </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签<span class="badge">11</span></a>
+
+  </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">46</span></a>
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">45</span></a>
 
   </li>
         <li class="menu-item menu-item-about">
@@ -188,7 +189,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/04/28/AVFoundation/%E8%A7%86%E9%A2%91%E4%B8%8E%E5%8A%A8%E7%94%BB%E5%9B%BE%E5%B1%82/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/04/27/AVFoundation/AVFoundation-%E6%B7%B7%E5%90%88%E9%9F%B3%E9%A2%91/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -201,7 +202,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          视频与动画图层
+          AVFoundation-混合音频
         </h1>
 
         <div class="post-meta">
@@ -211,7 +212,7 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2018-04-28 00:00:00" itemprop="dateCreated datePublished" datetime="2018-04-28T00:00:00+08:00">2018-04-28</time>
+              <time title="创建时间：2018-04-27 00:00:00" itemprop="dateCreated datePublished" datetime="2018-04-27T00:00:00+08:00">2018-04-27</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -226,7 +227,7 @@
             </span>
 
           
-            <div class="post-description">在编辑视频的过程中，时常有场景需要对视频增添更多个性化的内容，如字幕、水印或者表情等，此时需要对视频增加一个动画叠加层，在实现上来讲就需要结合 AVFoundation 和 CoreAnimation 一同使用。</div>
+            <div class="post-description">在组合媒体的过程中，需要用到 AVComposition 类，其中对于音频轨道可以使用与视频轨道一样的不重叠组合方式，同时音频轨道也可以重叠在一个时间段内，实现一种混音的效果，同时还可以设置不同轨道的音量变化。</div>
 
         </div>
       </header>
@@ -237,41 +238,52 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>在编辑视频的过程中，时常有场景需要对视频增添更多个性化的内容，如字幕、水印或者表情等，此时需要对视频增加一个动画叠加层，在实现上来讲就需要结合 AVFoundation 和 CoreAnimation 一同使用。</p>
-<p>在 AVFoundation 中使用 CoreAnimation 和在 iOS 其他地方使用 CoreAnimation 一样，但是最大的差别在于时间模型。正常使用 CoreAnimation 的时候，时间模型取决于系统主机，但是视频动画有其自己的时间线，同时需要支持停止、暂停、回退或快进等效果，所以不能直接用系统主机的时间模型向一个视频中添加基于时间的动画。</p>
-<p>针对这一特性，AVFoundation 在两个场景下提供了两个工具实现此效果</p>
+        <p>在组合媒体的过程中，需要用到 AVComposition 类，其中对于音频轨道可以使用与视频轨道一样的不重叠组合方式，同时音频轨道也可以重叠在一个时间段内，实现一种混音的效果，同时还可以设置不同轨道的音量变化。</p>
+<h2 id="1-混音轨道"><a href="#1-混音轨道" class="headerlink" title="1. 混音轨道"></a>1. 混音轨道</h2><p>组合媒体时，分别生成了组合视频和音频的 AVMutableCompositionTrack 类，实现混音效果只需要在插入音频轨道时将时间轴直接覆盖即可。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">AVMutableCompositionTrack</span> *audioCompositionTrack = [composition addMutableTrackWithMediaType:<span class="built_in">AVMediaTypeAudio</span> preferredTrackID:kCMPersistentTrackID_Invalid];</span><br><span class="line"><span class="built_in">AVAssetTrack</span> *audioTracck = [[targetAsset tracksWithMediaType:<span class="built_in">AVMediaTypeAudio</span>] firstObject];</span><br><span class="line">[audioCompositionTrack insertTimeRange:<span class="built_in">CMTimeRangeMake</span>(kCMTimeZero, targetAsset.duration) ofTrack:audioTracck atTime:kCMTimeZero error:<span class="literal">nil</span>];</span><br></pre></td></tr></table></figure>
+
+<p>这样生成的 AVMutableComposition 的多个音频轨道会同时发声。</p>
+<h2 id="2-调节音量"><a href="#2-调节音量" class="headerlink" title="2. 调节音量"></a>2. 调节音量</h2><p>要调节某个音频轨道的音量，需要用到 AVMutableAudioMix 类，这个类接受 AVMutableAudioMixInputParameters 对象作为参数，AVMutableAudioMixInputParameters 则提供了两种方法来设置音量，对于具体音量的变化范围定义为 0.0 到 1.0 之间。</p>
 <ul>
-<li>需要在播放视频时加入 CoreAnimation，提供 AVSynchronizedLayer 类</li>
-<li>需要在导出视频时加入 CoreAnimation，提供 AVVideoCompositionCoreAnimationTool</li>
+<li>一段时间内变化音量 (void)setVolumeRampFromStartVolume:(float)startVolume toEndVolume:(float)endVolume timeRange:(CMTimeRange)timeRange;</li>
+<li>在某一时间点变化音量 - (void)setVolume:(float)volume atTime:(CMTime)time;</li>
 </ul>
-<p>不清楚为什么需要两个类实现同一个效果，这样做会导致在实现带有 CoreAnimation 的 layer 时，要保证 layer 的坐标与尺寸保持一致会非常麻烦。</p>
-<h2 id="1-AVSynchronizedLayer-与播放"><a href="#1-AVSynchronizedLayer-与播放" class="headerlink" title="1. AVSynchronizedLayer 与播放"></a>1. AVSynchronizedLayer 与播放</h2><p>首先实现一个简单的 CALayer 来展示一段字符串组成的字幕</p>
-<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">CGFloat</span> fontSize = <span class="number">32.0</span>f;</span><br><span class="line"><span class="built_in">UIFont</span> *font = [<span class="built_in">UIFont</span> fontWithName:<span class="string">@"GillSans-Bold"</span> size:fontSize];</span><br><span class="line"><span class="built_in">NSDictionary</span> *attrs = @&#123;<span class="built_in">NSFontAttributeName</span> : font, <span class="built_in">NSForegroundColorAttributeName</span> : (<span class="keyword">id</span>)[<span class="built_in">UIColor</span> whiteColor].CGColor&#125;;</span><br><span class="line"><span class="built_in">NSAttributedString</span> *string = [[<span class="built_in">NSAttributedString</span> alloc] initWithString:<span class="string">@"hello yasic"</span> attributes:attrs];</span><br><span class="line"><span class="built_in">CGSize</span> textSize = [<span class="string">@"hello yasic"</span> sizeWithAttributes:attrs];</span><br><span class="line"><span class="built_in">CATextLayer</span> *layer = [<span class="built_in">CATextLayer</span> layer];</span><br><span class="line">layer.opacity = <span class="number">0.0</span>;</span><br><span class="line">layer.string = string;</span><br><span class="line">layer.frame = <span class="built_in">CGRectMake</span>((SCREEN_WIDTH - textSize.width)/<span class="number">2.0</span>, (SCREEN_HEIGHT - textSize.height)/<span class="number">2.0</span>, textSize.width, textSize.height);</span><br><span class="line">layer.backgroundColor = [<span class="built_in">UIColor</span> clearColor].CGColor;</span><br></pre></td></tr></table></figure>
+<p>其具体使用如下</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSArray</span>&lt;<span class="built_in">AVAssetTrack</span> *&gt; *audioAssetTracks = [[composition <span class="keyword">copy</span>] tracksWithMediaType:<span class="built_in">AVMediaTypeAudio</span>]; <span class="comment">// 获取音轨组合</span></span><br><span class="line"><span class="built_in">AVMutableAudioMix</span> *audioMix = [<span class="built_in">AVMutableAudioMix</span> audioMix];</span><br><span class="line"><span class="built_in">NSMutableArray</span>&lt;<span class="built_in">AVMutableAudioMixInputParameters</span> *&gt; *params = [<span class="built_in">NSMutableArray</span> array];</span><br><span class="line">__block <span class="built_in">CMTime</span> cursor = kCMTimeZero;</span><br><span class="line">[audioAssetTracks enumerateObjectsUsingBlock:^(<span class="built_in">AVAssetTrack</span> * _Nonnull obj, <span class="built_in">NSUInteger</span> idx, <span class="built_in">BOOL</span> * _Nonnull stop) &#123; <span class="comment">// 遍历音轨</span></span><br><span class="line">    <span class="built_in">AVMutableAudioMixInputParameters</span>  *parameters = [<span class="built_in">AVMutableAudioMixInputParameters</span> audioMixInputParametersWithTrack:obj]; <span class="comment">// 生成某一音轨的 AVMutableAudioMixInputParameters 对象</span></span><br><span class="line">    [parameters setVolumeRampFromStartVolume:begin toEndVolume:end timeRange:<span class="built_in">CMTimeRangeMake</span>(cursor, obj.timeRange.duration)]; <span class="comment">// 设置音量</span></span><br><span class="line">    begin = begin + end;</span><br><span class="line">    end = begin - end;</span><br><span class="line">    begin = begin - end;</span><br><span class="line">    cursor = <span class="built_in">CMTimeAdd</span>(cursor, obj.timeRange.duration);</span><br><span class="line">    [params addObject:parameters]; <span class="comment">// 加入到参数组合中</span></span><br><span class="line">&#125;];</span><br><span class="line">audioMix.inputParameters = params;<span class="comment">// 设置 audioMix 的参数组合</span></span><br></pre></td></tr></table></figure>
 
-<p>然后对这个 layer 加上 CoreAnimation</p>
-<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">CAKeyframeAnimation</span> *animation = [<span class="built_in">CAKeyframeAnimation</span> animationWithKeyPath:<span class="string">@"opacity"</span>];</span><br><span class="line">animation.values = @[@<span class="number">0.0</span>f, @<span class="number">1.0</span>f, @<span class="number">1.0</span>f, @<span class="number">0.0</span>f];</span><br><span class="line">animation.keyTimes = @[@<span class="number">0.0</span>f, @<span class="number">0.3</span>f, @<span class="number">0.7</span>f, @<span class="number">1.0</span>f];</span><br><span class="line">animation.beginTime = <span class="built_in">CMTimeGetSeconds</span>(<span class="built_in">CMTimeMake</span>(<span class="number">1</span>, <span class="number">1</span>));</span><br><span class="line">animation.duration = <span class="number">5.0</span>f;</span><br><span class="line">animation.removedOnCompletion = <span class="literal">NO</span>;</span><br><span class="line">[layer addAnimation:animation forKey:<span class="string">@"opacity"</span>];</span><br></pre></td></tr></table></figure>
-
-<p>这里一定要设置起始时间，如果要表示影片片头，不能用 0.0 来赋值 beginTime，因为 CoreAnimation 会将 0.0 的 beginTime 转为 CACurrentMediaTime()，所以要用 AVCoreAnimationBeginTimeAtZero 来代替。</p>
-<p>另外，需要注意要将 CoreAnimation 的 removedOnCompletion 属性设置为 NO，否则在播放过程中动画执行一次后就从图层树上移除了，之后就不会出现动画了。</p>
-<p>CoreAnimation 提供了 CAAnimationGroup 来组合多个动画，但是书中建议在视频动画中避免使用 CAAnimationGroup。</p>
-<p>最终将这个 layer 加入到 AVSynchronizedLayer 上</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">AVSynchronizedLayer *syncLayer &#x3D; [AVSynchronizedLayer synchronizedLayerWithPlayerItem:self.avPlayerItem];</span><br><span class="line">[syncLayer addSublayer:[self makeTextLayer]];</span><br><span class="line">syncLayer.frame &#x3D; CGRectMake(0, 0, 1280, 720);</span><br><span class="line">[self.layer addSublayer:syncLayer];</span><br></pre></td></tr></table></figure>
-
-<p>可以看到 AVSynchronizedLayer 是与 AVPlayerItem 绑定的，这样就能实现时间同步了。</p>
-<h2 id="2-AVVideoCompositionCoreAnimationTool-与导出"><a href="#2-AVVideoCompositionCoreAnimationTool-与导出" class="headerlink" title="2. AVVideoCompositionCoreAnimationTool 与导出"></a>2. AVVideoCompositionCoreAnimationTool 与导出</h2><p>导出时也需要创建 CALayer</p>
-<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">CALayer</span> *animationLayer = [<span class="built_in">CALayer</span> layer];</span><br><span class="line">animationLayer.frame = <span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="number">1280.</span>f, <span class="number">720.</span>f);</span><br><span class="line"><span class="built_in">CALayer</span> *videoLayer = [<span class="built_in">CALayer</span> layer];</span><br><span class="line">videoLayer.frame = <span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="number">1280.</span>f, <span class="number">720.</span>f);                            </span><br><span class="line">[animationLayer addSublayer:videoLayer];</span><br><span class="line">[animationLayer addSublayer:[<span class="keyword">self</span> makeTextLayer]];</span><br><span class="line">animationLayer.geometryFlipped = <span class="literal">YES</span>; <span class="comment">// 避免错位现象</span></span><br><span class="line"><span class="built_in">AVVideoCompositionCoreAnimationTool</span> *animationTool = [<span class="built_in">AVVideoCompositionCoreAnimationTool</span> videoCompositionCoreAnimationToolWithPostProcessingAsVideoLayer:videoLayer inLayer:animationLayer];</span><br></pre></td></tr></table></figure>
-
-<p>得到 animationTool 后将其绑定到 AVMutableVideoComposition 上，即可用于导出了。</p>
-<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">AVMutableVideoComposition</span> *finalVideocomposition = [videoComposition <span class="keyword">copy</span>];</span><br><span class="line">finalVideocomposition.animationTool = animationTool;</span><br></pre></td></tr></table></figure>
+<p>得到 audioMix 后，可以将其赋值给 AVPlayerItem 用于播放，也可以赋值给 AVAssetExportSession 用于导出完整的媒体资源，还可以赋值给 AVAssetReaderAudioMixOutput。</p>
+<p>要注意的是，对于同一音轨，设置音频轨道的时间区间不能出现重叠，否则会抛出运行时异常</p>
+<figure class="highlight vbnet"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Terminating app due <span class="keyword">to</span> uncaught exception <span class="comment">'NSInvalidArgumentException', reason: 'The timeRange of a volume ramp must not overlap the timeRange of an existing volume ramp.'</span></span><br></pre></td></tr></table></figure>
     </div>
 
     
     
     
       
+  <div class="popular-posts-header">相关文章</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="/2018/04/24/AVFoundation/AVFoundation-入门/" rel="bookmark">AVFoundation-入门</a></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="/2018/04/12/AVFoundation/AVFoundation-播放和录制音频/" rel="bookmark">AVFoundation-播放和录制音频</a></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="/2018/04/26/AVFoundation/AVFoundation-媒体的组合和编辑/" rel="bookmark">AVFoundation-媒体的组合和编辑</a></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="/2018/04/28/AVFoundation/AVFoundation-视频与动画图层/" rel="bookmark">AVFoundation-视频与动画图层</a></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="/2018/04/27/AVFoundation/AVFoundation-视频过渡动画/" rel="bookmark">AVFoundation-视频过渡动画</a></div>
+    </li>
+  </ul>
 
 
       <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/AVFoundation/" rel="tag"># AVFoundation</a>
+          </div>
 
         
 
@@ -279,12 +291,12 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2018/04/27/AVFoundation/%E6%B7%B7%E5%90%88%E9%9F%B3%E9%A2%91/" rel="prev" title="混合音频">
-      <i class="fa fa-chevron-left"></i> 混合音频
+    <a href="/2018/04/27/AVFoundation/AVFoundation-%E8%A7%86%E9%A2%91%E8%BF%87%E6%B8%A1%E5%8A%A8%E7%94%BB/" rel="prev" title="AVFoundation-视频过渡动画">
+      <i class="fa fa-chevron-left"></i> AVFoundation-视频过渡动画
     </a></div>
       <div class="post-nav-item">
-    <a href="/2018/05/31/iOS%E5%BC%80%E5%8F%91/iOS%E5%AE%9E%E7%8E%B0LUT%E6%BB%A4%E9%95%9C%E7%9A%84%E5%87%A0%E7%A7%8D%E6%96%B9%E5%BC%8F%E7%9A%84%E6%8E%A2%E7%A9%B6/" rel="next" title="iOS实现LUT滤镜的几种方式的探究">
-      iOS实现LUT滤镜的几种方式的探究 <i class="fa fa-chevron-right"></i>
+    <a href="/2018/04/28/AVFoundation/AVFoundation-%E8%A7%86%E9%A2%91%E4%B8%8E%E5%8A%A8%E7%94%BB%E5%9B%BE%E5%B1%82/" rel="next" title="AVFoundation-视频与动画图层">
+      AVFoundation-视频与动画图层 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -345,7 +357,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-AVSynchronizedLayer-与播放"><span class="nav-text">1. AVSynchronizedLayer 与播放</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-AVVideoCompositionCoreAnimationTool-与导出"><span class="nav-text">2. AVVideoCompositionCoreAnimationTool 与导出</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-混音轨道"><span class="nav-text">1. 混音轨道</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-调节音量"><span class="nav-text">2. 调节音量</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -361,7 +373,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">46</span>
+          <span class="site-state-item-count">45</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -370,6 +382,12 @@
           
         <span class="site-state-item-count">4</span>
         <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
 </div>
