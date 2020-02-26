@@ -2667,6 +2667,35 @@
       </tags>
   </entry>
   <entry>
+    <title>Autolayout指南·AutoLayout 高级指南·使用自适应高度TableViewCell</title>
+    <url>/2018/01/22/AutoLayout/Autolayout%E6%8C%87%E5%8D%97%C2%B7AutoLayout%20%E9%AB%98%E7%BA%A7%E6%8C%87%E5%8D%97%C2%B7%E4%BD%BF%E7%94%A8%E8%87%AA%E9%80%82%E5%BA%94%E9%AB%98%E5%BA%A6TableViewCell/</url>
+    <content><![CDATA[<h1 id="015-Autolayout指南·AutoLayout-高级指南"><a href="#015-Autolayout指南·AutoLayout-高级指南" class="headerlink" title="015-Autolayout指南·AutoLayout 高级指南"></a>015-Autolayout指南·AutoLayout 高级指南</h1><h2 id="使用自适应高度-TableViewCell"><a href="#使用自适应高度-TableViewCell" class="headerlink" title="使用自适应高度 TableViewCell"></a>使用自适应高度 TableViewCell</h2><p>在 iOS 中你可以使用 AutoLayout 来定义一个 TableViewCell 的高度，但是这一特性默认是没有打开的。</p>
+<p>一般来说，一个 cell 的高度是由 tableview 的代理对象的  tableView:heightForRowAtIndexPath: 来决定的。为了实现自适应高度的 TableViewCell，你必须设置 tableview 的 rowHeight 属性为 UITableViewAutomaticDimension，并为 tableview 的 estimatedRowHeight 属性设置一个值。一旦这两个属性都被设置了，系统就会使用 AutoLayout 来计算实际行高。</p>
+<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line">tableView.estimatedRowHeight = <span class="number">85.0</span></span><br><span class="line">tableView.rowHeight = <span class="built_in">UITableViewAutomaticDimension</span></span><br></pre></td></tr></table></figure>
+
+<p>接下来，将 tableviewcell 的内容放置在 cell 的内容视图中。为了定义 cell 的高度，你需要保证约束链和视图链从内容视图的顶边到底边有不间断的延伸，最终撑起内容区高度。如果你的 view 有固有内容高度，系统会使用这些高度，如果没有，你就必须显式得为视图或视图内的内容添加适合的高度约束。</p>
+<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/Chain_of_Views_and_Constraints_2x.png" width=500>
+
+<p>此外，你要尝试使预估高度尽量精确。系统会根据这些预估高度计算一些值，例如滚动条高度。越精确的预估高度越能实现无缝的用户体验。</p>
+<blockquote>
+<p>注意：</p>
+<p>使用 tableviewcell 时，不能更改预定义内容的布局（例如，textLabel，detailTextLabel 和 imageView 的属性）。</p>
+<p>下面这些约束都是支持的：</p>
+<ul>
+<li>定位子视图相对于内容视图的约束</li>
+<li>定位子视图相对于 cell 的边缘的约束</li>
+<li>定位子视图相对于预定义内容视图的约束</li>
+</ul>
+</blockquote>
+]]></content>
+      <categories>
+        <category>AutoLayout</category>
+      </categories>
+      <tags>
+        <tag>AutoLayout</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Autolayout指南·AutoLayout 高级指南·使用ScrollView</title>
     <url>/2018/01/22/AutoLayout/Autolayout%E6%8C%87%E5%8D%97%C2%B7AutoLayout%20%E9%AB%98%E7%BA%A7%E6%8C%87%E5%8D%97%C2%B7%E4%BD%BF%E7%94%A8ScrollView/</url>
     <content><![CDATA[<h1 id="014-Autolayout指南·AutoLayout-高级指南"><a href="#014-Autolayout指南·AutoLayout-高级指南" class="headerlink" title="014-Autolayout指南·AutoLayout 高级指南"></a>014-Autolayout指南·AutoLayout 高级指南</h1><h2 id="使用-ScrollView"><a href="#使用-ScrollView" class="headerlink" title="使用 ScrollView"></a>使用 ScrollView</h2><p>当你使用 scrollView 时，需要定义 scrollView 的 frame 在父视图中的尺寸和位置，同时定义内容区域的尺寸。所有这些属性都可以用 AutoLayout 来设置。</p>
@@ -2701,35 +2730,6 @@
 <p>你的布局必须完全定义内容视图的尺寸（步骤 5 和 步骤 6 定义的除外）。要根据内容的 intrinsic size 来设置高度，你必须保证约束链和视图链从内容视图的顶边到底边有不间断的延伸。 同样，要设置宽度，你必须保证约束链和视图链从内容视图的前导边缘到后边缘有一个不间断的延伸。</p>
 <p>如果你的内容没有固有内容尺寸，你必须为内容视图或内容设置一个适当的尺寸约束。</p>
 <p>当内容视图比 scrollView 高度要高时，scrollView 就能够在垂直方向上滑动。当内容视图比 scrollView 宽度要宽时，scrollView 就能够在水平方向上滑动。否则默认情况下 scrollView 是不能滑动的。</p>
-</blockquote>
-]]></content>
-      <categories>
-        <category>AutoLayout</category>
-      </categories>
-      <tags>
-        <tag>AutoLayout</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Autolayout指南·AutoLayout 高级指南·使用自适应高度TableViewCell</title>
-    <url>/2018/01/22/AutoLayout/Autolayout%E6%8C%87%E5%8D%97%C2%B7AutoLayout%20%E9%AB%98%E7%BA%A7%E6%8C%87%E5%8D%97%C2%B7%E4%BD%BF%E7%94%A8%E8%87%AA%E9%80%82%E5%BA%94%E9%AB%98%E5%BA%A6TableViewCell/</url>
-    <content><![CDATA[<h1 id="015-Autolayout指南·AutoLayout-高级指南"><a href="#015-Autolayout指南·AutoLayout-高级指南" class="headerlink" title="015-Autolayout指南·AutoLayout 高级指南"></a>015-Autolayout指南·AutoLayout 高级指南</h1><h2 id="使用自适应高度-TableViewCell"><a href="#使用自适应高度-TableViewCell" class="headerlink" title="使用自适应高度 TableViewCell"></a>使用自适应高度 TableViewCell</h2><p>在 iOS 中你可以使用 AutoLayout 来定义一个 TableViewCell 的高度，但是这一特性默认是没有打开的。</p>
-<p>一般来说，一个 cell 的高度是由 tableview 的代理对象的  tableView:heightForRowAtIndexPath: 来决定的。为了实现自适应高度的 TableViewCell，你必须设置 tableview 的 rowHeight 属性为 UITableViewAutomaticDimension，并为 tableview 的 estimatedRowHeight 属性设置一个值。一旦这两个属性都被设置了，系统就会使用 AutoLayout 来计算实际行高。</p>
-<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line">tableView.estimatedRowHeight = <span class="number">85.0</span></span><br><span class="line">tableView.rowHeight = <span class="built_in">UITableViewAutomaticDimension</span></span><br></pre></td></tr></table></figure>
-
-<p>接下来，将 tableviewcell 的内容放置在 cell 的内容视图中。为了定义 cell 的高度，你需要保证约束链和视图链从内容视图的顶边到底边有不间断的延伸，最终撑起内容区高度。如果你的 view 有固有内容高度，系统会使用这些高度，如果没有，你就必须显式得为视图或视图内的内容添加适合的高度约束。</p>
-<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/Chain_of_Views_and_Constraints_2x.png" width=500>
-
-<p>此外，你要尝试使预估高度尽量精确。系统会根据这些预估高度计算一些值，例如滚动条高度。越精确的预估高度越能实现无缝的用户体验。</p>
-<blockquote>
-<p>注意：</p>
-<p>使用 tableviewcell 时，不能更改预定义内容的布局（例如，textLabel，detailTextLabel 和 imageView 的属性）。</p>
-<p>下面这些约束都是支持的：</p>
-<ul>
-<li>定位子视图相对于内容视图的约束</li>
-<li>定位子视图相对于 cell 的边缘的约束</li>
-<li>定位子视图相对于预定义内容视图的约束</li>
-</ul>
 </blockquote>
 ]]></content>
       <categories>
@@ -3135,6 +3135,44 @@
 <p>例如，将你的容错点的优先级设置为 999，在大多无情况下这样的高优先级和必需优先级并没有什么区别。然而一旦冲突出现，高优先级约束就会被打破，从而保护剩余的布局。</p>
 <p>类似的，避免给一个有 intrinsic content size 的 view 设置必需的 content-hugging 或 compression-resistance 优先级。一般而言，控制器的尺寸就是一个理想的容错点，控制器可以变得稍微大一些或者小一些，同时对布局不会造成过于显著的影响。</p>
 <p>的确，有些控制器只能按照其 intrinsic content size 大小来展示，然而即使是这样的情况，使控制器有几 pt 的错误也比使布局按照无法预测的方式破损的效果要好很多。</p>
+]]></content>
+      <categories>
+        <category>AutoLayout</category>
+      </categories>
+      <tags>
+        <tag>AutoLayout</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>AutoLayout指南·概述·AutoLayout Without Constraints</title>
+    <url>/2017/12/26/AutoLayout/AutoLayout%E6%8C%87%E5%8D%97%C2%B7%E6%A6%82%E8%BF%B0%C2%B7AutoLayout%20Without%20Constraints/</url>
+    <content><![CDATA[<h1 id="AutoLayout指南·概述"><a href="#AutoLayout指南·概述" class="headerlink" title="AutoLayout指南·概述"></a>AutoLayout指南·概述</h1><h2 id="AutoLayout-Without-Constraints"><a href="#AutoLayout-Without-Constraints" class="headerlink" title="AutoLayout Without Constraints"></a>AutoLayout Without Constraints</h2><p>Stack View 提供了一种简单的方式，可以不引入复杂的约束就能运用 AutoLayout 的特性构建用用户界面。一个 StackView 可以定义一行或者一列的用户界面元素。StackView 运用以下属性来调整这些元素。</p>
+<ul>
+<li>axis(UIStackView Only)：定义 StackView 的轴向是垂直还是水平</li>
+<li>orientation(NSStackView only)：定义 StackView 的轴向是垂直还是水平</li>
+<li>distribution：定义子 view 沿轴向的排布方式</li>
+<li>alignment：设定如何沿轴线垂直方向排布子视图</li>
+<li>spacing：设定子视图间距</li>
+</ul>
+<p>可以在 Interface Builder 中拖一个垂直或者水平的 StackView 到画布上来使用一个 StackView，然后拖出其他内容放到 Stack 中。</p>
+<p>如果一个对象自身有固有内容尺寸(intrinsic content size)，则放置到 StackView 中后仍然会保持这一尺寸。如果对象本身没有 intrinsic content size，IB 将会提供一个默认尺寸给它。你可以重新调整对象的尺寸，IB 也会添加约束来维护视图的尺寸。</p>
+<p>要进一步调整这个布局，也可以用属性检查器修改 StackView 的属性。比如下面的例子设置了 StackView 的间距为 8，distribution 为 Fills Equallly(默认使用Fill模式，自视图各自按照各自尺寸显示，Fill Equally模式的意思是让所有自视图尺寸大小相等)。</p>
+<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/IB_StackView_Simple_2x.png" width=500>
+
+<p>StackView 也会基于子视图的抗拉伸属性和抗压缩属性来设置布局，你可以用尺寸检查器来修改这些属性。</p>
+<blockquote>
+<p>注意：</p>
+<p>你可以直接通过添加约束的方式来调整子视图的布局，但是要避免任何可能的约束冲突：一般来说，如果一个视图的尺寸默认返回其 Intrinsic Content Size 值，就可以安全给这一维度添加约束。更多关于约束冲突的信息查看 <a href="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/ConflictingLayouts.html#//apple_ref/doc/uid/TP40010853-CH19-SW1" target="_blank" rel="noopener">不安全的布局</a></p>
+</blockquote>
+<p>此外，你也可以嵌套 StackView 到其他 StackView 中，构建更加复杂的布局。</p>
+<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/IB_StackView_NestedStacks_2x.png" width=500>
+
+<p>总而言之，应当尽可能用 StackView 去设置你的布局，只有 StackView 无法达到你想到的效果时才应该借助创建约束的方式去实现。</p>
+<p>更多关于使用 StackView 的信息查看 <a href="https://developer.apple.com/documentation/uikit/uistackview" target="_blank" rel="noopener">UIStackView Class Reference</a> 或 <a href="https://developer.apple.com/documentation/appkit/nsstackview" target="_blank" rel="noopener">NSStackView Class Reference</a></p>
+<blockquote>
+<p>注意：</p>
+<p>尽管嵌套 StackView 的使用可以创建更复杂的用户界面，你也不能完全避免使用约束。至少你仍然会需要用约束来布局最外层 StackView 的位置或者尺寸大小。</p>
+</blockquote>
 ]]></content>
       <categories>
         <category>AutoLayout</category>
@@ -3647,44 +3685,6 @@
       </tags>
   </entry>
   <entry>
-    <title>AutoLayout指南·概述·AutoLayout Without Constraints</title>
-    <url>/2017/12/26/AutoLayout/AutoLayout%E6%8C%87%E5%8D%97%C2%B7%E6%A6%82%E8%BF%B0%C2%B7AutoLayout%20Without%20Constraints/</url>
-    <content><![CDATA[<h1 id="AutoLayout指南·概述"><a href="#AutoLayout指南·概述" class="headerlink" title="AutoLayout指南·概述"></a>AutoLayout指南·概述</h1><h2 id="AutoLayout-Without-Constraints"><a href="#AutoLayout-Without-Constraints" class="headerlink" title="AutoLayout Without Constraints"></a>AutoLayout Without Constraints</h2><p>Stack View 提供了一种简单的方式，可以不引入复杂的约束就能运用 AutoLayout 的特性构建用用户界面。一个 StackView 可以定义一行或者一列的用户界面元素。StackView 运用以下属性来调整这些元素。</p>
-<ul>
-<li>axis(UIStackView Only)：定义 StackView 的轴向是垂直还是水平</li>
-<li>orientation(NSStackView only)：定义 StackView 的轴向是垂直还是水平</li>
-<li>distribution：定义子 view 沿轴向的排布方式</li>
-<li>alignment：设定如何沿轴线垂直方向排布子视图</li>
-<li>spacing：设定子视图间距</li>
-</ul>
-<p>可以在 Interface Builder 中拖一个垂直或者水平的 StackView 到画布上来使用一个 StackView，然后拖出其他内容放到 Stack 中。</p>
-<p>如果一个对象自身有固有内容尺寸(intrinsic content size)，则放置到 StackView 中后仍然会保持这一尺寸。如果对象本身没有 intrinsic content size，IB 将会提供一个默认尺寸给它。你可以重新调整对象的尺寸，IB 也会添加约束来维护视图的尺寸。</p>
-<p>要进一步调整这个布局，也可以用属性检查器修改 StackView 的属性。比如下面的例子设置了 StackView 的间距为 8，distribution 为 Fills Equallly(默认使用Fill模式，自视图各自按照各自尺寸显示，Fill Equally模式的意思是让所有自视图尺寸大小相等)。</p>
-<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/IB_StackView_Simple_2x.png" width=500>
-
-<p>StackView 也会基于子视图的抗拉伸属性和抗压缩属性来设置布局，你可以用尺寸检查器来修改这些属性。</p>
-<blockquote>
-<p>注意：</p>
-<p>你可以直接通过添加约束的方式来调整子视图的布局，但是要避免任何可能的约束冲突：一般来说，如果一个视图的尺寸默认返回其 Intrinsic Content Size 值，就可以安全给这一维度添加约束。更多关于约束冲突的信息查看 <a href="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/ConflictingLayouts.html#//apple_ref/doc/uid/TP40010853-CH19-SW1" target="_blank" rel="noopener">不安全的布局</a></p>
-</blockquote>
-<p>此外，你也可以嵌套 StackView 到其他 StackView 中，构建更加复杂的布局。</p>
-<img src="https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/AutolayoutPG/Art/IB_StackView_NestedStacks_2x.png" width=500>
-
-<p>总而言之，应当尽可能用 StackView 去设置你的布局，只有 StackView 无法达到你想到的效果时才应该借助创建约束的方式去实现。</p>
-<p>更多关于使用 StackView 的信息查看 <a href="https://developer.apple.com/documentation/uikit/uistackview" target="_blank" rel="noopener">UIStackView Class Reference</a> 或 <a href="https://developer.apple.com/documentation/appkit/nsstackview" target="_blank" rel="noopener">NSStackView Class Reference</a></p>
-<blockquote>
-<p>注意：</p>
-<p>尽管嵌套 StackView 的使用可以创建更复杂的用户界面，你也不能完全避免使用约束。至少你仍然会需要用约束来布局最外层 StackView 的位置或者尺寸大小。</p>
-</blockquote>
-]]></content>
-      <categories>
-        <category>AutoLayout</category>
-      </categories>
-      <tags>
-        <tag>AutoLayout</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>AutoLayout指南·概述·详解约束</title>
     <url>/2017/12/26/AutoLayout/AutoLayout%E6%8C%87%E5%8D%97%C2%B7%E6%A6%82%E8%BF%B0%C2%B7%E8%AF%A6%E8%A7%A3%E7%BA%A6%E6%9D%9F/</url>
     <content><![CDATA[<h1 id="AutoLayout指南·概述"><a href="#AutoLayout指南·概述" class="headerlink" title="AutoLayout指南·概述"></a>AutoLayout指南·概述</h1><h2 id="详解约束"><a href="#详解约束" class="headerlink" title="详解约束"></a>详解约束</h2><p>AutoLayout 用一系列的线性约束来实现视图层级的布局，每一个约束对应一个等式。你的目标就是声明一系列的等式，这些等式有且仅有一个可能的解。</p>
@@ -4144,6 +4144,219 @@
       </categories>
       <tags>
         <tag>多媒体</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Block 深入学习</title>
+    <url>/2017/08/20/iOS%E5%BC%80%E5%8F%91/Block%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0/</url>
+    <content><![CDATA[<p>Block 是 C 语言的扩充功能，实质是带有局部变量的匿名函数。其定义如下</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">^ 返回值类型 参数列表 表达式</span><br></pre></td></tr></table></figure>
+
+<p>具体使用有很多省略方法，可以查看 <a href="http://fuckingblocksyntax.com/" target="_blank" rel="noopener">How Do I Declare A Block in Objective-C?</a></p>
+<p>Block 可以截获内部变量的值，但不能再进行改写，如果是 OC 对象类型的内部变量，可以调用变更其对象的方法，但不能重新赋值。要实现改写和赋值，必须用到 <code>__block</code> 说明符。</p>
+<p>目前的 Block 没有实现对 C 语言数组的截获，因此要使用指针来实现。</p>
+<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="keyword">char</span> text[] = <span class="string">"hello"</span>;</span><br><span class="line"><span class="keyword">void</span> (^blk)(<span class="keyword">void</span>) = ^&#123;</span><br><span class="line">    [printf(<span class="string">"%c"</span>, text[<span class="number">2</span>]);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>这样会报错，要改成下面的</p>
+<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="keyword">char</span> *text = <span class="string">"hello"</span>;</span><br><span class="line"><span class="keyword">void</span> (^blk)(<span class="keyword">void</span>) = ^&#123;</span><br><span class="line">    printf(<span class="string">"%c"</span>, text[<span class="number">2</span>]);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>对于 Block 的代码可以用 clang 进行转换，成为可以阅读的 C 语言源码，具体命令是 “clang -rewrite-objc 源文件名”，它会生成一个 cpp 文件。接下来分析各种情况下的 Block 源码实现。</p>
+<h2 id="不截获变量"><a href="#不截获变量" class="headerlink" title="不截获变量"></a>不截获变量</h2><p>首先是不带局部变量的情况，也就是不涉及对 Block 之外的局部变量或者其他变量进行截获的情况。</p>
+<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line"><span class="meta">#import <span class="meta-string">&lt;Foundation/Foundation.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> main()</span><br><span class="line">&#123;   </span><br><span class="line">    <span class="keyword">void</span> (^blk)(<span class="keyword">void</span>) = ^&#123;printf(<span class="string">"Hello world\n"</span>);&#125;;</span><br><span class="line">    blk(); </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>它转换后变为以下代码</p>
+<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line"><span class="keyword">struct</span> __main_block_impl_0 &#123;</span><br><span class="line">  <span class="keyword">struct</span> __block_impl impl;</span><br><span class="line">  <span class="keyword">struct</span> __main_block_desc_0* Desc;</span><br><span class="line">  __main_block_impl_0(<span class="keyword">void</span> *fp, <span class="keyword">struct</span> __main_block_desc_0 *desc, <span class="keyword">int</span> flags=<span class="number">0</span>) &#123;</span><br><span class="line">    impl.isa = &amp;_NSConcreteStackBlock;</span><br><span class="line">    impl.Flags = flags;</span><br><span class="line">    impl.FuncPtr = fp;</span><br><span class="line">    Desc = desc;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">static</span> <span class="keyword">void</span> __main_block_func_0(<span class="keyword">struct</span> __main_block_impl_0 *__cself) &#123;</span><br><span class="line">printf(<span class="string">"Hello world\n"</span>);&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">struct</span> __main_block_desc_0 &#123;</span><br><span class="line">  size_t reserved;</span><br><span class="line">  size_t Block_size;</span><br><span class="line">&#125; __main_block_desc_0_DATA = &#123; <span class="number">0</span>, <span class="keyword">sizeof</span>(<span class="keyword">struct</span> __main_block_impl_0)&#125;;</span><br><span class="line"><span class="keyword">int</span> main()</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">void</span> (*blk)(<span class="keyword">void</span>) = ((<span class="keyword">void</span> (*)())&amp;__main_block_impl_0((<span class="keyword">void</span> *)__main_block_func_0, &amp;__main_block_desc_0_DATA));</span><br><span class="line">    ((<span class="keyword">void</span> (*)(__block_impl *))((__block_impl *)blk)-&gt;FuncPtr)((__block_impl *)blk);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>来分析下它的实现。</p>
+<p>首先看 main 函数中，对于源码中的第一句对 block 的定义，main 函数是这样转换的</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">void</span> (*blk)(<span class="keyword">void</span>) = ((<span class="keyword">void</span> (*)())&amp;__main_block_impl_0((<span class="keyword">void</span> *)__main_block_func_0, &amp;__main_block_desc_0_DATA));</span><br></pre></td></tr></table></figure>
+
+<p>其中包含以下几个元素，首先是一个函数指针，它将会负责执行我们定义的 Block，而它被赋值为一个 <code>__main_block_impl_0</code> 结构体实例，这个实例定义如下</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> __<span class="title">main_block_impl_0</span> &#123;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> __<span class="title">block_impl</span> <span class="title">impl</span>;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> __<span class="title">main_block_desc_0</span>* <span class="title">Desc</span>;</span></span><br><span class="line">  __main_block_impl_0(<span class="keyword">void</span> *fp, struct __main_block_desc_0 *desc, <span class="keyword">int</span> flags=<span class="number">0</span>) &#123;</span><br><span class="line">    impl.isa = &amp;_NSConcreteStackBlock;</span><br><span class="line">    impl.Flags = flags;</span><br><span class="line">    impl.FuncPtr = fp;</span><br><span class="line">    Desc = desc;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>它定义了一些内部变量</p>
+<ul>
+<li><code>__block_impl</code> 类型的 impl</li>
+<li><code>__main_block_desc_0</code> 类型的指针 Desc</li>
+<li>还有一个初始化方法，这个方法接受一个函数指针，一个 <code>__main_block_desc_0</code> 指针，一个  flag 标志位。</li>
+</ul>
+<p>逐一来看，首先是 __block_impl，它的定义如下</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> __<span class="title">block_impl</span> &#123;</span></span><br><span class="line">  <span class="keyword">void</span> *isa;</span><br><span class="line">  <span class="keyword">int</span> Flags;</span><br><span class="line">  <span class="keyword">int</span> Reserved;</span><br><span class="line">  <span class="keyword">void</span> *FuncPtr;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>这里 isa 指针变量是个很重要的变量。首先要明确在 OC 中一切类的定义都是对象，同时 OC 包含对象实例、类、元类（metaClass）三种元素，isa 就是一个 Class 类型的指针，在实例中 isa 指向它的类对象，而类对象的 isa 指针指向它的元类，元类保存了类方法的列表，而类则保存了成员变量和成员方法的列表。元类的 isa 指针会指向元类的父类，最终指向一个根元类，根元类的 isa 指针则指向它本身形成一个闭环。所以 这里 isa 其实是指向 Block 的类对象。Flag 是个标志位，Reserced 是保留空间，而 FuncPtr 指针则会保存一个方法的指针。</p>
+<p>实例、类、元类的继承关系如下图所示</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/449095-3e972ec16703c54d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240/q/100" alt=""></p>
+<p>然后是 <code>__main_block_desc_0</code> 类型的结构体，它的定义如下</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">struct</span> __<span class="title">main_block_desc_0</span> &#123;</span></span><br><span class="line">  <span class="keyword">size_t</span> reserved;</span><br><span class="line">  <span class="keyword">size_t</span> Block_size;</span><br><span class="line">&#125; __main_block_desc_0_DATA = &#123; <span class="number">0</span>, <span class="keyword">sizeof</span>(struct __main_block_impl_0)&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到这里直接将结构体实例化并赋值给一个 <code>__main_block_desc_0_DATA</code> 变量。其中 reserved 也是保留位，<code>Block_size</code> 被赋值为结构体 <code>__main_block_impl_0</code> 的大小，也就是我们的 Block 的实际大小。</p>
+<p>最后是一个初始化方法，这个方法具体内容很容易看明白，就是对一些内部变量的赋值，唯独 impl.isa 被赋值为 <code>_NSConcreteStackBlock</code> 的地址，这里相当于指明 impl 对象的类对象是 <code>_NSConcreteStackBlock</code>，因此 Block 实际上就是 OC 对象的一个对象而已，它的类可以是以下几种</p>
+<ul>
+<li><code>_NSConcreteStackBlock</code></li>
+<li><code>_NSConcreteGlobalBlock</code></li>
+<li><code>_NSConcreteMallocBlock</code></li>
+</ul>
+<p>之后涉及到局部变量截获并超出作用域可访问时就会区分它们的区别。</p>
+<p>那么在 main 函数中如何使用到这个初始化函数呢</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line">((<span class="keyword">void</span> (*)())&amp;__main_block_impl_0((<span class="keyword">void</span> *)__main_block_func_0, &amp;__main_block_desc_0_DATA))</span><br></pre></td></tr></table></figure>
+
+<p>它进行了初始化后转换为函数指针类型赋值给了 blk 变量，而初始化传入的参数第一个是 <code>__main_block_func_0</code>，它的参数含义就是一个方法的指针，而它的定义如下</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">void</span> __main_block_func_0(struct __main_block_impl_0 *__cself) &#123;</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"Hello world\n"</span>);&#125;</span><br></pre></td></tr></table></figure>
+
+<p>看到了我们定义的打印方法，所以最终 Block 内部的方法都会转换为一个静态 C 语言函数，命名方式为 Block 语法所属函数名和 Block 语法在函数中出现的顺序，这里的参数 <code>__cself</code> 变量是一个 <code>__main_block_impl_0</code> 指针，后面执行时会看到它。</p>
+<p>因此在 main 函数中用 <code>(void *)__main_block_func_0</code> 方法指针和 <code>__main_block_desc_0_DATA</code> 结构体指针初始化了这个函数指针变量。</p>
+<p>接下来就是调用部分</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line">((<span class="keyword">void</span> (*)(__block_impl *))((__block_impl *)blk)-&gt;FuncPtr)((__block_impl *)blk);</span><br></pre></td></tr></table></figure>
+
+<p>简化后可以看作</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line">(blk-&gt;FunPtr)(blk);</span><br></pre></td></tr></table></figure>
+
+<p>前面提过这个 FunPtr 在初始化时其实被赋值为了 <code>(void *)__main_block_func_0</code> 方法指针，这里就是对它的调用，而传入的 self 参数则是 blk 自身，符合这个方法的参数定义。</p>
+<h2 id="截获基本类型局部变量"><a href="#截获基本类型局部变量" class="headerlink" title="截获基本类型局部变量"></a>截获基本类型局部变量</h2><p>首先看一段使用了非 <code>__blocking</code> 的局部变量的 Block 代码</p>
+<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line"><span class="meta">#import <span class="meta-string">&lt;Foundation/Foundation.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> main(<span class="keyword">int</span> argc, <span class="keyword">const</span> <span class="keyword">char</span> * argv[])</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">int</span> value1 = <span class="number">256</span>;</span><br><span class="line">    <span class="keyword">int</span> value2 = <span class="number">128</span>;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span> *fmt = <span class="string">"val = %d\n"</span>;</span><br><span class="line">    <span class="keyword">void</span> (^blk)(<span class="keyword">void</span>) = ^&#123;printf(fmt, value2);&#125;;</span><br><span class="line">    value2 = <span class="number">64</span>;</span><br><span class="line">    fmt = <span class="string">"new val = %d\n"</span>;</span><br><span class="line">    blk();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>由于没有使用 <code>__blocking</code> 修饰符所以这里修改局部变量对于 Block 运行是不会有影响的，打印结果是</p>
+<figure class="highlight ini"><table><tr><td class="code"><pre><span class="line"><span class="attr">val</span> = <span class="number">128</span></span><br></pre></td></tr></table></figure>
+
+<p>那么它的实现代码如下</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> __<span class="title">main_block_impl_0</span> &#123;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> __<span class="title">block_impl</span> <span class="title">impl</span>;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> __<span class="title">main_block_desc_0</span>* <span class="title">Desc</span>;</span></span><br><span class="line">  <span class="keyword">const</span> <span class="keyword">char</span> *fmt;</span><br><span class="line">  <span class="keyword">int</span> value2;</span><br><span class="line">  __main_block_impl_0(<span class="keyword">void</span> *fp, struct __main_block_desc_0 *desc, <span class="keyword">const</span> <span class="keyword">char</span> *_fmt, <span class="keyword">int</span> _value2, <span class="keyword">int</span> flags=<span class="number">0</span>) : fmt(_fmt), value2(_value2) &#123;</span><br><span class="line">    impl.isa = &amp;_NSConcreteStackBlock;</span><br><span class="line">    impl.Flags = flags;</span><br><span class="line">    impl.FuncPtr = fp;</span><br><span class="line">    Desc = desc;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">static</span> <span class="keyword">void</span> __main_block_func_0(struct __main_block_impl_0 *__cself) &#123;</span><br><span class="line">  <span class="keyword">const</span> <span class="keyword">char</span> *fmt = __cself-&gt;fmt; <span class="comment">// bound by copy</span></span><br><span class="line">  <span class="keyword">int</span> value2 = __cself-&gt;value2; <span class="comment">// bound by copy</span></span><br><span class="line"><span class="built_in">printf</span>(fmt, value2);&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">struct</span> __<span class="title">main_block_desc_0</span> &#123;</span></span><br><span class="line">  <span class="keyword">size_t</span> reserved;</span><br><span class="line">  <span class="keyword">size_t</span> Block_size;</span><br><span class="line">&#125; __main_block_desc_0_DATA = &#123; <span class="number">0</span>, <span class="keyword">sizeof</span>(struct __main_block_impl_0)&#125;;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">const</span> <span class="keyword">char</span> * argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> value1 = <span class="number">256</span>;</span><br><span class="line">    <span class="keyword">int</span> value2 = <span class="number">128</span>;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span> *fmt = <span class="string">"val = %d\n"</span>;</span><br><span class="line">    <span class="keyword">void</span> (*blk)(<span class="keyword">void</span>) = ((<span class="keyword">void</span> (*)())&amp;__main_block_impl_0((<span class="keyword">void</span> *)__main_block_func_0, &amp;__main_block_desc_0_DATA, fmt, value2));</span><br><span class="line">    value2 = <span class="number">64</span>;</span><br><span class="line">    fmt = <span class="string">"new val = %d\n"</span>;</span><br><span class="line">    ((<span class="keyword">void</span> (*)(__block_impl *))((__block_impl *)blk)-&gt;FuncPtr)((__block_impl *)blk);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里基本过程和前面类似，主要关注对于局部变量的截获操作。可以看到在 <code>__main_block_impl_0</code> 方法的参数列表中多了两个参数，对应地在结构体 <code>__main_block_impl_0</code> 中也有两个成员变量 fmt 和 value2，而根据 OC 代码生成的方法函数 <code>__main_block_func_0</code> 只需要获取到 self 变量后就可以进行相关的打印操作了，因此截获自动变量就是在执行 Block 时，将 Block 所使用的自动变量值保存到 Block 结构体实例中。</p>
+<p>由于截获后的数据并不能监听到原局部变量的值的变化，所以对原局部变量进行赋值或修改操作不能影响到 Block 结构体的成员变量，因此也不能改变 Block 内的值。</p>
+<h2 id="Block-变量的截获操作"><a href="#Block-变量的截获操作" class="headerlink" title="__Block 变量的截获操作"></a>__Block 变量的截获操作</h2><p>如果要实现在 Block 内部保存值或者响应外部值的变化，可以通过静态变量、静态全局变量、全局变量来实现，也可以使用 <code>__block</code> 修饰符。</p>
+<p>首先看静态变量和全局变量在 Block 的实现中是如何实现的。</p>
+<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line"><span class="meta">#import <span class="meta-string">&lt;Foundation/Foundation.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> global_val = <span class="number">1</span>;</span><br><span class="line"><span class="keyword">static</span> <span class="keyword">int</span> static_global_val = <span class="number">2</span>;</span><br><span class="line"><span class="keyword">int</span> main(<span class="keyword">int</span> argc, <span class="keyword">const</span> <span class="keyword">char</span> * argv[])</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">int</span> static_val = <span class="number">3</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">void</span> (^blk)(<span class="keyword">void</span>) = ^&#123;</span><br><span class="line">        global_val += <span class="number">1</span>;</span><br><span class="line">        static_global_val += <span class="number">1</span>;</span><br><span class="line">        static_val += <span class="number">1</span>;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    blk();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>它的实现预测如下</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">int</span> global_val = <span class="number">1</span>;</span><br><span class="line"><span class="keyword">static</span> <span class="keyword">int</span> static_global_val = <span class="number">2</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> __<span class="title">main_block_impl_0</span> &#123;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> __<span class="title">block_impl</span> <span class="title">impl</span>;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> __<span class="title">main_block_desc_0</span>* <span class="title">Desc</span>;</span></span><br><span class="line">  <span class="keyword">int</span> *static_val;</span><br><span class="line">  __main_block_impl_0(<span class="keyword">void</span> *fp, struct __main_block_desc_0 *desc, <span class="keyword">int</span> *_static_val, <span class="keyword">int</span> flags=<span class="number">0</span>) : static_val(_static_val) &#123;</span><br><span class="line">    impl.isa = &amp;_NSConcreteStackBlock;</span><br><span class="line">    impl.Flags = flags;</span><br><span class="line">    impl.FuncPtr = fp;</span><br><span class="line">    Desc = desc;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">static</span> <span class="keyword">void</span> __main_block_func_0(struct __main_block_impl_0 *__cself) &#123;</span><br><span class="line">  <span class="keyword">int</span> *static_val = __cself-&gt;static_val; <span class="comment">// bound by copy</span></span><br><span class="line"></span><br><span class="line">        global_val += <span class="number">1</span>;</span><br><span class="line">        static_global_val += <span class="number">1</span>;</span><br><span class="line">        (*static_val) += <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">struct</span> __<span class="title">main_block_desc_0</span> &#123;</span></span><br><span class="line">  <span class="keyword">size_t</span> reserved;</span><br><span class="line">  <span class="keyword">size_t</span> Block_size;</span><br><span class="line">&#125; __main_block_desc_0_DATA = &#123; <span class="number">0</span>, <span class="keyword">sizeof</span>(struct __main_block_impl_0)&#125;;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">const</span> <span class="keyword">char</span> * argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">int</span> static_val = <span class="number">3</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">void</span> (*blk)(<span class="keyword">void</span>) = ((<span class="keyword">void</span> (*)())&amp;__main_block_impl_0((<span class="keyword">void</span> *)__main_block_func_0, &amp;__main_block_desc_0_DATA, &amp;static_val));</span><br><span class="line"></span><br><span class="line">    ((<span class="keyword">void</span> (*)(__block_impl *))((__block_impl *)blk)-&gt;FuncPtr)((__block_impl *)blk);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对于全局变量，无论是静态还是非静态，都可以被作用域内所有函数访问，包括 Block 函数，所以可以看到没有对它们进行额外的操作。而对于局部静态变量，由于 Block 方法域内要实现对这个静态变量的修改赋值操作，因此要进行地址传递，将静态局部变量的地址作为参数传给 Block 结构体，在 Block 方法内通过地址修改静态局部变量的值。</p>
+<p>接下来是 <code>__block</code> 修饰符的实现过程</p>
+<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line"><span class="meta">#import <span class="meta-string">&lt;Foundation/Foundation.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> main(<span class="keyword">int</span> argc, <span class="keyword">const</span> <span class="keyword">char</span> * argv[])</span><br><span class="line">&#123;</span><br><span class="line">    __block <span class="keyword">int</span> val = <span class="number">10</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">void</span> (^blk)(<span class="keyword">void</span>) = ^&#123;</span><br><span class="line">        val = <span class="number">20</span>;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    blk();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>它的实现预测如下</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> __<span class="title">Block_byref_val_0</span> &#123;</span></span><br><span class="line">  <span class="keyword">void</span> *__isa;</span><br><span class="line">__Block_byref_val_0 *__forwarding;</span><br><span class="line"> <span class="keyword">int</span> __flags;</span><br><span class="line"> <span class="keyword">int</span> __size;</span><br><span class="line"> <span class="keyword">int</span> val;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> __<span class="title">main_block_impl_0</span> &#123;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> __<span class="title">block_impl</span> <span class="title">impl</span>;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> __<span class="title">main_block_desc_0</span>* <span class="title">Desc</span>;</span></span><br><span class="line">  __Block_byref_val_0 *val; <span class="comment">// by ref</span></span><br><span class="line">  __main_block_impl_0(<span class="keyword">void</span> *fp, struct __main_block_desc_0 *desc, __Block_byref_val_0 *_val, <span class="keyword">int</span> flags=<span class="number">0</span>) : val(_val-&gt;__forwarding) &#123;</span><br><span class="line">    impl.isa = &amp;_NSConcreteStackBlock;</span><br><span class="line">    impl.Flags = flags;</span><br><span class="line">    impl.FuncPtr = fp;</span><br><span class="line">    Desc = desc;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">static</span> <span class="keyword">void</span> __main_block_func_0(struct __main_block_impl_0 *__cself) &#123;</span><br><span class="line">  __Block_byref_val_0 *val = __cself-&gt;val; <span class="comment">// bound by ref</span></span><br><span class="line"></span><br><span class="line">        (val-&gt;__forwarding-&gt;val) = <span class="number">20</span>;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="keyword">static</span> <span class="keyword">void</span> __main_block_copy_0(struct __main_block_impl_0*dst, struct __main_block_impl_0*src) &#123;_Block_object_assign((<span class="keyword">void</span>*)&amp;dst-&gt;val, (<span class="keyword">void</span>*)src-&gt;val, <span class="number">8</span><span class="comment">/*BLOCK_FIELD_IS_BYREF*/</span>);&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">void</span> __main_block_dispose_0(struct __main_block_impl_0*src) &#123;_Block_object_dispose((<span class="keyword">void</span>*)src-&gt;val, <span class="number">8</span><span class="comment">/*BLOCK_FIELD_IS_BYREF*/</span>);&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">struct</span> __<span class="title">main_block_desc_0</span> &#123;</span></span><br><span class="line">  <span class="keyword">size_t</span> reserved;</span><br><span class="line">  <span class="keyword">size_t</span> Block_size;</span><br><span class="line">  <span class="keyword">void</span> (*copy)(struct __main_block_impl_0*, struct __main_block_impl_0*);</span><br><span class="line">  <span class="keyword">void</span> (*dispose)(struct __main_block_impl_0*);</span><br><span class="line">&#125; __main_block_desc_0_DATA = &#123; <span class="number">0</span>, <span class="keyword">sizeof</span>(struct __main_block_impl_0), __main_block_copy_0, __main_block_dispose_0&#125;;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">const</span> <span class="keyword">char</span> * argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    __attribute__((__blocks__(byref))) __Block_byref_val_0 val = &#123;(<span class="keyword">void</span>*)<span class="number">0</span>,(__Block_byref_val_0 *)&amp;val, <span class="number">0</span>, <span class="keyword">sizeof</span>(__Block_byref_val_0), <span class="number">10</span>&#125;;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">void</span> (*blk)(<span class="keyword">void</span>) = ((<span class="keyword">void</span> (*)())&amp;__main_block_impl_0((<span class="keyword">void</span> *)__main_block_func_0, &amp;__main_block_desc_0_DATA, (__Block_byref_val_0 *)&amp;val, <span class="number">570425344</span>));</span><br><span class="line"></span><br><span class="line">    ((<span class="keyword">void</span> (*)(__block_impl *))((__block_impl *)blk)-&gt;FuncPtr)((__block_impl *)blk);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到，实现中把 <code>__block</code> 修饰的变量用一个 <code>__Block_byref_val_0</code> 结构体存储，这个结构体的定义如下</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> __<span class="title">Block_byref_val_0</span> &#123;</span></span><br><span class="line">  <span class="keyword">void</span> *__isa;</span><br><span class="line">__Block_byref_val_0 *__forwarding;</span><br><span class="line"> <span class="keyword">int</span> __flags;</span><br><span class="line"> <span class="keyword">int</span> __size;</span><br><span class="line"> <span class="keyword">int</span> val;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>其中最重要的成员变量是 <code>__Block_byref_val_0</code> 指针，它的作用主要体现在可以使 Block 截获的变量超出其作用域，但是目前还没用到这一特性。</p>
+<p>最终 <code>__block</code> 修饰的局部变量被初始化为一个结构体</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line">__attribute__((__blocks__(byref))) __Block_byref_val_0 val = &#123;(<span class="keyword">void</span>*)<span class="number">0</span>,(__Block_byref_val_0 *)&amp;val, <span class="number">0</span>, <span class="keyword">sizeof</span>(__Block_byref_val_0), <span class="number">10</span>&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>然后对于具体的赋值操作，实现如下</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">void</span> __main_block_func_0(struct __main_block_impl_0 *__cself) &#123;</span><br><span class="line">  __Block_byref_val_0 *val = __cself-&gt;val; <span class="comment">// bound by ref</span></span><br><span class="line"></span><br><span class="line">        (val-&gt;__forwarding-&gt;val) = <span class="number">20</span>;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>与静态局部变量的实现不同，这里的赋值操作是通过对 val 结构体实例的 <code>__forwarding</code> 指针的 val 成员变量进行赋值操作，当然在这里实际上就是对 val 结构体实例的 val 成员变量进行赋值，因此是可以改变原局部变量值的。</p>
+<p>由于 block 变量的结构体 <code>__Block_byref_val_0</code> 被定义在全局范围，所以可以被多个 Block 复用。例如下面的代码</p>
+<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line"><span class="meta">#import <span class="meta-string">&lt;Foundation/Foundation.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> main(<span class="keyword">int</span> argc, <span class="keyword">const</span> <span class="keyword">char</span> * argv[])</span><br><span class="line">&#123;</span><br><span class="line">    __block <span class="keyword">int</span> val = <span class="number">10</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">void</span> (^blk0)(<span class="keyword">void</span>) = ^&#123;</span><br><span class="line">        val = <span class="number">20</span>;</span><br><span class="line">    &#125;;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">void</span> (^blk1)(<span class="keyword">void</span>) = ^&#123;</span><br><span class="line">        val = <span class="number">20</span>;</span><br><span class="line">    &#125;;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其实现预测如下</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">const</span> <span class="keyword">char</span> * argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    __attribute__((__blocks__(byref))) __Block_byref_val_0 val = &#123;(<span class="keyword">void</span>*)<span class="number">0</span>,(__Block_byref_val_0 *)&amp;val, <span class="number">0</span>, <span class="keyword">sizeof</span>(__Block_byref_val_0), <span class="number">10</span>&#125;;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">void</span> (*blk0)(<span class="keyword">void</span>) = ((<span class="keyword">void</span> (*)())&amp;__main_block_impl_0((<span class="keyword">void</span> *)__main_block_func_0, &amp;__main_block_desc_0_DATA, (__Block_byref_val_0 *)&amp;val, <span class="number">570425344</span>));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">void</span> (*blk1)(<span class="keyword">void</span>) = ((<span class="keyword">void</span> (*)())&amp;__main_block_impl_1((<span class="keyword">void</span> *)__main_block_func_1, &amp;__main_block_desc_1_DATA, (__Block_byref_val_0 *)&amp;val, <span class="number">570425344</span>));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这样将 Block 与 block 变量分离，可以便捷实现一个 Block 使用多个 block 变量或者一个 block 变量被多个 Block 使用。</p>
+<h2 id="Block-存储域"><a href="#Block-存储域" class="headerlink" title="Block 存储域"></a>Block 存储域</h2><p>根据上面的解读，Block 实际上是栈上的结构体实例，block 变量也是栈上的结构体实例，而前面提过 isa 指针指向的是 Block 的类对象，它一般有三个值</p>
+<ul>
+<li><code>_NSConcreteStackBlock</code></li>
+<li><code>_NSConcreteGlobalBlock</code></li>
+<li><code>_NSConcreteMallocBlock</code></li>
+</ul>
+<p>这三个值实际上表达了 Block 的存储域，<code>_NSConcreteStackBlock</code> 将 Block 存储在栈上，<code>_NSConcreteGlobalBlock</code> 将 Block 存储在数据区域，<code>_NSConcreteMallocBlock</code> 将 Block 存储在堆上。</p>
+<p><strong>要注意一点是，使用 clang 命令转换代码时可能会与实际实现有所不同。</strong></p>
+<p>简单来说，在 Linux 下一个应用程序的内存分布如下所示</p>
+<table>
+<thead>
+<tr>
+<th>区域</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>程序区域 .text</td>
+<td>编译后程序的主体，也就是程序的机器指令</td>
+</tr>
+<tr>
+<td>数据区域 .data</td>
+<td>保存已初始化的全局变量</td>
+</tr>
+<tr>
+<td>.bss</td>
+<td>保存只声明没有初始化的全局变量</td>
+</tr>
+<tr>
+<td>堆 heap</td>
+<td>保存动态分配的内存，向高地址方向增长</td>
+</tr>
+<tr>
+<td>栈 stack</td>
+<td>用于函数调用，保存函数参数、临时变量、返回地址等，向低地址方向增长</td>
+</tr>
+</tbody></table>
+<p>具体到 Block 中，定义在全局变量的 Block 以及在函数中但是没有截获局部变量的 Block 的 isa 都会被赋值为 <code>_NSConcreteGlobalBlock</code>，也就是会被存储在数据区域，而截获了局部变量或是 block 变量的 Block 则有些复杂。前面提到 block 变量是分配在栈上的，因此如果其所属变量作用域结束了，这个 block 变量也就被废弃了，但是事实上 Block 依然可以提供对 block 变量的跨作用域访问，这种机制的实现是将 Block 和 block 变量从栈上复制到堆上，由于堆的生命周期是由应用程序控制的，因而可以实现跨作用域的访问效果。而这时 Block 的 isa 指针就会指向 <code>_NSConcreteMallocBlock</code> 了。</p>
+<p>一般来说当我们向方法或函数的参数中传递 Block 时，需要对 Block 进行手动复制操作，也就是执行 copy 方法，这一方法是没有副作用的，因此可以多次对一个 Block 调用。</p>
+<table>
+<thead>
+<tr>
+<th>Block 类</th>
+<th>副本源的配置存储域</th>
+<th>复制效果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>_NSConcreteStackBlock</code></td>
+<td>栈</td>
+<td>从栈复制到堆</td>
+</tr>
+<tr>
+<td><code>_NSConcreteGlobalBlock</code></td>
+<td>程序的数据区域</td>
+<td>什么也不做</td>
+</tr>
+<tr>
+<td><code>_NSConcreteMallocBlock</code></td>
+<td>堆</td>
+<td>引用计数增加</td>
+</tr>
+</tbody></table>
+<p>当我们返回一个 Block 类型的返回值时，如果 Block 捕获了一个局部变量，这种我们也需要进行手动 copy 操作。</p>
+<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line">blk_int func(<span class="keyword">id</span> rate)&#123;</span><br><span class="line">   <span class="keyword">return</span> [^(<span class="keyword">int</span> count) &#123;</span><br><span class="line">       <span class="keyword">return</span> (<span class="keyword">int</span>)rate * count;</span><br><span class="line">   &#125; <span class="keyword">copy</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>当然如果方法和函数已经复制了 Block 参数，就不需要手动复制了，包括以下情况</p>
+<ul>
+<li>Cocoa 框架的方法且方法名中含有 usingBlock 等</li>
+<li>GCD 的 API</li>
+</ul>
+<h2 id="block-变量存储域"><a href="#block-变量存储域" class="headerlink" title="block 变量存储域"></a>block 变量存储域</h2><p>上节提到 Block 会从栈复制到堆，同时也会把 block 变量从栈复制到堆上，并且持有这一 block 变量，增加引用计数，最终 block 变量会按照引用计数的方式被管理。最关键的一点是，当 block 变量被复制到堆上以后，栈上还存在的 block 变量的 <code>__forwarding</code> 指针会指向堆上的 block 变量，而堆上的 <code>__forwarding</code> 指针则依然指向堆上的 block 变量自身。</p>
+<p>看一段代码</p>
+<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line"><span class="meta">#import <span class="meta-string">&lt;Foundation/Foundation.h&gt;</span></span></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">int</span> (^blk_t)(<span class="keyword">int</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> main(<span class="keyword">int</span> argc, <span class="keyword">const</span> <span class="keyword">char</span> * argv[])</span><br><span class="line">&#123;</span><br><span class="line">    __block <span class="keyword">int</span> val = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">void</span> (^blk)(<span class="keyword">void</span>) = [^&#123;++val;&#125; <span class="keyword">copy</span>];</span><br><span class="line">    ++val;</span><br><span class="line">    blk();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里定义了一个 block 变量，并且分别在 Block 内外对它进行自增一操作，它的实现预测如下</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">const</span> <span class="keyword">char</span> * argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    __attribute__((__blocks__(byref))) __Block_byref_val_0 val = &#123;(<span class="keyword">void</span>*)<span class="number">0</span>,(__Block_byref_val_0 *)&amp;val, <span class="number">0</span>, <span class="keyword">sizeof</span>(__Block_byref_val_0), <span class="number">0</span>&#125;;</span><br><span class="line">    <span class="keyword">void</span> (*blk)(<span class="keyword">void</span>) = (<span class="keyword">void</span> (*)())((id (*)(id, SEL))(<span class="keyword">void</span> *)objc_msgSend)((id)((<span class="keyword">void</span> (*)())&amp;__main_block_impl_0((<span class="keyword">void</span> *)__main_block_func_0, &amp;__main_block_desc_0_DATA, (__Block_byref_val_0 *)&amp;val, <span class="number">570425344</span>)), sel_registerName(<span class="string">"copy"</span>));</span><br><span class="line">    ++(val.__forwarding-&gt;val);</span><br><span class="line">    ((<span class="keyword">void</span> (*)(__block_impl *))((__block_impl *)blk)-&gt;FuncPtr)((__block_impl *)blk);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到，在 Block 内部访问的是堆上的 block 变量，在 Block 外部访问的是栈上的 block 变量，但是由于都是通过 <code>__forwarding</code> 指针来访问的，所以实际效果都是访问到了堆上的 block 变量。</p>
+<h2 id="截获-OC-对象"><a href="#截获-OC-对象" class="headerlink" title="截获 OC 对象"></a>截获 OC 对象</h2><p>对于 oc 对象也可以在 Block 中使用，并且会自动被 Block 截获。</p>
+<figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line"><span class="meta">#import <span class="meta-string">&lt;Foundation/Foundation.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> main(<span class="keyword">int</span> argc, <span class="keyword">const</span> <span class="keyword">char</span> * argv[])</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">typedef</span> <span class="keyword">void</span> (^blk_t)(<span class="keyword">id</span> obj);</span><br><span class="line">    blk_t blk;</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">id</span> array = [[<span class="built_in">NSMutableArray</span> alloc] init];</span><br><span class="line">        blk = [^(<span class="keyword">id</span> obj)&#123;</span><br><span class="line">            [array addObject:obj];</span><br><span class="line">            <span class="built_in">NSLog</span>(<span class="string">@"array count = %ld"</span>, [array count]);</span><br><span class="line">        &#125; <span class="keyword">copy</span>];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    blk([<span class="built_in">NSObject</span> new]);</span><br><span class="line">    blk([<span class="built_in">NSObject</span> new]);</span><br><span class="line">    blk([<span class="built_in">NSObject</span> new]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里我们手动 copy 了 Block，但是在 ARC 下会自动帮我们 copy 所不用担心程序会强制结束的问题。下面是预测的实现源码</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> __<span class="title">main_block_impl_0</span> &#123;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> __<span class="title">block_impl</span> <span class="title">impl</span>;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> __<span class="title">main_block_desc_0</span>* <span class="title">Desc</span>;</span></span><br><span class="line">  id <span class="built_in">array</span>;</span><br><span class="line">  __main_block_impl_0(<span class="keyword">void</span> *fp, struct __main_block_desc_0 *desc, id _array, <span class="keyword">int</span> flags=<span class="number">0</span>) : <span class="built_in">array</span>(_array) &#123;</span><br><span class="line">    impl.isa = &amp;_NSConcreteStackBlock;</span><br><span class="line">    impl.Flags = flags;</span><br><span class="line">    impl.FuncPtr = fp;</span><br><span class="line">    Desc = desc;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">static</span> <span class="keyword">void</span> __main_block_func_0(struct __main_block_impl_0 *__cself, id obj) &#123;</span><br><span class="line">  id <span class="built_in">array</span> = __cself-&gt;<span class="built_in">array</span>; <span class="comment">// bound by copy</span></span><br><span class="line"></span><br><span class="line">            ((<span class="keyword">void</span> (*)(id, SEL, ObjectType))(<span class="keyword">void</span> *)objc_msgSend)((id)<span class="built_in">array</span>, sel_registerName(<span class="string">"addObject:"</span>), (id)obj);</span><br><span class="line">            NSLog((NSString *)&amp;__NSConstantStringImpl__var_folders_qj_zz_x2p3n7nv4t1r7gfbpd1q80000gn_T_SimpleBlock_267687_mi_0, ((NSUInteger (*)(id, SEL))(<span class="keyword">void</span> *)objc_msgSend)((id)<span class="built_in">array</span>, sel_registerName(<span class="string">"count"</span>)));</span><br><span class="line">        &#125;</span><br><span class="line"><span class="keyword">static</span> <span class="keyword">void</span> __main_block_copy_0(struct __main_block_impl_0*dst, struct __main_block_impl_0*src) &#123;_Block_object_assign((<span class="keyword">void</span>*)&amp;dst-&gt;<span class="built_in">array</span>, (<span class="keyword">void</span>*)src-&gt;<span class="built_in">array</span>, <span class="number">3</span><span class="comment">/*BLOCK_FIELD_IS_OBJECT*/</span>);&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">void</span> __main_block_dispose_0(struct __main_block_impl_0*src) &#123;_Block_object_dispose((<span class="keyword">void</span>*)src-&gt;<span class="built_in">array</span>, <span class="number">3</span><span class="comment">/*BLOCK_FIELD_IS_OBJECT*/</span>);&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">struct</span> __<span class="title">main_block_desc_0</span> &#123;</span></span><br><span class="line">  <span class="keyword">size_t</span> reserved;</span><br><span class="line">  <span class="keyword">size_t</span> Block_size;</span><br><span class="line">  <span class="keyword">void</span> (*copy)(struct __main_block_impl_0*, struct __main_block_impl_0*);</span><br><span class="line">  <span class="keyword">void</span> (*dispose)(struct __main_block_impl_0*);</span><br><span class="line">&#125; __main_block_desc_0_DATA = &#123; <span class="number">0</span>, <span class="keyword">sizeof</span>(struct __main_block_impl_0), __main_block_copy_0, __main_block_dispose_0&#125;;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">const</span> <span class="keyword">char</span> * argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">typedef</span> <span class="title">void</span> <span class="params">(*<span class="keyword">blk_t</span>)</span><span class="params">(id obj)</span></span>;</span><br><span class="line">    <span class="keyword">blk_t</span> blk;</span><br><span class="line">    &#123;</span><br><span class="line">        id <span class="built_in">array</span> = ((NSMutableArray *(*)(id, SEL))(<span class="keyword">void</span> *)objc_msgSend)((id)((NSMutableArray *(*)(id, SEL))(<span class="keyword">void</span> *)objc_msgSend)((id)objc_getClass(<span class="string">"NSMutableArray"</span>), sel_registerName(<span class="string">"alloc"</span>)), sel_registerName(<span class="string">"init"</span>));</span><br><span class="line">        blk = (<span class="keyword">blk_t</span>)((id (*)(id, SEL))(<span class="keyword">void</span> *)objc_msgSend)((id)((<span class="keyword">void</span> (*)(id))&amp;__main_block_impl_0((<span class="keyword">void</span> *)__main_block_func_0, &amp;__main_block_desc_0_DATA, <span class="built_in">array</span>, <span class="number">570425344</span>)), sel_registerName(<span class="string">"copy"</span>));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ((<span class="keyword">void</span> (*)(__block_impl *, id))((__block_impl *)blk)-&gt;FuncPtr)((__block_impl *)blk, ((NSObject *(*)(id, SEL))(<span class="keyword">void</span> *)objc_msgSend)((id)objc_getClass(<span class="string">"NSObject"</span>), sel_registerName(<span class="string">"new"</span>)));</span><br><span class="line">    ((<span class="keyword">void</span> (*)(__block_impl *, id))((__block_impl *)blk)-&gt;FuncPtr)((__block_impl *)blk, ((NSObject *(*)(id, SEL))(<span class="keyword">void</span> *)objc_msgSend)((id)objc_getClass(<span class="string">"NSObject"</span>), sel_registerName(<span class="string">"new"</span>)));</span><br><span class="line">    ((<span class="keyword">void</span> (*)(__block_impl *, id))((__block_impl *)blk)-&gt;FuncPtr)((__block_impl *)blk, ((NSObject *(*)(id, SEL))(<span class="keyword">void</span> *)objc_msgSend)((id)objc_getClass(<span class="string">"NSObject"</span>), sel_registerName(<span class="string">"new"</span>)));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到大致过程与前面几种情况类似，但在 main 函数中对 Block 变量调用了 copy 方法，这个也是符合逻辑的。</p>
+<p>当 Block 被从栈复制到堆的时候，会调用 <code>__main_block_copy_0</code> 方法，这个方法实际上调用的是 <code>_Block_object_assign</code> 方法，它会对 Block 的引用计数增加一。而当 Block 没有引用的时候，会被废弃，此时会调用 <code>__main_block_dispose_0</code> 方法，它实际上调用的是 <code>_Block_object_dispose</code> 方法，类似于 release 方法，释放 Block 对象。</p>
+<p>调用 <code>_Block_object_assign</code> 方法的时机，也就是将 Block 从栈复制到堆的时机有</p>
+<ul>
+<li>调用 Block 的 copy 方法</li>
+<li>Block 作为函数返回值</li>
+<li>Block 赋值给 strong 变量或 Block 变量</li>
+<li>方法名中含有 usingBlock 的 Cocoa 框架方法或 GCD 的 API</li>
+</ul>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>这里主要是对 《OC 高级编程》 第二章的总结，而第二章的论述很多是基于 MRC 的，实际上在 ARC 环境下，Block 一般都会直接分配在 <code>_NSConcreteMallocBlock</code> 上，因而很多 copy 操作不需要手动去做，一些会引发 crash 的操作也被做了保护，比如在作用域外，通过 block 对于一个数组进行操作，由于 block 被自动复制了，所以不会引发异常，对于 weak 变量也是同理。</p>
+]]></content>
+      <categories>
+        <category>iOS开发</category>
+      </categories>
+      <tags>
+        <tag>Block</tag>
+        <tag>ObjectiveC</tag>
       </tags>
   </entry>
 </search>
